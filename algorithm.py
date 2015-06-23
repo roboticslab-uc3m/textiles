@@ -40,11 +40,8 @@ def contour_center(contour):
     cy = int(M['m01']/M['m00'])
     return (cx, cy)
 
-def main():
-    # Load image
-    image = cv2.imread("data/image2.png", cv2.CV_LOAD_IMAGE_GRAYSCALE)
-    show_image("original", image)
 
+def get_garment_contour(image):
     # Get clothes contour:
     ret, image_contours_src = cv2.threshold(image, 240, 255, cv2.THRESH_BINARY_INV)
     clothes_contours, dummy = cv2.findContours(image_contours_src, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -53,13 +50,46 @@ def main():
     maxArea = cv2.contourArea(clothes_contour)
     for contour in clothes_contours[1:]:
         currentArea = cv2.contourArea(contour)
-        if  currentArea > maxArea:
+        if currentArea > maxArea:
             maxArea = currentArea
             clothes_contour = contour
 
     # Simplify contour:
-    perimeter = cv2.arcLength(contour,True)
-    approx = cv2.approxPolyDP(contour,0.012*perimeter,True)
+    perimeter = cv2.arcLength(contour, True)
+    approx = cv2.approxPolyDP(contour, 0.012 * perimeter, True)
+    return approx
+
+
+def get_garment_main_lines(image):
+    # Apply canny to find 'not cross' lines
+    blur = cv2.GaussianBlur(image, (11, 11), 0)
+    inverted = cv2.bitwise_not(blur)
+    # show_image("gauss", inverted)
+    edges = cv2.Canny(inverted, 80, 160, apertureSize=3)
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
+    # show_image("canny", edges)
+    edges = cv2.morphologyEx(edges, cv2.MORPH_CLOSE, kernel, iterations=5)
+    return edges
+
+
+def get_highest_points(image, threshold=20):
+    # Find highest zones
+    ret, highest_zones = cv2.threshold(image, threshold, 255, cv2.THRESH_BINARY_INV)
+    highest_contours = process_mask(highest_zones)
+    highest_points = []
+    for contour in highest_contours:
+        highest_points.append(contour_center(contour))
+
+    return highest_points
+
+
+def main():
+    # Load image
+    image = cv2.imread("data/image2.png", cv2.CV_LOAD_IMAGE_GRAYSCALE)
+    show_image("original", image)
+
+    # Obtain garment contour
+    approx = get_garment_contour(image)
 
     # Print clothes contour
     contour_show = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
@@ -68,22 +98,12 @@ def main():
         cv2.circle(contour_show, tuple(point[0]), 3, (0, 0, 255), 2)
     show_image("contour", contour_show)
 
-    # Apply canny to find 'not cross' lines
-    blur = cv2.GaussianBlur(image,(11,11),0)
-    inverted = cv2.bitwise_not(blur)
-    show_image("gauss", inverted)
-    edges = cv2.Canny(inverted,80,160, apertureSize=3)
-    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
-    show_image("canny", edges)
-    edges = cv2.morphologyEx(edges, cv2.MORPH_CLOSE, kernel, iterations=5)
+    # Get 'not crossing' lines
+    edges = get_garment_main_lines(image)
     show_image("canny2", edges)
 
-    # Find highest zones
-    ret, highest_zones = cv2.threshold(image, 20, 255, cv2.THRESH_BINARY_INV)
-    highest_contours = process_mask(highest_zones)
-    highest_points = []
-    for contour in highest_contours:
-        highest_points.append(contour_center(contour))
+    # Get highest_points
+    highest_points = get_highest_points(image)
 
     # Print clothes contour
     hp_show = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
@@ -94,7 +114,6 @@ def main():
         cv2.circle(hp_show, tuple(point), 3, (255, 0, 0), 2)
     show_image("h point", hp_show)
 
-    show_image("highest", highest_zones)
     cv2.waitKey(-1)
     cv2.destroyAllWindows()
 

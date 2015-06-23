@@ -39,9 +39,6 @@ def main():
     image_paths = ['./data/robe01_1_fold.ppm', './data/robe01_2_fold.ppm', './data/sweater02_1_fold.ppm', './data/sweater02_2_fold.ppm', './data/tshirt01_1_fold.ppm',
                    './data/tshirt01_2_fold.ppm','./data/polo01_1_fold.ppm', './data/polo01_2_fold.ppm', './data/dishcloth01_2_fold.ppm', './data/dishcloth01_1_fold.ppm']
 
-    depth_maps = ['./data/robe01_1_fold.mat', './data/robe01_2_fold.mat', './data/sweater02_1_fold.mat', './data/sweater02_2_fold.mat', './data/tshirt01_1_fold.mat',
-                   './data/tshirt01_2_fold.mat','./data/polo01_1_fold.mat', './data/polo01_2_fold.mat', './data/dishcloth01_2_fold.mat', './data/dishcloth01_1_fold.mat']
-
     for path in image_paths:
         image = cv2.imread(path)
 
