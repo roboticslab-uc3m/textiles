@@ -7,7 +7,7 @@ __author__ = 'def'
 
 def show_image(text, image):
     cv2.imshow(text, image)
-    cv2.waitKey(-1)
+    cv2.waitKey(200)
 
 def process_mask(mask, kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))):
     """
@@ -77,7 +77,9 @@ def get_garment_main_lines(image):
 def get_highest_points(image, threshold=40):
     # Find highest zones
     ret, highest_zones = cv2.threshold(image, threshold, 255, cv2.THRESH_BINARY_INV)
-    highest_contours = process_mask(highest_zones)
+    #highest_contours = process_mask(highest_zones)
+    highest_contours, dummy = cv2.findContours(highest_zones.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    show_image("highest_zones", highest_zones)
     highest_points = []
     for contour in highest_contours:
         highest_points.append(contour_center(contour))
@@ -97,8 +99,7 @@ def main():
 
         # Get mask
         mask = get_coloured_item(image)
-        cv2.imshow("mask", mask)
-        cv2.waitKey(500)
+        show_image("mask", mask)
         cv2.destroyAllWindows()
 
         # Obtain garment contour
@@ -119,11 +120,13 @@ def main():
 
         # Normalize depth map
         scaled_depth_map = masked_depth_image.copy()
-        min_value = masked_depth_image[np.unravel_index(masked_depth_image.argmin(), masked_depth_image.shape)]
-        max_value = masked_depth_image[np.unravel_index(masked_depth_image.argmax(), masked_depth_image.shape)]
+        min_value = masked_depth_image[np.unravel_index(np.where(masked_depth_image == 0, 1000,masked_depth_image).argmin(), masked_depth_image.shape)]
+        max_value = masked_depth_image[np.unravel_index(np.where(masked_depth_image == 1000, 0,masked_depth_image).argmax(), masked_depth_image.shape)]
         range_value = max_value-min_value
-        scaled_depth_map -= min_value
-        scaled_depth_map *= 255/range_value
+        print "Depth image range: (%d, %d) l=%d" % (min_value, max_value, range_value)
+        scaled_depth_map = np.where(scaled_depth_map != 1000, (scaled_depth_map - min_value) * (255/range_value), 255)
+        # scaled_depth_map -= min_value
+        # scaled_depth_map *= 255/range_value
         scaled_depth_map = scaled_depth_map.astype(np.uint8)
         # plt.figure(2)
         # plt.imshow(scaled_depth_map.astype(np.uint8))
@@ -135,7 +138,10 @@ def main():
         show_image("canny2", edges)
 
         # Get highest_points
-        highest_points = get_highest_points(scaled_depth_map)
+        try:
+            highest_points = get_highest_points(scaled_depth_map,255/range_value*2)
+        except:
+            pass
 
         # Print clothes contour
         hp_show = image.copy()
