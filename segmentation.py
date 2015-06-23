@@ -32,7 +32,6 @@ def get_coloured_item(image):
     final_mask = np.zeros([image.shape[0], image.shape[1], 1], np.uint8)
     cv2.drawContours(final_mask, contours_filtered, 0, 255, -1)
 
-    print final_mask.shape
     return final_mask
 
 def main():

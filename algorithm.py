@@ -1,11 +1,13 @@
 import cv2
 import numpy as np
+from segmentation import get_coloured_item
+from matplotlib import pyplot as plt
 
 __author__ = 'def'
 
 def show_image(text, image):
     cv2.imshow(text, image)
-    #cv2.waitKey(-1)
+    cv2.waitKey(-1)
 
 def process_mask(mask, kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))):
     """
@@ -41,10 +43,10 @@ def contour_center(contour):
     return (cx, cy)
 
 
-def get_garment_contour(image):
+def get_garment_contour(mask):
     # Get clothes contour:
-    ret, image_contours_src = cv2.threshold(image, 240, 255, cv2.THRESH_BINARY_INV)
-    clothes_contours, dummy = cv2.findContours(image_contours_src, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    #ret, image_contours_src = cv2.threshold(image, 240, 255, cv2.THRESH_BINARY_INV)
+    clothes_contours, dummy = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     clothes_contour = clothes_contours[0]
     # Size filtering:
     maxArea = cv2.contourArea(clothes_contour)
@@ -55,8 +57,8 @@ def get_garment_contour(image):
             clothes_contour = contour
 
     # Simplify contour:
-    perimeter = cv2.arcLength(contour, True)
-    approx = cv2.approxPolyDP(contour, 0.012 * perimeter, True)
+    perimeter = cv2.arcLength(clothes_contour, True)
+    approx = cv2.approxPolyDP(clothes_contour, 0.010 * perimeter, True)
     return approx
 
 
@@ -72,7 +74,7 @@ def get_garment_main_lines(image):
     return edges
 
 
-def get_highest_points(image, threshold=20):
+def get_highest_points(image, threshold=40):
     # Find highest zones
     ret, highest_zones = cv2.threshold(image, threshold, 255, cv2.THRESH_BINARY_INV)
     highest_contours = process_mask(highest_zones)
@@ -82,40 +84,70 @@ def get_highest_points(image, threshold=20):
 
     return highest_points
 
-
 def main():
-    # Load image
-    image = cv2.imread("data/image2.png", cv2.CV_LOAD_IMAGE_GRAYSCALE)
-    show_image("original", image)
+    image_paths = ['./data/robe01_1_fold.ppm', './data/robe01_2_fold.ppm', './data/sweater02_1_fold.ppm', './data/sweater02_2_fold.ppm', './data/tshirt01_1_fold.ppm',
+                   './data/tshirt01_2_fold.ppm','./data/polo01_1_fold.ppm', './data/polo01_2_fold.ppm', './data/dishcloth01_2_fold.ppm', './data/dishcloth01_1_fold.ppm']
 
-    # Obtain garment contour
-    approx = get_garment_contour(image)
+    depth_maps = ['./data/robe01_1_fold.mat', './data/robe01_2_fold.mat', './data/sweater02_1_fold.mat', './data/sweater02_2_fold.mat', './data/tshirt01_1_fold.mat',
+                   './data/tshirt01_2_fold.mat','./data/polo01_1_fold.mat', './data/polo01_2_fold.mat', './data/dishcloth01_2_fold.mat', './data/dishcloth01_1_fold.mat']
 
-    # Print clothes contour
-    contour_show = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
-    cv2.drawContours(contour_show, [approx], -1, (0, 0,255))
-    for point in approx:
-        cv2.circle(contour_show, tuple(point[0]), 3, (0, 0, 255), 2)
-    show_image("contour", contour_show)
+    for path_rgb, path_depth in zip(image_paths, depth_maps):
+        # Load image
+        image = cv2.imread(path_rgb)
 
-    # Get 'not crossing' lines
-    edges = get_garment_main_lines(image)
-    show_image("canny2", edges)
+        # Get mask
+        mask = get_coloured_item(image)
+        cv2.imshow("mask", mask)
+        cv2.waitKey(500)
+        cv2.destroyAllWindows()
 
-    # Get highest_points
-    highest_points = get_highest_points(image)
+        # Obtain garment contour
+        approx = get_garment_contour(mask)
 
-    # Print clothes contour
-    hp_show = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
-    cv2.drawContours(hp_show, [approx], -1, (0, 0,255))
-    for point in approx:
-        cv2.circle(hp_show, tuple(point[0]), 3, (0, 0, 255), 2)
-    for point in highest_points:
-        cv2.circle(hp_show, tuple(point), 3, (255, 0, 0), 2)
-    show_image("h point", hp_show)
+        # Print clothes contour
+        contour_show = image.copy()
+        cv2.drawContours(contour_show, [approx], -1, (0, 0,255))
+        for point in approx:
+            cv2.circle(contour_show, tuple(point[0]), 3, (0, 0, 255), 2)
+        show_image("contour", contour_show)
 
-    cv2.waitKey(-1)
-    cv2.destroyAllWindows()
+        # Load depth map
+        depth_image = np.loadtxt(path_depth)
+        masked_depth_image = np.where(mask[:,:,0]==255, depth_image.transpose(), 1000)
+        # plt.figure(1)
+        # plt.hist(masked_depth_image)
+
+        # Normalize depth map
+        scaled_depth_map = masked_depth_image.copy()
+        min_value = masked_depth_image[np.unravel_index(masked_depth_image.argmin(), masked_depth_image.shape)]
+        max_value = masked_depth_image[np.unravel_index(masked_depth_image.argmax(), masked_depth_image.shape)]
+        range_value = max_value-min_value
+        scaled_depth_map -= min_value
+        scaled_depth_map *= 255/range_value
+        scaled_depth_map = scaled_depth_map.astype(np.uint8)
+        # plt.figure(2)
+        # plt.imshow(scaled_depth_map.astype(np.uint8))
+        show_image("scaled", scaled_depth_map)
+        # plt.show()
+
+        # Get 'not crossing' lines
+        edges = get_garment_main_lines(scaled_depth_map)
+        show_image("canny2", edges)
+
+        # Get highest_points
+        highest_points = get_highest_points(scaled_depth_map)
+
+        # Print clothes contour
+        hp_show = image.copy()
+        cv2.drawContours(hp_show, [approx], -1, (0, 0,255))
+        for point in approx:
+            cv2.circle(hp_show, tuple(point[0]), 3, (0, 0, 255), 2)
+        for point in highest_points:
+            cv2.circle(hp_show, tuple(point), 3, (255, 0, 0), 2)
+        show_image("h point", hp_show)
+
+        cv2.waitKey(-1)
+        cv2.destroyAllWindows()
 
 if __name__ == "__main__":
     main()
