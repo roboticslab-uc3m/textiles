@@ -86,6 +86,18 @@ def get_highest_points(image, threshold=40):
 
     return highest_points
 
+def get_contour_midpoints(contour):
+    contour_midpoints = []
+
+    for i, j in zip(range(-1, len(contour)-1), range(len(contour))):
+        start = contour[i][0]
+        end = contour[j][0]
+
+        midpoint = [start[0]+(end[0]-start[0])/2, start[1]+(end[1]-start[1])/2]
+        contour_midpoints.append(midpoint)
+
+    return contour_midpoints
+
 def main():
     image_paths = ['./data/robe01_1_fold.ppm', './data/robe01_2_fold.ppm', './data/sweater02_1_fold.ppm', './data/sweater02_2_fold.ppm', './data/tshirt01_1_fold.ppm',
                    './data/tshirt01_2_fold.ppm','./data/polo01_1_fold.ppm', './data/polo01_2_fold.ppm', './data/dishcloth01_2_fold.ppm', './data/dishcloth01_1_fold.ppm']
@@ -150,6 +162,8 @@ def main():
             cv2.circle(hp_show, tuple(point[0]), 3, (0, 0, 255), 2)
         for point in highest_points:
             cv2.circle(hp_show, tuple(point), 3, (255, 0, 0), 2)
+        for point in get_contour_midpoints(approx):
+            cv2.circle(hp_show, tuple(point), 3, (0, 255, 255), 2)
         show_image("h point", hp_show)
 
         cv2.waitKey(-1)
