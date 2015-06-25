@@ -98,12 +98,37 @@ def get_contour_midpoints(contour):
 
     return contour_midpoints
 
-def main():
-    image_paths = ['./data/robe01_1_fold.ppm', './data/robe01_2_fold.ppm', './data/sweater02_1_fold.ppm', './data/sweater02_2_fold.ppm', './data/tshirt01_1_fold.ppm',
-                   './data/tshirt01_2_fold.ppm','./data/polo01_1_fold.ppm', './data/polo01_2_fold.ppm', './data/dishcloth01_2_fold.ppm', './data/dishcloth01_1_fold.ppm']
+def load_data(root_path):
+    import glob, os
 
-    depth_maps = ['./data/robe01_1_fold.mat', './data/robe01_2_fold.mat', './data/sweater02_1_fold.mat', './data/sweater02_2_fold.mat', './data/tshirt01_1_fold.mat',
-                   './data/tshirt01_2_fold.mat','./data/polo01_1_fold.mat', './data/polo01_2_fold.mat', './data/dishcloth01_2_fold.mat', './data/dishcloth01_1_fold.mat']
+    good_images = []
+    good_depth_files = []
+
+    images = glob.glob(os.path.join(root_path, '*.ppm'))
+    depth_files = glob.glob(os.path.join(root_path, '*.mat'))
+
+    for image in images:
+        name, ext = os.path.splitext(image)
+        found = False
+        for depth_file in depth_files:
+            if depth_file.find(name) != -1:
+                found = True
+                break
+
+        if found:
+            good_images.append(image)
+            good_depth_files.append(name+'.mat')
+
+    return good_images, good_depth_files
+
+def main():
+    #image_paths = ['./data/robe01_1_fold.ppm', './data/robe01_2_fold.ppm', './data/sweater02_1_fold.ppm', './data/sweater02_2_fold.ppm', './data/tshirt01_1_fold.ppm',
+    #               './data/tshirt01_2_fold.ppm','./data/polo01_1_fold.ppm', './data/polo01_2_fold.ppm', './data/dishcloth01_2_fold.ppm', './data/dishcloth01_1_fold.ppm']
+
+    #depth_maps = ['./data/robe01_1_fold.mat', './data/robe01_2_fold.mat', './data/sweater02_1_fold.mat', './data/sweater02_2_fold.mat', './data/tshirt01_1_fold.mat',
+    #               './data/tshirt01_2_fold.mat','./data/polo01_1_fold.mat', './data/polo01_2_fold.mat', './data/dishcloth01_2_fold.mat', './data/dishcloth01_1_fold.mat']
+
+    image_paths, depth_maps = load_data('./data')
 
     for path_rgb, path_depth in zip(image_paths, depth_maps):
         # Load image
@@ -135,7 +160,7 @@ def main():
         min_value = masked_depth_image[np.unravel_index(np.where(masked_depth_image == 0, 1000,masked_depth_image).argmin(), masked_depth_image.shape)]
         max_value = masked_depth_image[np.unravel_index(np.where(masked_depth_image == 1000, 0,masked_depth_image).argmax(), masked_depth_image.shape)]
         range_value = max_value-min_value
-        print "Depth image range: (%d, %d) l=%d" % (min_value, max_value, range_value)
+        print "Depth image range: (%d, %d) delta=%d" % (min_value, max_value, range_value)
         scaled_depth_map = np.where(scaled_depth_map != 1000, (scaled_depth_map - min_value) * (255/range_value), 255)
         # scaled_depth_map -= min_value
         # scaled_depth_map *= 255/range_value
@@ -147,13 +172,18 @@ def main():
 
         # Get 'not crossing' lines
         edges = get_garment_main_lines(scaled_depth_map)
-        show_image("canny2", edges)
+        # show_image("canny2", edges)
+        interior_edges = cv2.bitwise_and(edges, cv2.morphologyEx(mask, cv2.MORPH_ERODE, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))))
+        show_image("good", interior_edges)
 
         # Get highest_points
         try:
             highest_points = get_highest_points(scaled_depth_map,255/range_value*2)
         except:
             pass
+
+        # Get contour midpoints
+        contour_midpoints = get_contour_midpoints(approx)
 
         # Print clothes contour
         hp_show = image.copy()
@@ -162,12 +192,18 @@ def main():
             cv2.circle(hp_show, tuple(point[0]), 3, (0, 0, 255), 2)
         for point in highest_points:
             cv2.circle(hp_show, tuple(point), 3, (255, 0, 0), 2)
-        for point in get_contour_midpoints(approx):
+        for point in contour_midpoints:
             cv2.circle(hp_show, tuple(point), 3, (0, 255, 255), 2)
+        for point in highest_points:
+            for target in contour_midpoints:
+                cv2.line(hp_show, tuple(point), tuple(target), (0 , 255, 0))
         show_image("h point", hp_show)
 
         cv2.waitKey(-1)
         cv2.destroyAllWindows()
+
+        # Check collisions (somehow) between trajectories and not-crossing lines
+
 
 if __name__ == "__main__":
     main()
