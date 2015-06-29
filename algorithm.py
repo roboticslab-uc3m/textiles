@@ -1,7 +1,10 @@
 import cv2
 import numpy as np
+
 from segmentation import get_coloured_item
-from matplotlib import pyplot as plt
+from utils import load_data
+from ClothContour import ClothContour
+
 
 __author__ = 'def'
 
@@ -86,40 +89,6 @@ def get_highest_points(image, threshold=40):
 
     return highest_points
 
-def get_contour_midpoints(contour):
-    contour_midpoints = []
-
-    for i, j in zip(range(-1, len(contour)-1), range(len(contour))):
-        start = contour[i][0]
-        end = contour[j][0]
-
-        midpoint = [start[0]+(end[0]-start[0])/2, start[1]+(end[1]-start[1])/2]
-        contour_midpoints.append(midpoint)
-
-    return contour_midpoints
-
-def load_data(root_path):
-    import glob, os
-
-    good_images = []
-    good_depth_files = []
-
-    images = glob.glob(os.path.join(root_path, '*.ppm'))
-    depth_files = glob.glob(os.path.join(root_path, '*.mat'))
-
-    for image in images:
-        name, ext = os.path.splitext(image)
-        found = False
-        for depth_file in depth_files:
-            if depth_file.find(name) != -1:
-                found = True
-                break
-
-        if found:
-            good_images.append(image)
-            good_depth_files.append(name+'.mat')
-
-    return good_images, good_depth_files
 
 def main():
     #image_paths = ['./data/robe01_1_fold.ppm', './data/robe01_2_fold.ppm', './data/sweater02_1_fold.ppm', './data/sweater02_2_fold.ppm', './data/tshirt01_1_fold.ppm',
@@ -128,7 +97,7 @@ def main():
     #depth_maps = ['./data/robe01_1_fold.mat', './data/robe01_2_fold.mat', './data/sweater02_1_fold.mat', './data/sweater02_2_fold.mat', './data/tshirt01_1_fold.mat',
     #               './data/tshirt01_2_fold.mat','./data/polo01_1_fold.mat', './data/polo01_2_fold.mat', './data/dishcloth01_2_fold.mat', './data/dishcloth01_1_fold.mat']
 
-    image_paths, depth_maps = load_data('./data')
+    image_paths, depth_maps = load_data('./data/20150625')
 
     for path_rgb, path_depth in zip(image_paths, depth_maps):
         # Load image
@@ -183,8 +152,19 @@ def main():
             pass
 
         # Get contour midpoints
-        contour_midpoints = get_contour_midpoints(approx)
+        cloth_contour = ClothContour(approx)
+        contour_segments, contour_midpoints = cloth_contour.segments, cloth_contour.midpoints
 
+        # Get paths to traverse:
+        candidate_paths = cloth_contour.get_candidate_paths(highest_points)
+
+
+        """from intersect import seg_intersect
+        valid_paths = []
+        for path in candidate_paths:
+            for i, j
+            if seg_intersect(path[0], path[1], )
+        #"""
         # Print clothes contour
         hp_show = image.copy()
         cv2.drawContours(hp_show, [approx], -1, (0, 0,255))
@@ -194,9 +174,8 @@ def main():
             cv2.circle(hp_show, tuple(point), 3, (255, 0, 0), 2)
         for point in contour_midpoints:
             cv2.circle(hp_show, tuple(point), 3, (0, 255, 255), 2)
-        for point in highest_points:
-            for target in contour_midpoints:
-                cv2.line(hp_show, tuple(point), tuple(target), (0 , 255, 0))
+        for path in candidate_paths:
+                cv2.line(hp_show, tuple(path[0]), tuple(path[1]), (0 , 255, 0))
         show_image("h point", hp_show)
 
         cv2.waitKey(-1)
