@@ -158,13 +158,8 @@ def main():
         # Get paths to traverse:
         candidate_paths = cloth_contour.get_candidate_paths(highest_points)
 
+        valid_paths = cloth_contour.get_valid_paths(highest_points)
 
-        """from intersect import seg_intersect
-        valid_paths = []
-        for path in candidate_paths:
-            for i, j
-            if seg_intersect(path[0], path[1], )
-        #"""
         # Print clothes contour
         hp_show = image.copy()
         cv2.drawContours(hp_show, [approx], -1, (0, 0,255))
@@ -174,14 +169,52 @@ def main():
             cv2.circle(hp_show, tuple(point), 3, (255, 0, 0), 2)
         for point in contour_midpoints:
             cv2.circle(hp_show, tuple(point), 3, (0, 255, 255), 2)
-        for path in candidate_paths:
+        for id, path in valid_paths:
+            if path:
                 cv2.line(hp_show, tuple(path[0]), tuple(path[1]), (0 , 255, 0))
         show_image("h point", hp_show)
 
-        cv2.waitKey(-1)
+        # cv2.waitKey(-1)
         cv2.destroyAllWindows()
 
         # Check collisions (somehow) between trajectories and not-crossing lines
+        fold_edges = set()
+        for id, path in valid_paths:
+            if path:
+                # Get path bounding box:
+                start = np.array(path[0])
+                end = np.array(path[1])
+
+                top_left_corner = np.minimum(start, end)
+                sides = np.abs(start-end)
+
+                # Crop the roi from the original image
+                margin = 5
+                roi_top_left_corner = top_left_corner-margin*np.array([1,1])
+                roi_sides = sides + margin*np.array([2,2])
+
+                roi_top_left_corner = np.clip(roi_top_left_corner, np.array([0,0]), image.shape[0:1])
+                roi_sides = np.clip(roi_sides, np.array([0,0]), image.shape[0:1])
+
+                roi_img = interior_edges[roi_top_left_corner[1]:roi_top_left_corner[1]+roi_sides[1],
+                                         roi_top_left_corner[0]:roi_top_left_corner[0]+roi_sides[0]]
+
+                # Generate a image for the path:
+                line_thickness = 3
+                path_img = np.zeros(roi_img.shape, dtype=np.uint8)
+                cv2.line(path_img, tuple(start-roi_top_left_corner), tuple(end-top_left_corner), (255), line_thickness)
+
+                # Check if they intersect. If they don't, the edge is a candidate to be the folding edge
+                if cv2.countNonZero(cv2.bitwise_and(roi_img, path_img)) == 0:
+                    fold_edges.add(id)
+
+        print 'Fold edge(s) id(s): %s' % str(list(fold_edges))
+        fold_edges_show = image.copy()
+        for id in list(fold_edges):
+                cv2.line(fold_edges_show, tuple(contour_segments[id][0]), tuple(contour_segments[id][1]), (255, 0, 255), 3)
+        show_image("fold edges", fold_edges_show)
+        cv2.waitKey(-1)
+        cv2.destroyAllWindows()
 
 
 if __name__ == "__main__":
