@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+from matplotlib import pyplot as plt
 
 from segmentation import get_coloured_item
 from utils import load_data
@@ -97,7 +98,7 @@ def main():
     #depth_maps = ['./data/robe01_1_fold.mat', './data/robe01_2_fold.mat', './data/sweater02_1_fold.mat', './data/sweater02_2_fold.mat', './data/tshirt01_1_fold.mat',
     #               './data/tshirt01_2_fold.mat','./data/polo01_1_fold.mat', './data/polo01_2_fold.mat', './data/dishcloth01_2_fold.mat', './data/dishcloth01_1_fold.mat']
 
-    image_paths, depth_maps = load_data('./data/20150625')
+    image_paths, depth_maps = load_data('./data/20150625_2')
 
     for path_rgb, path_depth in zip(image_paths, depth_maps):
         # Load image
@@ -137,10 +138,23 @@ def main():
         # plt.figure(2)
         # plt.imshow(scaled_depth_map.astype(np.uint8))
         show_image("scaled", scaled_depth_map)
+        # cv2.imwrite(path_rgb+'-bw.png', scaled_depth_map)
         # plt.show()
 
         # Get 'not crossing' lines
         edges = get_garment_main_lines(scaled_depth_map)
+        sobel_x = cv2.Sobel(scaled_depth_map, cv2.CV_64F, 1, 0, ksize=-1)
+        sobel_y = cv2.Sobel(scaled_depth_map, cv2.CV_64F, 0, 1, ksize=-1)
+        edges2 = np.sqrt(sobel_x**2 + sobel_y**2)
+        min_ed, max_ed = edges2[np.unravel_index(edges2.argmin(), edges2.shape)], edges2[np.unravel_index(edges2.argmax(), edges2.shape)]
+        print min_ed, max_ed
+        edges2 = np.where(edges2 >= 350, 255, 0)
+        edges = np.uint8(np.absolute(edges2))
+        plt.figure(1)
+        plt.hist(edges2, bins=10)
+        plt.figure(2)
+        plt.imshow(edges, cmap='hot')
+        plt.show()
         # show_image("canny2", edges)
         interior_edges = cv2.bitwise_and(edges, cv2.morphologyEx(mask, cv2.MORPH_ERODE, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))))
         show_image("good", interior_edges)
