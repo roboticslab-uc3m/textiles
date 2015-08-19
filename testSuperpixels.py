@@ -26,25 +26,34 @@ for name in images:
     print("Slic number of segments: %d" % len(np.unique(segments_slic)))
     print("Quickshift number of segments: %d" % len(np.unique(segments_quick)))
 
-    fig, ax = plt.subplots(1, 2)
+    fig, ax = plt.subplots(2, 2)
     fig.set_size_inches(8, 3, forward=True)
     fig.subplots_adjust(0.05, 0.05, 0.95, 0.95, 0.05, 0.05)
 
-
-    ax[0].imshow(mark_boundaries(img, segments_slic))
-    ax[0].set_title("SLIC")
-    plt.imshow(segments_slic, cmap=plt.cm.gray)
-    ax[1].set_title("SLIC2")
-
-    for a in ax:
-        a.set_xticks(())
-        a.set_yticks(())
-    # plt.show()
+    ax[0][0].imshow(img_src[::2, ::2], cmap=plt.cm.gray)
+    ax[0][0].set_title("SRC")
+    ax[0][1].imshow(mark_boundaries(img, segments_slic))
+    ax[0][1].set_title("SLIC")
 
 
-    from Superpixels import get_average_slic
+    for b in ax:
+        for a in b:
+            a.set_xticks(())
+            a.set_yticks(())
 
-    fig, ax = plt.subplots(1,2)
-    ax[0].imshow(img_src[::2, ::2], cmap=plt.cm.gray)
-    ax[1].imshow(get_average_slic(img_src[::2, ::2], segments_slic), cmap=plt.cm.gray)
+
+    from Superpixels import get_average_slic, get_highest_superpixel, get_centroid
+
+    avg = get_average_slic(img_src[::2, ::2], segments_slic)
+
+    ax[1][0].imshow(avg, cmap=plt.cm.gray)
+    ax[1][0].set_title("AVG")
+
+    highest_patch = get_highest_superpixel(avg)
+    print(avg.shape, avg.dtype)
+    print(highest_patch.shape, highest_patch.dtype)
+    ax[1][1].imshow(highest_patch, cmap=plt.cm.gray)
+    centroid = get_centroid(highest_patch)
+    ax[1][1].plot(centroid[1], centroid[0], 'r+' )
+    ax[1][1].set_title("HIGH")
     plt.show()
