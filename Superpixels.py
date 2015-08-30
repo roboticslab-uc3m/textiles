@@ -37,7 +37,15 @@ def get_centroid(image):
     return (m[0, 1] / m[0, 0], m[1, 0] / m[0, 0])
 
 
-def line_sampling_points(start, end, step):
+def line_sampling_points(p1, p2, step):
+    # Order points:
+    if p1[0] <= p2[0]:
+        start = p1
+        end = p2
+    else:
+        start = p2
+        end = p1
+
     # Find line slope and length
     slope = np.true_divide(end[1] - start[1], end[0] - start[0])
     length = np.sqrt(np.power(end[1] - start[1], 2) + np.power(end[0] - start[0], 2))
@@ -49,8 +57,8 @@ def line_sampling_points(start, end, step):
     return x, y
 
 
-def line_sampling(image, start, end, step):
-    x, y = line_sampling_points(start, end, step)
+def line_sampling(image, p1, p2, step):
+    x, y = line_sampling_points(p1, p2, step)
     print image.shape
     if len(image.shape) == 3:
         return [ image[int(j), int(i), :] for i, j in zip(x, y)]
