@@ -231,5 +231,133 @@ def main():
         cv2.destroyAllWindows()
 
 
+def main2():
+    #image_paths = ['./data/robe01_1_fold.ppm', './data/robe01_2_fold.ppm', './data/sweater02_1_fold.ppm', './data/sweater02_2_fold.ppm', './data/tshirt01_1_fold.ppm',
+    #               './data/tshirt01_2_fold.ppm','./data/polo01_1_fold.ppm', './data/polo01_2_fold.ppm', './data/dishcloth01_2_fold.ppm', './data/dishcloth01_1_fold.ppm']
+
+    #depth_maps = ['./data/robe01_1_fold.mat', './data/robe01_2_fold.mat', './data/sweater02_1_fold.mat', './data/sweater02_2_fold.mat', './data/tshirt01_1_fold.mat',
+    #               './data/tshirt01_2_fold.mat','./data/polo01_1_fold.mat', './data/polo01_2_fold.mat', './data/dishcloth01_2_fold.mat', './data/dishcloth01_1_fold.mat']
+
+    import matplotlib.pyplot as plt
+    import numpy as np
+
+
+    from skimage.segmentation import  slic
+    from skimage.segmentation import mark_boundaries
+    from skimage.util import img_as_float
+    from skimage import io
+    from skimage.color import gray2rgb
+    import glob, os
+    from matplotlib.backends.backend_pdf import PdfPages
+
+    import Superpixels
+
+    image_paths, depth_maps = load_data('./data/20150625_2')
+
+    for path_rgb, path_depth in zip(image_paths, depth_maps):
+        # Load image
+        image = cv2.imread(path_rgb)
+        print "Loaded rgb image, dimensions: " + str(image.shape)
+
+        # Get mask
+        mask = get_coloured_item(image)
+        show_image("mask", mask)
+        cv2.destroyAllWindows()
+
+        # Obtain garment contour
+        approx = get_garment_contour(mask)
+
+        # Print clothes contour
+        contour_show = image.copy()
+        cv2.drawContours(contour_show, [approx], -1, (0, 0,255))
+        for point in approx:
+            cv2.circle(contour_show, tuple(point[0]), 3, (0, 0, 255), 2)
+        show_image("contour", contour_show)
+
+        # Load depth map
+        depth_image = np.loadtxt(path_depth)
+        masked_depth_image = np.where(mask[:,:,0]==255, depth_image.transpose(), 1000)
+        print "Loaded depth image, dimensions: " + str(depth_image.shape)
+        # plt.figure(1)
+        # plt.hist(masked_depth_image)
+
+        # Normalize depth map
+        scaled_depth_map = masked_depth_image.copy()
+        min_value = masked_depth_image[np.unravel_index(np.where(masked_depth_image == 0, 1000,masked_depth_image).argmin(), masked_depth_image.shape)]
+        max_value = masked_depth_image[np.unravel_index(np.where(masked_depth_image == 1000, 0,masked_depth_image).argmax(), masked_depth_image.shape)]
+        range_value = max_value-min_value
+        print "Scaled depth image dimensions: " + str(scaled_depth_map.shape)
+        print "Depth image range: (%d, %d) delta=%d" % (min_value, max_value, range_value)
+        scaled_depth_map = np.where(scaled_depth_map != 1000, (scaled_depth_map - min_value) * (255/range_value), 255)
+        # scaled_depth_map -= min_value
+        # scaled_depth_map *= 255/range_value
+        scaled_depth_map = scaled_depth_map.astype(np.uint8)
+        # plt.figure(2)
+        # plt.imshow(scaled_depth_map.astype(np.uint8))
+        show_image("scaled", scaled_depth_map)
+        # cv2.imwrite(path_rgb+'-bw.png', scaled_depth_map)
+        # plt.show()
+
+        # Get 'not crossing' lines
+        edges = get_garment_main_lines(scaled_depth_map)
+        sobel_x = cv2.Sobel(scaled_depth_map, cv2.CV_64F, 1, 0, ksize=-1)
+        sobel_y = cv2.Sobel(scaled_depth_map, cv2.CV_64F, 0, 1, ksize=-1)
+        edges2 = np.sqrt(sobel_x**2 + sobel_y**2)
+        min_ed, max_ed = edges2[np.unravel_index(edges2.argmin(), edges2.shape)], edges2[np.unravel_index(edges2.argmax(), edges2.shape)]
+        print min_ed, max_ed
+        edges2 = np.where(edges2 >= 350, 255, 0)
+        edges = np.uint8(np.absolute(edges2))
+        # show_image("canny2", edges)
+        interior_edges = cv2.bitwise_and(edges, cv2.morphologyEx(mask, cv2.MORPH_ERODE, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))))
+        show_image("good", interior_edges)
+
+        # Get highest_points
+        try:
+            highest_points = get_highest_points(scaled_depth_map,255/range_value*2)
+        except Exception, e:
+            print e
+
+        # Get contour midpoints
+        cloth_contour = ClothContour(approx)
+        contour_segments, contour_midpoints = cloth_contour.segments, cloth_contour.midpoints
+
+        # Get paths to traverse:
+        candidate_paths = cloth_contour.get_candidate_paths(highest_points)
+        valid_paths = cloth_contour.get_valid_paths(highest_points)
+
+        # Calculate SLIC image:
+        img_src = scaled_depth_map
+        img = gray2rgb(img_src)
+        img = img_as_float(img[::2, ::2])
+        segments_slic = slic(img, n_segments=250, compactness=10, sigma=1, min_size_factor=200)
+        avg = Superpixels.get_average_slic(img_src[::2, ::2], segments_slic)
+        highest_patch = Superpixels.get_highest_superpixel(avg)
+
+        pp = PdfPages(path_rgb+'.pdf')
+
+        for id, path in valid_paths:
+            if path:
+                start = [p/2 for p in path[0]]
+                end = [p/2 for p in path[1]]
+                path_samples_avg = Superpixels.line_sampling(avg, start , end, 2)
+                path_samples_src = Superpixels.line_sampling(img_src[::2, ::2], start, end, 2)
+                points = Superpixels.line_sampling_points(start, end, 2)
+
+                fig, ax = plt.subplots(1, 2)
+                fig.set_size_inches(8, 3, forward=True)
+                fig.subplots_adjust(0.06, 0.08, 0.97, 0.91, 0.15, 0.05)
+
+                ax[0].set_title(str(id)+': sampled profiles')
+                ax[0].plot(path_samples_avg, 'b-', path_samples_src, 'r-')
+
+                ax[1].set_title(str(id)+': sampling points')
+                ax[1].imshow(avg, cmap=plt.cm.gray)
+                ax[1].plot(points[0], points[1], 'b-')
+
+
+                plt.savefig(pp, format='pdf')
+        pp.close()
+        # plt.show()
+
 if __name__ == "__main__":
-    main()
+    main2()
