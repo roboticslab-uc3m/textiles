@@ -42,9 +42,11 @@ def line_sampling_points(p1, p2, step):
     if p1[0] <= p2[0]:
         start = p1
         end = p2
+        inverted = False
     else:
         start = p2
         end = p1
+        inverted = True
 
     # Find line slope and length
     slope = np.true_divide(end[1] - start[1], end[0] - start[0])
@@ -54,7 +56,11 @@ def line_sampling_points(p1, p2, step):
     # Obtain points to sample
     x = np.linspace(start[0], end[0], num_samples)
     y = (x-start[0]) * slope + start[1]
-    return x, y
+
+    if not inverted:
+        return x, y
+    else:
+        return x[::-1], y[::-1]
 
 
 def line_sampling(image, p1, p2, step):
