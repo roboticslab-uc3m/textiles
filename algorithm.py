@@ -11,7 +11,7 @@ __author__ = 'def'
 
 def show_image(text, image):
     cv2.imshow(text, image)
-    cv2.waitKey(200)
+    #cv2.waitKey(200)
 
 def process_mask(mask, kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))):
     """
@@ -312,10 +312,7 @@ def main2():
         show_image("good", interior_edges)
 
         # Get highest_points
-        try:
-            highest_points = get_highest_points(scaled_depth_map,255/range_value*2)
-        except Exception, e:
-            print e
+        highest_points = [Superpixels.get_highest_point_with_superpixels(scaled_depth_map)[::-1]]
 
         # Get contour midpoints
         cloth_contour = ClothContour(approx)
@@ -331,7 +328,6 @@ def main2():
         img = img_as_float(img[::2, ::2])
         segments_slic = slic(img, n_segments=250, compactness=10, sigma=1, min_size_factor=200)
         avg = Superpixels.get_average_slic(img_src[::2, ::2], segments_slic)
-        highest_patch = Superpixels.get_highest_superpixel(avg)
 
         pp = PdfPages(path_rgb+'.pdf')
 
@@ -339,23 +335,36 @@ def main2():
             if path:
                 start = [p/2 for p in path[0]]
                 end = [p/2 for p in path[1]]
-                path_samples_avg = Superpixels.line_sampling(avg, start , end, 2)
-                path_samples_src = Superpixels.line_sampling(img_src[::2, ::2], start, end, 2)
-                points = Superpixels.line_sampling_points(start, end, 2)
+                path_samples_avg = Superpixels.line_sampling(avg, start , end, 1)
+                path_samples_src = Superpixels.line_sampling(img_src[::2, ::2], start, end, 1)
+                points = Superpixels.line_sampling_points(start, end, 1)
 
                 fig, ax = plt.subplots(1, 2)
                 fig.set_size_inches(8, 3, forward=True)
                 fig.subplots_adjust(0.06, 0.08, 0.97, 0.91, 0.15, 0.05)
 
                 ax[0].set_title(str(id)+': sampled profiles')
-                ax[0].plot(path_samples_avg, 'b-', path_samples_src, 'r-')
+                # ax[0].plot(path_samples_avg, 'b-', path_samples_src, 'r-')
+                without_white = [p for p in path_samples_avg if p != 255]
+                ax[0].bar(range(len(without_white)), without_white, 1)
 
                 ax[1].set_title(str(id)+': sampling points')
                 ax[1].imshow(avg, cmap=plt.cm.gray)
                 ax[1].plot(points[0], points[1], 'b-')
 
-
                 plt.savefig(pp, format='pdf')
+
+                # Generate csv file
+                csv_filepath = os.path.splitext(path_rgb)[0] +'superpx.csv'
+                with open(csv_filepath, 'w') as f:
+                    for data in enumerate(path_samples_avg):
+                        f.write('%d,%d\n' % data)
+
+                csv_filepath = os.path.splitext(path_rgb)[0]+'raw.csv'
+                with open(csv_filepath, 'w') as f:
+                    for data in enumerate(path_samples_src):
+                        f.write('%d,%d\n' % data)
+
         pp.close()
         # plt.show()
 
