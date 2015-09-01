@@ -1,5 +1,7 @@
 import numpy as np
 from skimage.measure import moments
+from skimage.measure import label, regionprops
+import operator
 
 __author__ = 'def'
 
@@ -31,6 +33,15 @@ def get_highest_superpixel(image):
     labels = np.unique(image)
     lowest_value = labels[np.unravel_index(labels.argmin(), labels.shape)]
     return np.where(image<=lowest_value, 255, 0).astype(np.uint8)
+
+def get_highest_point_with_superpixels(image):
+    labels = np.unique(image)
+    lowest_value = labels[np.unravel_index(labels.argmin(), labels.shape)]
+    blobs = np.where(image<=lowest_value, 255, 0).astype(np.uint8)
+    label_img = label(blobs)
+    regions = regionprops(label_img)
+    max_index, max_value = max(enumerate([props.area for props in regions]), key=operator.itemgetter(1))
+    return regions[max_index].centroid
 
 def get_centroid(image):
     m = moments(image)

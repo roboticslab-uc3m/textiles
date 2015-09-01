@@ -56,6 +56,8 @@ for name in images:
     ax[1][1].imshow(highest_patch, cmap=plt.cm.gray)
     centroid = get_centroid(highest_patch)
     ax[1][1].plot(centroid[1], centroid[0], 'r+' )
+    highest_point = get_highest_point_with_superpixels(highest_patch)
+    ax[1][1].plot(highest_point[1], highest_point[0], 'b*')
     ax[1][1].set_title("HIGH")
 
     plt.figure()
