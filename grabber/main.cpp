@@ -1,4 +1,8 @@
 
+// yarpdev --device OpenNI2DeviceServer --depthVideoMode 4 --colorVideoMode 9 --noMirror
+// yarp connect /OpenNI2/imageFrame:o /rgb:i
+// yarp connect /OpenNI2/depthFrame:o /depth:i
+
 #include <yarp/os/RFModule.h>
 #include <yarp/os/Module.h>
 #include <yarp/os/Network.h>
