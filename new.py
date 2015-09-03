@@ -85,14 +85,8 @@ def main():
         from skimage.restoration import denoise_tv_chambolle
         from skimage import exposure
         
-        img_eq = exposure.equalize_hist(scaled_depth_map)
-        image = img_as_ubyte(img_eq)
-
-#       contour
-#        from skimage.feature import canny
-#        edges = cv2.Canny(image, 0, 250)
-#        fig, ax = plt.subplots(figsize=(4, 3))
-#        ax.imshow(edges, cmap=plt.cm.gray, interpolation='nearest')
+      #  img_eq = exposure.equalize_hist(scaled_depth_map)
+        image = img_as_ubyte(scaled_depth_map)
         
 #        cleaning image
 #        kernel = np.ones((5,5),np.uint8)
@@ -112,10 +106,12 @@ def main():
         # denoise image
         denoised = denoise_tv_chambolle(image, weight=0.05)
 
-#        denoised = rank.median(image, disk(10))
+#        denoised = rank.median(image, disk(5))
 
         # find continuous region (low gradient) --> markers
         markers = rank.gradient(denoised, disk(10)) < 25
+ #       markers = rank.gradient(denoised, disk(10)) < 10
+        
         markers = ndi.label(markers)[0]
 
 
