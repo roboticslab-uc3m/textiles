@@ -34,7 +34,7 @@ def get_garment_contour(mask):
 
 def main():
 
-    image_paths, depth_maps = load_data('./data/20150625_2')
+    image_paths, depth_maps = load_data('./data/20150625_single')
 
     for path_rgb, path_depth in zip(image_paths, depth_maps):
         # Load image
@@ -43,8 +43,7 @@ def main():
 
         # Get mask
         mask = get_coloured_item(image)
-#        show_image("mask", mask)
-#        cv2.destroyAllWindows()
+#        cv2.imshow("mask", mask)
 
         # Obtain garment contour
         approx = get_garment_contour(mask)
@@ -54,7 +53,7 @@ def main():
         cv2.drawContours(contour_show, [approx], -1, (0, 0,255))
         for point in approx:
             cv2.circle(contour_show, tuple(point[0]), 3, (0, 0, 255), 2)
-#        show_image("contour", contour_show)
+#        cv2.imshow("contour", contour_show)
 
         # Load depth map
         depth_image = np.loadtxt(path_depth)
@@ -72,10 +71,69 @@ def main():
         scaled_depth_map = np.where(scaled_depth_map != 1000, (scaled_depth_map - min_value) * (255/range_value), 255)
         scaled_depth_map = scaled_depth_map.astype(np.uint8)
 #        plt.figure(2)
-#        plt.imshow(scaled_depth_map.astype(np.uint8))
+#        plt.imshow(scaled_depth_map)
 #        cv2.imshow("scaled", scaled_depth_map)
 
+
 ##########       
+
+        from scipy import ndimage as ndi
+        
+        from skimage.morphology import watershed, disk
+        from skimage.filters import rank
+        from skimage.util import img_as_ubyte
+        from skimage.restoration import denoise_tv_chambolle
+        from skimage import exposure
+        
+        img_eq = exposure.equalize_hist(scaled_depth_map)
+        image = img_as_ubyte(img_eq)
+
+#       contour
+#        from skimage.feature import canny
+#        edges = cv2.Canny(image, 0, 250)
+#        fig, ax = plt.subplots(figsize=(4, 3))
+#        ax.imshow(edges, cmap=plt.cm.gray, interpolation='nearest')
+        
+#        cleaning image
+#        kernel = np.ones((5,5),np.uint8)
+#        edges_mod = cv2.dilate(edges,kernel,iterations = 1)
+#        fig, ax = plt.subplots(figsize=(4, 3))
+#        ax.imshow(edges_mod, cmap=plt.cm.gray, interpolation='nearest')
+
+#        kernel = np.ones((5,5),np.uint8)
+#        image = cv2.morphologyEx(image, cv2.MORPH_OPEN, kernel)
+
+#        kernel = np.ones((5,5),np.uint8)
+#        image = cv2.morphologyEx(image, cv2.MORPH_GRADIENT, kernel)
+
+
+
+
+        # denoise image
+        denoised = denoise_tv_chambolle(image, weight=0.05)
+
+#        denoised = rank.median(image, disk(10))
+
+        # find continuous region (low gradient) --> markers
+        markers = rank.gradient(denoised, disk(10)) < 25
+        markers = ndi.label(markers)[0]
+
+
+        #local gradient
+        gradient = rank.gradient(denoised, disk(5))
+        
+        # process the watershed
+        labels = watershed(gradient, markers)
+        
+        # display results
+        fig, axes = plt.subplots(2,3)       
+        axes[0, 0].imshow(image, cmap=plt.cm.gray, interpolation='nearest')
+        axes[0, 1].imshow(denoised, cmap=plt.cm.gray, interpolation='nearest')
+        axes[0, 2].imshow(markers, cmap=plt.cm.spectral, interpolation='nearest')
+        axes[1, 0].imshow(gradient, cmap=plt.cm.spectral, interpolation='nearest')
+        axes[1, 1].imshow(labels, cmap=plt.cm.spectral, interpolation='nearest', alpha=.7)               
+        plt.show()
+
 
 #        X = np.arange(0, scaled_depth_map.shape[1], 1)
 #        Y = np.arange(0, scaled_depth_map.shape[0], 1)
@@ -83,17 +141,17 @@ def main():
 #        plt.scatter(X,Y,scaled_depth_map)
 #        plt.show()
 
-        pseudo_3d_data = []
-        
-        for i in range(scaled_depth_map.shape[0]):
-            for j in range(scaled_depth_map.shape[1]):
-              #  print i, j, scaled_depth_map[i,j]
-                pseudo_3d_data.append([i, j, scaled_depth_map[i,j]])
-
-
-        import Superpixels
-        segments_slic = slic(np.array(pseudo_3d_data).astype(float), n_segments=250, compactness=10, sigma=1, min_size_factor=200)
-        avg = Superpixels.get_average_slic(scaled_depth_map, segments_slic)
+#        pseudo_3d_data = []
+#        
+#        for i in range(scaled_depth_map.shape[0]):
+#            for j in range(scaled_depth_map.shape[1]):
+#              #  print i, j, scaled_depth_map[i,j]
+#                pseudo_3d_data.append([i, j, scaled_depth_map[i,j]])
+#
+#
+#        import Superpixels
+#        segments_slic = slic(np.array(pseudo_3d_data).astype(float), n_segments=250, compactness=10, sigma=1, min_size_factor=200)
+#        avg = Superpixels.get_average_slic(scaled_depth_map, segments_slic)
 
 
 if __name__ == "__main__":
