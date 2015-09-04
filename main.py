@@ -84,7 +84,7 @@ def get_image_with_contours(image, mask):
         cv2.circle(contour_show, tuple(point[0]), 3, (0, 0, 255), 2)
 #    cv2.imshow("contour", contour_show)
    
-   return approx   
+    return approx   
     
 def normalize_1Channel_image(image):
     scaled_depth_map = image.copy()

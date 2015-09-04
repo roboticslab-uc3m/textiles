@@ -3,7 +3,7 @@ from skimage.measure import moments
 from skimage.measure import label, regionprops
 import operator
 
-__author__ = 'def'
+__author__ = 'def', 'smorante'
 
 
 def get_masks_slic(slic_image):
