@@ -2,7 +2,7 @@
 """
 Created on Wed Sep  2 11:42:35 2015
 
-@author: smorante
+@author: smorante, def
 """
 import matplotlib.pyplot as plt
 import numpy as np
@@ -19,26 +19,23 @@ from utils import load_data
 import Superpixels
 from ClothContour import ClothContour
 
-
-
+########################################################
+########################################################
 
 def get_coloured_item(image):
     # Convert to HSV color space
     image_hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
  
    # Threshold value and saturation (using Otsu for threshold selection)
- 
     blur_s = cv2.GaussianBlur(image_hsv[:, :, 1],(5,5),0)
     ret, mask_s = cv2.threshold(blur_s, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
 #    cv2.imshow("----", mask_s)
    
     blur_v = cv2.GaussianBlur(image_hsv[:, :, 2],(5,5),0) 
     ret, mask_v = cv2.threshold(blur_v, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
-
     mask = cv2.bitwise_and(mask_s, mask_v)
 
     # Filter result using morphological operations (closing)
-    
     kernel = np.ones((5,5),np.uint8)    
     filtered_mask_close = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel, iterations=5)
     filtered_mask_open = cv2.morphologyEx(filtered_mask_close, cv2.MORPH_OPEN, kernel, iterations=8)
@@ -76,7 +73,7 @@ def get_garment_main_lines(image):
     edges = cv2.morphologyEx(edges, cv2.MORPH_CLOSE, kernel, iterations=5)
     return edges
 
-def showImageContours(image, mask):
+def get_image_with_contours(image, mask):
     # Obtain garment contour
     approx = get_garment_contour(mask)
 
@@ -86,36 +83,11 @@ def showImageContours(image, mask):
     for point in approx:
         cv2.circle(contour_show, tuple(point[0]), 3, (0, 0, 255), 2)
 #    cv2.imshow("contour", contour_show)
-    return approx   
+   
+   return approx   
     
-    
-#####################################################################
-#####################################################################
-#####################################################################
-
-image_paths, depth_maps = load_data('./data/20150625_single')
-
-for path_rgb, path_depth in zip(image_paths, depth_maps):
-    # Load image
-    image = cv2.imread(path_rgb)
-    print "Loaded rgb image, dimensions: " + str(image.shape)
-#    cv2.imshow("----", image)
-
-    # Get mask
-    mask = get_coloured_item(image)
-#    cv2.imshow("mask", mask)
-
- # Print clothes contour
-    approx=    showImageContours(image, mask)
-    
-    # Load depth map
-    depth_image = np.loadtxt(path_depth)
-    masked_depth_image = np.where(mask==255, depth_image.transpose(), 1000)
-    print "Loaded depth image, dimensions: " + str(depth_image.shape)
-
-
-    # Normalize depth map
-    scaled_depth_map = masked_depth_image.copy()
+def normalize_1Channel_image(image):
+    scaled_depth_map = image.copy()
     min_value = masked_depth_image[np.unravel_index(np.where(masked_depth_image == 0, 1000,masked_depth_image).argmin(), masked_depth_image.shape)]
     max_value = masked_depth_image[np.unravel_index(np.where(masked_depth_image == 1000, 0,masked_depth_image).argmax(), masked_depth_image.shape)]
     range_value = max_value-min_value
@@ -126,9 +98,34 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
 #    plt.figure(2)
 #    plt.imshow(scaled_depth_map)
 #    cv2.imshow("scaled", scaled_depth_map)
+    return scaled_depth_map
+#####################################################################
+#####################################################################
+#####################################################################
 
-################
+image_paths, depth_maps = load_data('./data/20150625_single')
 
+for path_rgb, path_depth in zip(image_paths, depth_maps):
+    # Load image
+    image = cv2.imread(path_rgb)
+    print "Loaded rgb image, dimensions: " + str(image.shape)
+
+    # Get mask
+    mask = get_coloured_item(image)
+
+    # Print clothes contour
+    approx =  get_image_with_contours(image, mask)
+    
+    # Load depth map
+    depth_image = np.loadtxt(path_depth)
+    masked_depth_image = np.where(mask==255, depth_image.transpose(), 1000)
+    print "Loaded depth image, dimensions: " + str(depth_image.shape)
+
+    # Normalize depth map
+    scaled_depth_map = normalize_1Channel_image(masked_depth_image)
+
+
+######## HIGHEST POINT
     # Get highest_points
     highest_points = [Superpixels.get_highest_point_with_superpixels(scaled_depth_map)[::-1]]
 
@@ -143,27 +140,22 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
 ####### WATERSHED 
     image = img_as_ubyte(scaled_depth_map)
         
-  # denoise image
+    # denoise image
     denoised = denoise_tv_chambolle(image, weight=0.05)
     denoised_equalize= exposure.equalize_hist(denoised)  
 
     
-  # find continuous region (low gradient) --> markers
+    # find continuous region (low gradient) --> markers
     markers = rank.gradient(denoised_equalize, disk(25)) < 15 # 25,15  10,10
-
-
-#    markers = ndi.label(markers)[0]        
     markers = ndi.label(markers)[0]
 
-  #local gradient
+    # local gradient
     gradient = rank.gradient(denoised, disk(5))
-#    cv2.imshow("gradient_equalize", gradient_equalize)    
 
-
+    # labels
     labels = watershed(gradient, markers)
-
-#        
-  # display results
+  
+    # display results
     fig, axes = plt.subplots(2,3)       
     axes[0, 0].imshow(image, cmap=plt.cm.gray, interpolation='nearest')
     axes[0, 1].imshow(denoised, cmap=plt.cm.gray, interpolation='nearest')
@@ -171,13 +163,14 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
     axes[1, 0].imshow(gradient, cmap=plt.cm.spectral, interpolation='nearest')
     axes[1, 1].imshow(labels, cmap=plt.cm.spectral, interpolation='nearest', alpha=.7)               
     plt.show()
-####################################
 
+
+######## PATHS
     # calculate heights paths
     img_src= scaled_depth_map    
     avg = Superpixels.get_average_regions(img_src, labels)
 
-     #profiles
+    # profiles
     for id, path in valid_paths:
         if path:
             start = [p for p in path[0]]
