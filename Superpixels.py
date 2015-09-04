@@ -17,6 +17,18 @@ def get_masks_slic(slic_image):
 
     return masks
 
+
+def get_average_regions(image, regions_image):
+    """ Returns an image with the median value for each superpixel """
+    labels = np.unique(regions_image)
+    avg = np.zeros(regions_image.shape, np.uint8)
+
+    for elem in labels:
+        avg_value = np.median(np.extract(regions_image == elem,image))
+        avg = np.where(regions_image == elem, int(avg_value), avg)
+        
+    return avg
+
 def get_average_slic(image, slic_image):
     """ Returns an image with the median value for each superpixel """
     labels = np.unique(slic_image)

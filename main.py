@@ -7,16 +7,18 @@ Created on Wed Sep  2 11:42:35 2015
 import matplotlib.pyplot as plt
 import numpy as np
 import cv2
-
-from utils import load_data
-import Superpixels
-from ClothContour import ClothContour
 from scipy import ndimage as ndi        
 from skimage.morphology import watershed, disk
 from skimage.filters import rank
 from skimage.util import img_as_ubyte
 from skimage.restoration import denoise_tv_chambolle
 from skimage import exposure
+
+# def
+from utils import load_data
+import Superpixels
+from ClothContour import ClothContour
+
 
 
 
@@ -173,7 +175,7 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
 
     # calculate heights paths
     img_src= scaled_depth_map    
-    avg = Superpixels.get_average_slic(img_src, labels)
+    avg = Superpixels.get_average_regions(img_src, labels)
 
      #profiles
     for id, path in valid_paths:
