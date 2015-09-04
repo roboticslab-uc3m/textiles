@@ -8,7 +8,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import cv2
 
-from segmentation import get_coloured_item
 from utils import load_data
 from mpl_toolkits.mplot3d import Axes3D
 from skimage.segmentation import  slic
@@ -23,6 +22,53 @@ from skimage import exposure
 from skimage.color import gray2rgb
 from skimage.util import img_as_float
 
+
+def get_coloured_item(image):
+    # Convert to HSV color space
+    image_hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+ 
+   # Threshold value and saturation (using Otsu for threshold selection)
+# original David
+#    ret, mask_s = cv2.threshold(image_hsv[:, :, 1], 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+ 
+    blur_s = cv2.GaussianBlur(image_hsv[:, :, 1],(5,5),0)
+    ret, mask_s = cv2.threshold(blur_s, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+#    cv2.imshow("----", mask_s)
+
+    # original David
+  #  ret, mask_v = cv2.threshold(image_hsv[:, :, 2], 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+    
+    blur_v = cv2.GaussianBlur(image_hsv[:, :, 2],(5,5),0) 
+    ret, mask_v = cv2.threshold(blur_v, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+
+
+    # mask = cv2.inRange(image_hsv, (0, 0, 150), (180, 100, 255))
+    mask = cv2.bitwise_and(mask_s, mask_v)
+
+    # Filter result using morphological operations (closing)
+#    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+#    filtered_mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel, iterations=3)
+    
+    kernel = np.ones((5,5),np.uint8)    
+    filtered_mask_close = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel, iterations=5)
+    filtered_mask_open = cv2.morphologyEx(filtered_mask_close, cv2.MORPH_OPEN, kernel, iterations=8)
+
+
+
+#    # Get contours, filter them and fill them to get the final mask:
+#    contours, dummy = cv2.findContours(filtered_mask_open, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+#    contours_filtered = []
+#    for contour in contours:
+#        if len(contour) > 20 and cv2.contourArea(contour) > 150:
+#            contours_filtered.append(contour)
+#    contours_filtered.sort(key=lambda x: cv2.contourArea(x))
+#    contours_filtered.reverse()
+#
+#    final_mask = np.zeros([image.shape[0], image.shape[1], 1], np.uint8)
+#    cv2.drawContours(final_mask, contours_filtered, 0, 255, -1)
+#    return final_mask
+
+    return filtered_mask_open
 
 def get_garment_contour(mask):
     # Get clothes contour:
@@ -64,10 +110,11 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
     # Load image
     image = cv2.imread(path_rgb)
     print "Loaded rgb image, dimensions: " + str(image.shape)
+#    cv2.imshow("----", image)
 
     # Get mask
     mask = get_coloured_item(image)
-#   cv2.imshow("mask", mask)
+    cv2.imshow("mask", mask)
 
     # Obtain garment contour
     approx = get_garment_contour(mask)
@@ -165,32 +212,32 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
     plt.show()
 ####################################
 
-    #avg = Superpixels.get_average_slic(img_src[::2, ::2], segments_slic)
+   ### #avg = Superpixels.get_average_slic(img_src[::2, ::2], segments_slic)
     
-    img_src= scaled_depth_map    
-    avg = Superpixels.get_average_slic(img_src, labels)
-
-     #profiles
-    for id, path in valid_paths:
-        if path:
-            start = [p for p in path[0]]
-            end = [p for p in path[1]]
-            path_samples_avg = Superpixels.line_sampling(avg, start , end, 1)
-            path_samples_src = Superpixels.line_sampling(img_src, start, end, 1)
-            points = Superpixels.line_sampling_points(start, end, 1)
-
-            fig, ax = plt.subplots(1, 2)
-            fig.set_size_inches(8, 3, forward=True)
-            fig.subplots_adjust(0.06, 0.08, 0.97, 0.91, 0.15, 0.05)
-
-            ax[0].set_title(str(id)+': sampled profiles')
-           # ax[0].plot(path_samples_avg, 'b-', path_samples_src, 'r-')
-            without_white = [p for p in path_samples_avg if p != 255]
-            ax[0].bar(range(len(without_white)), without_white, 1)
-
-            ax[1].set_title(str(id)+': sampling points')
-            ax[1].imshow(avg, cmap=plt.cm.gray)
-            ax[1].plot(points[0], points[1], 'b-')
+#    img_src= scaled_depth_map    
+#    avg = Superpixels.get_average_slic(img_src, labels)
+#
+#     #profiles
+#    for id, path in valid_paths:
+#        if path:
+#            start = [p for p in path[0]]
+#            end = [p for p in path[1]]
+#            path_samples_avg = Superpixels.line_sampling(avg, start , end, 1)
+#            path_samples_src = Superpixels.line_sampling(img_src, start, end, 1)
+#            points = Superpixels.line_sampling_points(start, end, 1)
+#
+#            fig, ax = plt.subplots(1, 2)
+#            fig.set_size_inches(8, 3, forward=True)
+#            fig.subplots_adjust(0.06, 0.08, 0.97, 0.91, 0.15, 0.05)
+#
+#            ax[0].set_title(str(id)+': sampled profiles')
+#           # ax[0].plot(path_samples_avg, 'b-', path_samples_src, 'r-')
+#            without_white = [p for p in path_samples_avg if p != 255]
+#            ax[0].bar(range(len(without_white)), without_white, 1)
+#
+#            ax[1].set_title(str(id)+': sampling points')
+#            ax[1].imshow(avg, cmap=plt.cm.gray)
+#            ax[1].plot(points[0], points[1], 'b-')
 
 
     
