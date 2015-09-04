@@ -99,6 +99,19 @@ def normalize_1Channel_image(image):
 #    plt.imshow(scaled_depth_map)
 #    cv2.imshow("scaled", scaled_depth_map)
     return scaled_depth_map
+    
+def auto_canny(image, sigma=0.33):
+    ## http://www.pyimagesearch.com/2015/04/06/zero-parameter-automatic-canny-edge-detection-with-python-and-opencv/
+	# compute the median of the single channel pixel intensities
+	v = np.median(image)
+ 
+	# apply automatic Canny edge detection using the computed median
+	lower = int(max(0, (1.0 - sigma) * v))
+	upper = int(min(255, (1.0 + sigma) * v))
+	edged = cv2.Canny(image, lower, upper)
+ 
+	# return the edged image
+	return edged    
 #####################################################################
 #####################################################################
 #####################################################################
@@ -139,14 +152,16 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
 
 ####### WATERSHED 
     image = img_as_ubyte(scaled_depth_map)
-        
+          
     # denoise image
     denoised = denoise_tv_chambolle(image, weight=0.05)
     denoised_equalize= exposure.equalize_hist(denoised)  
 
-    
     # find continuous region (low gradient) --> markers
     markers = rank.gradient(denoised_equalize, disk(25)) < 15 # 25,15  10,10
+# 2 #   markers = auto_canny(img_as_ubyte(denoised_equalize), 5)
+# 3 #    markers = cv2.Canny(img_as_ubyte(denoised_equalize), 10,200)
+
     markers = ndi.label(markers)[0]
 
     # local gradient
@@ -165,29 +180,29 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
     plt.show()
 
 
-######## PATHS
-    # calculate heights paths
-    img_src= scaled_depth_map    
-    avg = Superpixels.get_average_regions(img_src, labels)
-
-    # profiles
-    for id, path in valid_paths:
-        if path:
-            start = [p for p in path[0]]
-            end = [p for p in path[1]]
-            path_samples_avg = Superpixels.line_sampling(avg, start , end, 1)
-            path_samples_src = Superpixels.line_sampling(img_src, start, end, 1)
-            points = Superpixels.line_sampling_points(start, end, 1)
-
-            fig, ax = plt.subplots(1, 2)
-            fig.set_size_inches(8, 3, forward=True)
-            fig.subplots_adjust(0.06, 0.08, 0.97, 0.91, 0.15, 0.05)
-
-            ax[0].set_title(str(id)+': sampled profiles')
-           # ax[0].plot(path_samples_avg, 'b-', path_samples_src, 'r-')
-            without_white = [p for p in path_samples_avg if p != 255]
-            ax[0].bar(range(len(without_white)), without_white, 1)
-
-            ax[1].set_title(str(id)+': sampling points')
-            ax[1].imshow(avg, cmap=plt.cm.gray)
-            ax[1].plot(points[0], points[1], 'b-')
+######### PATHS
+#    # calculate heights paths
+#    img_src= scaled_depth_map    
+#    avg = Superpixels.get_average_regions(img_src, labels)
+#
+#    # profiles
+#    for id, path in valid_paths:
+#        if path:
+#            start = [p for p in path[0]]
+#            end = [p for p in path[1]]
+#            path_samples_avg = Superpixels.line_sampling(avg, start , end, 1)
+#            path_samples_src = Superpixels.line_sampling(img_src, start, end, 1)
+#            points = Superpixels.line_sampling_points(start, end, 1)
+#
+#            fig, ax = plt.subplots(1, 2)
+#            fig.set_size_inches(8, 3, forward=True)
+#            fig.subplots_adjust(0.06, 0.08, 0.97, 0.91, 0.15, 0.05)
+#
+#            ax[0].set_title(str(id)+': sampled profiles')
+#           # ax[0].plot(path_samples_avg, 'b-', path_samples_src, 'r-')
+#            without_white = [p for p in path_samples_avg if p != 255]
+#            ax[0].bar(range(len(without_white)), without_white, 1)
+#
+#            ax[1].set_title(str(id)+': sampling points')
+#            ax[1].imshow(avg, cmap=plt.cm.gray)
+#            ax[1].plot(points[0], points[1], 'b-')
