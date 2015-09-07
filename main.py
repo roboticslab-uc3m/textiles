@@ -138,17 +138,6 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
     scaled_depth_map = normalize_1Channel_image(masked_depth_image)
 
 
-######## HIGHEST POINT
-    # Get highest_points
-    highest_points = [Superpixels.get_highest_point_with_superpixels(scaled_depth_map)[::-1]]
-
-    # Get contour midpoints
-    cloth_contour = ClothContour(approx)
-    contour_segments, contour_midpoints = cloth_contour.segments, cloth_contour.midpoints
-
-    # Get paths to traverse:
-    valid_paths = cloth_contour.get_valid_paths(highest_points)
-
 
 ####### WATERSHED 
     image = img_as_ubyte(scaled_depth_map)
@@ -159,8 +148,6 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
 
     # find continuous region (low gradient) --> markers
     markers = rank.gradient(denoised_equalize, disk(25)) < 15 # 25,15  10,10
-# 2 #   markers = auto_canny(img_as_ubyte(denoised_equalize), 5)
-# 3 #    markers = cv2.Canny(img_as_ubyte(denoised_equalize), 10,200)
 
     markers = ndi.label(markers)[0]
 
@@ -178,31 +165,49 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
     axes[1, 0].imshow(gradient, cmap=plt.cm.spectral, interpolation='nearest')
     axes[1, 1].imshow(labels, cmap=plt.cm.spectral, interpolation='nearest', alpha=.7)               
     plt.show()
+    
+    
 
 
 ######### PATHS
-#    # calculate heights paths
-#    img_src= scaled_depth_map    
-#    avg = Superpixels.get_average_regions(img_src, labels)
-#
-#    # profiles
-#    for id, path in valid_paths:
-#        if path:
-#            start = [p for p in path[0]]
-#            end = [p for p in path[1]]
-#            path_samples_avg = Superpixels.line_sampling(avg, start , end, 1)
-#            path_samples_src = Superpixels.line_sampling(img_src, start, end, 1)
-#            points = Superpixels.line_sampling_points(start, end, 1)
-#
-#            fig, ax = plt.subplots(1, 2)
-#            fig.set_size_inches(8, 3, forward=True)
-#            fig.subplots_adjust(0.06, 0.08, 0.97, 0.91, 0.15, 0.05)
-#
-#            ax[0].set_title(str(id)+': sampled profiles')
-#           # ax[0].plot(path_samples_avg, 'b-', path_samples_src, 'r-')
-#            without_white = [p for p in path_samples_avg if p != 255]
-#            ax[0].bar(range(len(without_white)), without_white, 1)
-#
-#            ax[1].set_title(str(id)+': sampling points')
-#            ax[1].imshow(avg, cmap=plt.cm.gray)
-#            ax[1].plot(points[0], points[1], 'b-')
+    # calculate heights paths
+    img_src= scaled_depth_map    
+    avg = Superpixels.get_average_regions(img_src, labels)
+
+
+
+    ######## HIGHEST POINT
+    # Get highest_points 
+    highest_points = [Superpixels.get_highest_point_with_superpixels(avg)[::-1]]
+
+    # Get contour midpoints
+    cloth_contour = ClothContour(approx)
+    contour_segments, contour_midpoints = cloth_contour.segments, cloth_contour.midpoints
+
+    # Get paths to traverse:
+    valid_paths = cloth_contour.get_valid_paths(highest_points)
+
+
+
+
+    # profiles
+    for id, path in valid_paths:
+        if path:
+            start = [p for p in path[0]]
+            end = [p for p in path[1]]
+            path_samples_avg = Superpixels.line_sampling(avg, start , end, 1)
+            path_samples_src = Superpixels.line_sampling(img_src, start, end, 1)
+            points = Superpixels.line_sampling_points(start, end, 1)
+
+            fig, ax = plt.subplots(1, 2)
+            fig.set_size_inches(8, 3, forward=True)
+            fig.subplots_adjust(0.06, 0.08, 0.97, 0.91, 0.15, 0.05)
+
+            ax[0].set_title(str(id)+': sampled profiles')
+           # ax[0].plot(path_samples_avg, 'b-', path_samples_src, 'r-')
+            without_white = [p for p in path_samples_avg if p != 255]
+            ax[0].bar(range(len(without_white)), without_white, 1)
+
+            ax[1].set_title(str(id)+': sampling points')
+            ax[1].imshow(avg, cmap=plt.cm.gray)
+            ax[1].plot(points[0], points[1], 'b-')
