@@ -13,6 +13,7 @@ from skimage.filters import rank
 from skimage.util import img_as_ubyte
 from skimage.restoration import denoise_tv_chambolle
 from skimage import exposure
+from scipy import stats
 
 # def
 from utils import load_data
@@ -21,7 +22,7 @@ from ClothContour import ClothContour
 
 ########################################################
 
-ALPHA=0.5
+ALPHA=-0.5
 
 ########################################################
 
@@ -71,7 +72,6 @@ def get_garment_main_lines(image):
     
     edges = cv2.Canny(inverted, 80, 160, apertureSize=3)
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
-    # show_image("canny", edges)
     
     edges = cv2.morphologyEx(edges, cv2.MORPH_CLOSE, kernel, iterations=5)
     return edges
@@ -103,19 +103,12 @@ def normalize_1Channel_image(image):
 #    cv2.imshow("scaled", scaled_depth_map)
     return scaled_depth_map
     
-def calculateAdequacy(profile, selection):
+def calculate_adequacy(profile, selection):
     var=0
-    print "len:", len(profile)
     if selection==1:
-        
-        for i in range(1,len(profile)):
-#            print "profile elems: ", profile[i], "  ", profile[i-1]
-#            print "difference:", np.abs(int(profile[i])-int(profile[i-1]))
-#            
+        for i in range(1,len(profile)):            
 #            # cast to int becasue they were unit8 and failed to substract them
             var+=np.abs(int(profile[i])-int(profile[i-1]))
-#            print "var:", var
-
         return var
  
     if selection==2:
@@ -132,7 +125,38 @@ def calculateAdequacy(profile, selection):
     
 def get_outlier(points, thresh=2):
     results = stats.zscore(points) 
-    return results.flatten() > thresh, results
+    return results.flatten() < thresh, results
+    
+    
+def plot_zscores(ALPHA, zscores, xtitle="Scores"):
+    fig = plt.figure()
+    plt.bar(np.arange(len(zscores)), zscores, alpha=0.4, color='b')
+
+    plt.xlabel(xtitle, fontsize=30)
+    plt.xticks( fontsize=20)
+    plt.xlim(0,len(zscores))
+    plt.ylabel('Score', fontsize=30)
+    plt.yticks( fontsize=20)
+
+    plt.axhline(y=ALPHA, xmin=0, xmax=1, hold=None, color='red', lw=4, linestyle='--')
+    plt.legend()
+    plt.tight_layout()
+    plt.show()    
+
+def get_slope(p1, p2):
+    # Order points:
+    if p1[0] <= p2[0]:
+        start = p1
+        end = p2
+    else:
+        start = p2
+        end = p1
+
+    # Find line slope
+    slope = np.true_divide(end[1] - start[1], end[0] - start[0])
+#    print "Slope: " , slope   
+    return slope
+
 #####################################################################
 #####################################################################
 #####################################################################
@@ -157,7 +181,6 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
 
     # Normalize depth map
     scaled_depth_map = normalize_1Channel_image(masked_depth_image)
-
 
 
 ####### WATERSHED 
@@ -187,8 +210,6 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
     axes[1, 1].imshow(labels, cmap=plt.cm.spectral, interpolation='nearest', alpha=.7)               
     plt.show()
     
-    
-
 
 ######### PATHS
     # calculate heights paths
@@ -208,16 +229,15 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
     # Get paths to traverse:
     valid_paths = cloth_contour.get_valid_paths(highest_points)
 
-
-
-
 ###### PROFILES
 
     profiles = []
+    all_line_data=[]
     for id, path in valid_paths:
         if path:
             start = [p for p in path[0]]
             end = [p for p in path[1]]
+            all_line_data.append([start, end])
             path_samples_avg = Superpixels.line_sampling(avg, start , end, 1)
             points = Superpixels.line_sampling_points(start, end, 1)
 
@@ -235,19 +255,40 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
             ax[1].imshow(avg, cmap=plt.cm.gray)
             ax[1].plot(points[0], points[1], 'b-')
 
-
 ###### SELECTING BEST DIRECTIONS
     adequacy = []
 
     for elem in profiles:
-        adequacy.append(calculateAdequacy(elem,1))
+        adequacy.append(calculate_adequacy(elem,1))
    
-    print "adequacy:", adequacy
+#    print "Adequacy:", adequacy
 
     boolzscores, zscores = get_outlier(adequacy, thresh=ALPHA)
-    print "[INFO] Detected outliers: ", boolzscores, zscores
+#    print "[INFO] Detected outliers: ", boolzscores, zscores
+    plot_zscores(ALPHA, zscores)
 
-    fig, ax = plt.figure()
-
+###### AVERAGING DIRECTIONS
+    selected_directions=[]
+#    slopes =[]
+    if np.sum(boolzscores) > 1:
+        for i in range(len(boolzscores)):
+            if boolzscores[i]==True:
+                selected_directions.append(all_line_data[i])
+#                slopes.append(get_slope(all_line_data[i][0] , all_line_data[i][1]))
+        
+    print "Selected directions: ", selected_directions     
+    print "Final Direction (start, end): ", selected_directions
         
 
+
+
+    final_extremes = np.average(selected_directions, axis=0)
+    final_line = Superpixels.line_sampling_points(final_extremes[0], final_extremes[1], 1)
+
+ 
+    fig, axis = plt.subplots(1, 1)
+    axis.imshow(avg, cmap=plt.cm.gray)
+    axis.plot(final_line[0], final_line[1], 'b-')
+    
+
+#    print "Done!"
