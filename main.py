@@ -100,18 +100,14 @@ def normalize_1Channel_image(image):
 #    cv2.imshow("scaled", scaled_depth_map)
     return scaled_depth_map
     
-def auto_canny(image, sigma=0.33):
-    ## http://www.pyimagesearch.com/2015/04/06/zero-parameter-automatic-canny-edge-detection-with-python-and-opencv/
-	# compute the median of the single channel pixel intensities
-	v = np.median(image)
- 
-	# apply automatic Canny edge detection using the computed median
-	lower = int(max(0, (1.0 - sigma) * v))
-	upper = int(min(255, (1.0 + sigma) * v))
-	edged = cv2.Canny(image, lower, upper)
- 
-	# return the edged image
-	return edged    
+def calculateAdequacy(profile, selection):
+    
+    if selection==1:
+        return np.sum(profile)
+    else:
+        return False
+    
+    
 #####################################################################
 #####################################################################
 #####################################################################
@@ -176,7 +172,7 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
 
 
 
-    ######## HIGHEST POINT
+######## HIGHEST POINT
     # Get highest_points 
     highest_points = [Superpixels.get_highest_point_with_superpixels(avg)[::-1]]
 
@@ -190,13 +186,15 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
 
 
 
-    # profiles
+###### PROFILES
+
+    profiles = []
     for id, path in valid_paths:
         if path:
             start = [p for p in path[0]]
             end = [p for p in path[1]]
             path_samples_avg = Superpixels.line_sampling(avg, start , end, 1)
-            path_samples_src = Superpixels.line_sampling(img_src, start, end, 1)
+            profiles.append(path_samples_avg)            
             points = Superpixels.line_sampling_points(start, end, 1)
 
             fig, ax = plt.subplots(1, 2)
@@ -204,10 +202,17 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
             fig.subplots_adjust(0.06, 0.08, 0.97, 0.91, 0.15, 0.05)
 
             ax[0].set_title(str(id)+': sampled profiles')
-           # ax[0].plot(path_samples_avg, 'b-', path_samples_src, 'r-')
             without_white = [p for p in path_samples_avg if p != 255]
             ax[0].bar(range(len(without_white)), without_white, 1)
 
             ax[1].set_title(str(id)+': sampling points')
             ax[1].imshow(avg, cmap=plt.cm.gray)
             ax[1].plot(points[0], points[1], 'b-')
+
+
+###### SELECTING BEST DIRECTION
+    indexes = []
+    for elem in profiles:
+        indexes.append(calculateAdequacy(elem,1))
+
+    print "Indexes:", indexes
