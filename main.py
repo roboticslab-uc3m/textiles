@@ -4,6 +4,8 @@ Created on Wed Sep  2 11:42:35 2015
 
 @author: smorante, def
 """
+from __future__ import division
+
 import matplotlib.pyplot as plt
 import numpy as np
 import cv2
@@ -160,13 +162,38 @@ def get_slope(p1, p2):
 #    print "Slope: " , slope   
     return slope
 
-def get_line(v):
-    
-    angle_v0= math.atan2(v[0][1][1]-v[0][0][1], v[0][1][0]-v[0][0][0])
-    angle_v1= math.atan2(v[1][1][1]-v[1][0][1], v[1][1][0]-v[1][0][0])
-
-
+def multiple_segments_extender(v):
     return True
+
+def segment_extender(xmin, ymin, xmax, ymax, x1, y1, x2, y2):
+    if y1 == y2:
+        return (xmin, y1, xmax, y1)
+    if x1 == x2:
+        return (x1, ymin, x1, ymax)
+
+    # based on (y - y1) / (x - x1) == (y2 - y1) / (x2 - x1)
+    # => (y - y1) * (x2 - x1) == (y2 - y1) * (x - x1)
+    y_for_xmin = y1 + (y2 - y1) * (xmin - x1) / (x2 - x1)
+    y_for_xmax = y1 + (y2 - y1) * (xmax - x1) / (x2 - x1)
+
+    x_for_ymin = x1 + (x2 - x1) * (ymin - y1) / (y2 - y1)
+    x_for_ymax = x1 + (x2 - x1) * (ymax - y1) / (y2 - y1)
+
+    if ymin <= y_for_xmin <= ymax:
+        if xmin <= x_for_ymax <= xmax:
+            print "here"
+            return (xmin, y_for_xmin, x_for_ymax, ymax)
+        if xmin <= x_for_ymin <= xmax:
+            print "here"
+            return (xmin, y_for_xmin, x_for_ymin, ymin)
+    if ymin <= y_for_xmax <= ymax:
+        if xmin <= x_for_ymin <= xmax:
+            print "here"            
+            return (x_for_ymin, ymin, xmax, y_for_xmax)
+        if xmin <= x_for_ymax <= xmax:
+            print "here"            
+            return (x_for_ymax, ymax, xmax, y_for_xmax)
+    print "noooooooooo"
 #####################################################################
 #####################################################################
 #####################################################################
@@ -271,54 +298,75 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
    
     print "Adequacy:", adequacy
     selected_directions=[]
-    ### ASSUMING ONLY ONE FOR NOW    
-#    selected_directions.append(all_line_data[ np.argmin(adequacy) ])          
+    ### ASSUMING ONLY ONE DIRECTIONS FOR NOW (UNTIL WE CAME UP WITH ANOTHER STRATEGY)
+    selected_directions.append(all_line_data[ np.argmin(adequacy) ])          
 
 ###### AVERAGING DIRECTIONS
 ################## TO BE IMPROVED    
-    boolzscores, zscores = get_outlier(adequacy, thresh=ALPHA)
-    print "[INFO] Detected outliers: ", boolzscores, zscores
-    plot_zscores(ALPHA, zscores)
-
-    if np.sum(boolzscores) == 1 or np.sum(boolzscores) == 2:
-        for i in range(len(boolzscores)):
-            if boolzscores[i]==True:
-                selected_directions.append(all_line_data[i])
-                print "True value: ", all_line_data[i]
-
-    elif np.sum(boolzscores) > 2:
-        zscores_copy= copy.copy(zscores)
-
-        # first smallest value
-        selected_directions.append(all_line_data[ np.argmin(zscores_copy) ])          
-
-
-        print "First smallest value: ", all_line_data[ np.argmin(zscores_copy) ], " --> ", np.argmin(zscores_copy)
-        
-        # substitute smallest by max int        
-        zscores_copy[np.argmin(zscores_copy)] = sys.maxint
-
-        # second smallest value
-        selected_directions.append(all_line_data[ np.argmin(zscores_copy) ])          
-        print "Second smallest value: ", all_line_data[ np.argmin(zscores_copy) ], " --> ", np.argmin(zscores_copy)
-
-
-    else:
-        selected_directions.append(all_line_data[ np.argmin(zscores) ])  
-        print "Selecting smallest value: ", np.argmin(zscores)
-
-        
-    print "Selected directions (start, end): ", selected_directions  
-    
-    get_line(selected_directions)
-#          
+#    boolzscores, zscores = get_outlier(adequacy, thresh=ALPHA)
+#    print "[INFO] Detected outliers: ", boolzscores, zscores
+#    plot_zscores(ALPHA, zscores)
+#
+#    if np.sum(boolzscores) == 1 or np.sum(boolzscores) == 2:
+#        for i in range(len(boolzscores)):
+#            if boolzscores[i]==True:
+#                selected_directions.append(all_line_data[i])
+#                print "True value: ", all_line_data[i]
+#
+#    elif np.sum(boolzscores) > 2:
+#        zscores_copy= copy.copy(zscores)
+#
+#        # first smallest value
+#        selected_directions.append(all_line_data[ np.argmin(zscores_copy) ])          
+#
+#
+#        print "First smallest value: ", all_line_data[ np.argmin(zscores_copy) ], " --> ", np.argmin(zscores_copy)
+#        
+#        # substitute smallest by max int        
+#        zscores_copy[np.argmin(zscores_copy)] = sys.maxint
+#
+#        # second smallest value
+#        selected_directions.append(all_line_data[ np.argmin(zscores_copy) ])          
+#        print "Second smallest value: ", all_line_data[ np.argmin(zscores_copy) ], " --> ", np.argmin(zscores_copy)
+#
+#
+#    else:
+#        selected_directions.append(all_line_data[ np.argmin(zscores) ])  
+#        print "Selecting smallest value: ", np.argmin(zscores)
+#
+#        
+#    print "Selected directions (start, end): ", selected_directions            
 #    final_extremes = np.average(selected_directions, axis=0)
 ##################################################
     
     final_extremes = selected_directions[0]
     print "Final Direction: ", final_extremes
     
-
+    
+############ prototype (not working for now)
+    # this works, but region may be small    
+    highest_region_mask = Superpixels.get_highest_superpixel(avg)
+#    plt.figure()
+#    plt.imshow(highest_region_mask, cmap=plt.cm.gray)
+#    plt.show()
+    
+    # this doesnt work
+    v = segment_extender(0,0,highest_region_mask.shape[0], highest_region_mask.shape[1],
+                          final_extremes[0][0], final_extremes[0][1], 
+                            final_extremes[1][0], final_extremes[1][1])
+    
+    # if previous worked, this works
+    line_mask = np.zeros(highest_region_mask.shape,np.uint8)
+    cv2.line(line_mask, (int(v[0]), int(v[1])), (int(v[2]), int(v[3])), 255)
+#    plt.figure()
+#    plt.imshow(line_mask, cmap=plt.cm.gray)
+#    plt.show()
+    
+    # this works
+    intersection_img = np.logical_and( highest_region_mask, line_mask )
+############ end prototype
+    
+   
 ###### FINAL SOLUTION AND PLOTTING
     final_line = Superpixels.line_sampling_points(final_extremes[0], final_extremes[1], 1)
     fig, axis = plt.subplots(1, 1)
