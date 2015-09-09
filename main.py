@@ -14,6 +14,8 @@ from skimage.util import img_as_ubyte
 from skimage.restoration import denoise_tv_chambolle
 from skimage import exposure
 from scipy import stats
+import copy
+import sys
 
 # def
 from utils import load_data
@@ -269,20 +271,44 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
 
 ###### AVERAGING DIRECTIONS
     selected_directions=[]
-#    slopes =[]
-    if np.sum(boolzscores) > 1:
+    
+    if np.sum(boolzscores) == 1 or np.sum(boolzscores) == 2:
         for i in range(len(boolzscores)):
             if boolzscores[i]==True:
                 selected_directions.append(all_line_data[i])
-#                slopes.append(get_slope(all_line_data[i][0] , all_line_data[i][1]))
+                print "True value: ", all_line_data[i]
+
+    elif np.sum(boolzscores) > 2:
+        zscores_copy= copy.copy(zscores)
+
+        # first smallest value
+#        selected_directions.append(all_line_data[ zscores_copy.index(min(zscores_copy)) ])          
+        selected_directions.append(all_line_data[ np.argmin(zscores_copy) ])          
+
+
+        print "First smallest value: ", all_line_data[ np.argmin(zscores_copy) ], " --> ", np.argmin(zscores_copy)
         
-    print "Selected directions: ", selected_directions     
-    print "Final Direction (start, end): ", selected_directions
+        # substitute smallest by max int        
+        zscores_copy[np.argmin(zscores_copy)] = sys.maxint
+
+        # second smallest value
+        selected_directions.append(all_line_data[ np.argmin(zscores_copy) ])          
+        print "Second smallest value: ", all_line_data[ np.argmin(zscores_copy) ], " --> ", np.argmin(zscores_copy)
+
+
+    else:
+        selected_directions.append(all_line_data[ np.argmin(zscores) ])  
+        print "Selecting smallest value: ", np.argmin(zscores)
+
         
-
-
-
+    print "Selected directions (start, end): ", selected_directions     
+        
     final_extremes = np.average(selected_directions, axis=0)
+    print "Final Direction: ", final_extremes
+    
+
+###### FINAL SOLUTION AND PLOTTING
+
     final_line = Superpixels.line_sampling_points(final_extremes[0], final_extremes[1], 1)
 
  
