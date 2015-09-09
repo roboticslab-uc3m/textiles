@@ -303,6 +303,7 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
         
     print "Selected directions (start, end): ", selected_directions     
         
+        
     final_extremes = np.average(selected_directions, axis=0)
     print "Final Direction: ", final_extremes
     
