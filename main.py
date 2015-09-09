@@ -16,6 +16,7 @@ from skimage import exposure
 from scipy import stats
 import copy
 import sys
+import math
 
 # def
 from utils import load_data
@@ -159,6 +160,13 @@ def get_slope(p1, p2):
 #    print "Slope: " , slope   
     return slope
 
+def get_line(v):
+    
+    angle_v0= math.atan2(v[0][1][1]-v[0][0][1], v[0][1][0]-v[0][0][0])
+    angle_v1= math.atan2(v[1][1][1]-v[1][0][1], v[1][1][0]-v[1][0][0])
+
+
+    return True
 #####################################################################
 #####################################################################
 #####################################################################
@@ -204,13 +212,13 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
     labels = watershed(gradient, markers)
   
     # display results
-    fig, axes = plt.subplots(2,3)       
-    axes[0, 0].imshow(image, cmap=plt.cm.gray, interpolation='nearest')
-    axes[0, 1].imshow(denoised, cmap=plt.cm.gray, interpolation='nearest')
-    axes[0, 2].imshow(markers, cmap=plt.cm.spectral, interpolation='nearest')
-    axes[1, 0].imshow(gradient, cmap=plt.cm.spectral, interpolation='nearest')
-    axes[1, 1].imshow(labels, cmap=plt.cm.spectral, interpolation='nearest', alpha=.7)               
-    plt.show()
+#    fig, axes = plt.subplots(2,3)       
+#    axes[0, 0].imshow(image, cmap=plt.cm.gray, interpolation='nearest')
+#    axes[0, 1].imshow(denoised, cmap=plt.cm.gray, interpolation='nearest')
+#    axes[0, 2].imshow(markers, cmap=plt.cm.spectral, interpolation='nearest')
+#    axes[1, 0].imshow(gradient, cmap=plt.cm.spectral, interpolation='nearest')
+#    axes[1, 1].imshow(labels, cmap=plt.cm.spectral, interpolation='nearest', alpha=.7)               
+#    plt.show()
     
 
 ######### PATHS
@@ -243,19 +251,17 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
             path_samples_avg = Superpixels.line_sampling(avg, start , end, 1)
             points = Superpixels.line_sampling_points(start, end, 1)
 
-            fig, ax = plt.subplots(1, 2)
-            fig.set_size_inches(8, 3, forward=True)
-            fig.subplots_adjust(0.06, 0.08, 0.97, 0.91, 0.15, 0.05)
-
-            ax[0].set_title(str(id)+': sampled profiles')
             without_white = [p for p in path_samples_avg if p != 255]
-            profiles.append(without_white)            
+            profiles.append(without_white)  
 
-            ax[0].bar(range(len(without_white)), without_white, 1)
-
-            ax[1].set_title(str(id)+': sampling points')
-            ax[1].imshow(avg, cmap=plt.cm.gray)
-            ax[1].plot(points[0], points[1], 'b-')
+#            fig, ax = plt.subplots(1, 2)
+#            fig.set_size_inches(8, 3, forward=True)
+#            fig.subplots_adjust(0.06, 0.08, 0.97, 0.91, 0.15, 0.05)
+#            ax[0].set_title(str(id)+': sampled profiles')
+#            ax[0].bar(range(len(without_white)), without_white, 1)
+#            ax[1].set_title(str(id)+': sampling points')
+#            ax[1].imshow(avg, cmap=plt.cm.gray)
+#            ax[1].plot(points[0], points[1], 'b-')
 
 ###### SELECTING BEST DIRECTIONS
     adequacy = []
@@ -263,15 +269,17 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
     for elem in profiles:
         adequacy.append(calculate_adequacy(elem,1))
    
-#    print "Adequacy:", adequacy
+    print "Adequacy:", adequacy
+    selected_directions=[]
+    ### ASSUMING ONLY ONE FOR NOW    
+#    selected_directions.append(all_line_data[ np.argmin(adequacy) ])          
 
+###### AVERAGING DIRECTIONS
+################## TO BE IMPROVED    
     boolzscores, zscores = get_outlier(adequacy, thresh=ALPHA)
     print "[INFO] Detected outliers: ", boolzscores, zscores
     plot_zscores(ALPHA, zscores)
 
-###### AVERAGING DIRECTIONS
-    selected_directions=[]
-    
     if np.sum(boolzscores) == 1 or np.sum(boolzscores) == 2:
         for i in range(len(boolzscores)):
             if boolzscores[i]==True:
@@ -282,7 +290,6 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
         zscores_copy= copy.copy(zscores)
 
         # first smallest value
-#        selected_directions.append(all_line_data[ zscores_copy.index(min(zscores_copy)) ])          
         selected_directions.append(all_line_data[ np.argmin(zscores_copy) ])          
 
 
@@ -301,18 +308,19 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
         print "Selecting smallest value: ", np.argmin(zscores)
 
         
-    print "Selected directions (start, end): ", selected_directions     
-        
-        
-    final_extremes = np.average(selected_directions, axis=0)
+    print "Selected directions (start, end): ", selected_directions  
+    
+    get_line(selected_directions)
+#          
+#    final_extremes = np.average(selected_directions, axis=0)
+##################################################
+    
+    final_extremes = selected_directions[0]
     print "Final Direction: ", final_extremes
     
 
 ###### FINAL SOLUTION AND PLOTTING
-
     final_line = Superpixels.line_sampling_points(final_extremes[0], final_extremes[1], 1)
-
- 
     fig, axis = plt.subplots(1, 1)
     axis.imshow(avg, cmap=plt.cm.gray)
 
