@@ -162,38 +162,12 @@ def get_slope(p1, p2):
 #    print "Slope: " , slope   
     return slope
 
-def multiple_segments_extender(v):
-    return True
-
-def segment_extender(xmin, ymin, xmax, ymax, x1, y1, x2, y2):
-    if y1 == y2:
-        return (xmin, y1, xmax, y1)
-    if x1 == x2:
-        return (x1, ymin, x1, ymax)
-
-    # based on (y - y1) / (x - x1) == (y2 - y1) / (x2 - x1)
-    # => (y - y1) * (x2 - x1) == (y2 - y1) * (x - x1)
-    y_for_xmin = y1 + (y2 - y1) * (xmin - x1) / (x2 - x1)
-    y_for_xmax = y1 + (y2 - y1) * (xmax - x1) / (x2 - x1)
-
-    x_for_ymin = x1 + (x2 - x1) * (ymin - y1) / (y2 - y1)
-    x_for_ymax = x1 + (x2 - x1) * (ymax - y1) / (y2 - y1)
-
-    if ymin <= y_for_xmin <= ymax:
-        if xmin <= x_for_ymax <= xmax:
-            print "here"
-            return (xmin, y_for_xmin, x_for_ymax, ymax)
-        if xmin <= x_for_ymin <= xmax:
-            print "here"
-            return (xmin, y_for_xmin, x_for_ymin, ymin)
-    if ymin <= y_for_xmax <= ymax:
-        if xmin <= x_for_ymin <= xmax:
-            print "here"            
-            return (x_for_ymin, ymin, xmax, y_for_xmax)
-        if xmin <= x_for_ymax <= xmax:
-            print "here"            
-            return (x_for_ymax, ymax, xmax, y_for_xmax)
-    print "noooooooooo"
+def segment_extender(x_start, y_start, x_end, y_end):
+    
+    start = [x_start, y_start]
+    end = [x_end + (x_end-x_start), y_end + (y_end-y_start)]
+    
+    return [start, end]
 #####################################################################
 #####################################################################
 #####################################################################
@@ -343,29 +317,17 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
     print "Final Direction: ", final_extremes
     
     
-############ prototype (not working for now)
-    # this works, but region may be small    
-    highest_region_mask = Superpixels.get_highest_superpixel(avg)
-#    plt.figure()
-#    plt.imshow(highest_region_mask, cmap=plt.cm.gray)
-#    plt.show()
-    
-    # this doesnt work
-    v = segment_extender(0,0,highest_region_mask.shape[0], highest_region_mask.shape[1],
-                          final_extremes[0][0], final_extremes[0][1], 
+############ SEGMENT EXTENDER
+    traj = segment_extender(final_extremes[0][0], final_extremes[0][1], 
                             final_extremes[1][0], final_extremes[1][1])
+    print "Trajectory: ", traj
     
-    # if previous worked, this works
-    line_mask = np.zeros(highest_region_mask.shape,np.uint8)
-    cv2.line(line_mask, (int(v[0]), int(v[1])), (int(v[2]), int(v[3])), 255)
+    # visualize trajectory
+#    line_mask = np.zeros(mask.shape,np.uint8)
+#    cv2.line(line_mask, (int(v[0][0]), int(v[0][1])), (int(v[1][0]), int(v[1][1])), 255)
 #    plt.figure()
 #    plt.imshow(line_mask, cmap=plt.cm.gray)
 #    plt.show()
-    
-    # this works
-    intersection_img = np.logical_and( highest_region_mask, line_mask )
-############ end prototype
-    
    
 ###### FINAL SOLUTION AND PLOTTING
     final_line = Superpixels.line_sampling_points(final_extremes[0], final_extremes[1], 1)
@@ -377,5 +339,11 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
                    selected_directions[i][1][0]-selected_directions[i][0][0], 
                    selected_directions[i][1][1]-selected_directions[i][0][1], head_width=15, head_length=15, fc='blue', ec='blue')    
     
+    # direction
     axis.arrow(final_extremes[0][0], final_extremes[0][1], final_extremes[1][0]-final_extremes[0][0], 
                final_extremes[1][1]-final_extremes[0][1], head_width=15, head_length=15, fc='red', ec='red')
+               
+    # trajectory
+    axis.arrow(traj[0][0], traj[0][1], traj[1][0] - traj[0][0], traj[1][1] - traj[0][1], 
+               head_width=15, head_length=15, fc='green', ec='green')               
+

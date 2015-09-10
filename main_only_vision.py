@@ -128,7 +128,7 @@ def get_slope(p1, p2):
 #####################################################################
 #####################################################################
 
-image_paths, depth_maps = load_data('./data/20150625_single')
+image_paths, depth_maps = load_data('./data/20150902')
 
 for path_rgb, path_depth in zip(image_paths, depth_maps):
     # Load image
