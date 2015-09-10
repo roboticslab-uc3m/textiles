@@ -1,13 +1,13 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-#include "InSrPort.hpp"
+#include "InCommandPort.hpp"
 
 namespace teo
 {
 
 /************************************************************************/
 
-void InSrPort::onRead(Bottle& b) {
+void InCommandPort::onRead(Bottle& b) {
     if ((b.get(0).asString() == "go")||(b.get(0).asVocab() == VOCAB_GO))  // go //
     {
         Bottle* cvb = inCvPortPtr->read();

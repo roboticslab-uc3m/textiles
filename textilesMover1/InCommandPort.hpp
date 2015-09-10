@@ -20,7 +20,7 @@ namespace teo
  * @brief Input port of speech recognition data.
  *
  */
-class InSrPort : public BufferedPort<Bottle> {
+class InCommandPort : public BufferedPort<Bottle> {
     public:
         void setInCvPortPtr(BufferedPort<Bottle> *inCvPortPtr) {
             this->inCvPortPtr = inCvPortPtr;

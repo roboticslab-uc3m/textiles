@@ -7,7 +7,7 @@
 #include <yarp/dev/all.h>
 #include <stdlib.h>
 
-#include "InSrPort.hpp"
+#include "InCommandPort.hpp"
 
 #define VOCAB_FOLLOW_ME VOCAB4('f','o','l','l')
 #define VOCAB_STOP_FOLLOWING VOCAB4('s','f','o','l')
@@ -28,7 +28,7 @@ class TextilesMover1 : public RFModule {
         bool configure(ResourceFinder &rf);
 
     protected:
-        InSrPort inCommandPort;
+        InCommandPort inCommandPort;
         BufferedPort<Bottle> inCvPort;
         yarp::os::RpcClient armDevice;
 
