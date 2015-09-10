@@ -8,7 +8,7 @@ namespace teo
 /************************************************************************/
 
 void InSrPort::onRead(Bottle& b) {
-    if( b.get(0).asString() == "go" )
+    if ((b.get(0).asString() == "go")||(b.get(0).asVocab() == VOCAB_GO))  // go //
     {
         Bottle* cvb = inCvPortPtr->read();
         int x1 = cvb->get(0).asInt();
