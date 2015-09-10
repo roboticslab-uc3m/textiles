@@ -29,11 +29,17 @@ class InSrPort : public BufferedPort<Bottle> {
             this->inCvPortPtr = inCvPortPtr;
         }
 
+        void setIPositionControl(yarp::dev::IPositionControl *iPositionControl) {
+            this->iPositionControl = iPositionControl;
+        }
+
     protected:
         /** Callback on incoming Bottle. **/
         virtual void onRead(Bottle& b);
 
         InCvPort* inCvPortPtr;
+
+        yarp::dev::IPositionControl *iPositionControl;
 };
 
 }  // namespace teo

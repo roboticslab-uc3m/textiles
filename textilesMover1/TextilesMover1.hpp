@@ -31,8 +31,7 @@ class TextilesMover1 : public RFModule {
     protected:
         InSrPort inSrPort;
         InCvPort inCvPort;
-        yarp::dev::PolyDriver headDevice;
-        yarp::dev::IPositionControl *iPositionControl;
+        yarp::os::RpcClient armDevice;
 
         bool interruptModule();
         double getPeriod();

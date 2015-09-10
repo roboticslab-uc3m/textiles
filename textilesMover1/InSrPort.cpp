@@ -11,11 +11,15 @@ void InSrPort::onRead(Bottle& b) {
     switch ( b.get(0).asVocab() ) {
         case VOCAB_FOLLOW_ME:
             printf("follow\n");
-            inCvPortPtr->setFollow(true);
+            if( x > 50 ) iPositionControl->relativeMove(0, -2);
+            if( x < -50 ) iPositionControl->relativeMove(0, 2);
+            //
+            if( y > 50 ) iPositionControl->relativeMove(1, 2);
+            if( y < -50 ) iPositionControl->relativeMove(1, -2);
+
             break;
         case VOCAB_STOP_FOLLOWING:
             printf("stopFollowing\n");
-            inCvPortPtr->setFollow(false);
             break;
         default:
             break;

@@ -26,20 +26,8 @@ bool TextilesMover1::configure(ResourceFinder &rf) {
     }
 
     //
-    Property headOptions;
-    headOptions.put("device","remote_controlboard");
-    headOptions.put("local","/textilesMover1/head");
-    headOptions.put("remote","/teo/head");
-    headDevice.open(headOptions);
-    if( ! headDevice.isValid() ) {
-        printf("head remote_controlboard instantiation not worked.\n");
-        return false;
-    }
-    if( ! headDevice.view(iPositionControl) ) {
-        printf("view(iPositionControl) not worked.\n");
-        return false;
-    }
-    inCvPort.setIPositionControl(iPositionControl);
+    armDevice.open("/textilesMover1/rpc:o");
+    yarp::os::Network::connect("/textilesMover1/rpc:o","/teoCartesianServer/teo/leftArm/rpc:o");
 
     //-----------------OPEN LOCAL PORTS------------//
     inSrPort.setInCvPortPtr(&inCvPort);
