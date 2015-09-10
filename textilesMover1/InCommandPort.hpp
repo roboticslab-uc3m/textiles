@@ -9,6 +9,16 @@
 
 #define VOCAB_GO VOCAB2('g','o')
 
+// thanks! https://web.stanford.edu/~qianyizh/projects/scenedata.html
+#define DEFAULT_FX_D          525.0  // 640x480
+#define DEFAULT_FY_D          525.0  //
+#define DEFAULT_CX_D          319.5  //
+#define DEFAULT_CY_D          239.5  //
+#define DEFAULT_FX_RGB        525.0  //
+#define DEFAULT_FY_RGB        525.0  //
+#define DEFAULT_CX_RGB        319.5  //
+#define DEFAULT_CY_RGB        239.5  //
+
 using namespace yarp::os;
 
 namespace teo
