@@ -30,10 +30,10 @@ bool TextilesMover1::configure(ResourceFinder &rf) {
     yarp::os::Network::connect("/textilesMover1/rpc:o","/teoCartesianServer/teo/leftArm/rpc:o");
 
     //-----------------OPEN LOCAL PORTS------------//
-    inSrPort.setInCvPortPtr(&inCvPort);
+    inCommandPort.setInCvPortPtr(&inCvPort);
     inCvPort.useCallback();
-    inSrPort.useCallback();
-    inSrPort.open("/textilesMover1/dialogueManager/command:i");
+    inCommandPort.useCallback();
+    inCommandPort.open("/textilesMover1/command:i");
     inCvPort.open("/textilesMover1/cv/state:i");
 
     return true;
@@ -55,11 +55,11 @@ bool TextilesMover1::updateModule() {
 bool TextilesMover1::interruptModule() {
     printf("TextilesMover1 closing...\n");
     inCvPort.disableCallback();
-    inSrPort.disableCallback();
+    inCommandPort.disableCallback();
     inCvPort.interrupt();
-    inSrPort.interrupt();
+    inCommandPort.interrupt();
     inCvPort.close();
-    inSrPort.close();
+    inCommandPort.close();
     return true;
 }
 

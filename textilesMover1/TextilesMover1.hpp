@@ -7,7 +7,6 @@
 #include <yarp/dev/all.h>
 #include <stdlib.h>
 
-#include "InCvPort.hpp"
 #include "InSrPort.hpp"
 
 #define VOCAB_FOLLOW_ME VOCAB4('f','o','l','l')
@@ -29,8 +28,8 @@ class TextilesMover1 : public RFModule {
         bool configure(ResourceFinder &rf);
 
     protected:
-        InSrPort inSrPort;
-        InCvPort inCvPort;
+        InSrPort inCommandPort;
+        BufferedPort<Bottle> inCvPort;
         yarp::os::RpcClient armDevice;
 
         bool interruptModule();

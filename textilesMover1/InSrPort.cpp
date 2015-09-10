@@ -8,21 +8,15 @@ namespace teo
 /************************************************************************/
 
 void InSrPort::onRead(Bottle& b) {
-    switch ( b.get(0).asVocab() ) {
-        case VOCAB_FOLLOW_ME:
-            printf("follow\n");
-            if( x > 50 ) iPositionControl->relativeMove(0, -2);
-            if( x < -50 ) iPositionControl->relativeMove(0, 2);
-            //
-            if( y > 50 ) iPositionControl->relativeMove(1, 2);
-            if( y < -50 ) iPositionControl->relativeMove(1, -2);
-
-            break;
-        case VOCAB_STOP_FOLLOWING:
-            printf("stopFollowing\n");
-            break;
-        default:
-            break;
+    if( b.get(0).asString() == "go" )
+    {
+        Bottle* cvb = inCvPortPtr->read();
+        int x1 = cvb->get(0).asInt();
+        int y1 = cvb->get(1).asInt();
+        double z1 = cvb->get(2).asDouble();
+        int x2 = cvb->get(3).asInt();
+        int y2 = cvb->get(4).asInt();
+        double z2 = cvb->get(5).asDouble();
     }
 }
 
