@@ -19,6 +19,7 @@ from scipy import stats
 import copy
 import sys
 import math
+from scipy.spatial import distance
 
 # def
 from utils import load_data
@@ -168,6 +169,14 @@ def segment_extender(x_start, y_start, x_end, y_end):
     end = [x_end + (x_end-x_start), y_end + (y_end-y_start)]
     
     return [start, end]
+    
+    
+def segment_extender_twosides(x_start, y_start, x_end, y_end):
+    # 10 is just a number to assert long line cuts all image
+    start = [x_start - 10*(x_end-x_start), y_start - 10*(y_end-y_start)]
+    end = [x_end + 10*(x_end-x_start), y_end + 10*(y_end-y_start)]
+    
+    return [start, end]    
 #####################################################################
 #####################################################################
 #####################################################################
@@ -318,18 +327,83 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
     
     
 ############ SEGMENT EXTENDER
-    traj = segment_extender(final_extremes[0][0], final_extremes[0][1], 
+    # VARIABLE FOR FINAL POINTS (ONE IN SUPERPIXEL BORDER, THE OTHER IN IMAGE BORDER)    
+    extended_final_extremes = []    
+
+   # LONG LINE MASK 
+    # extending final_extremes a lot to be sure it cuts countour highest superpixel
+    long_line = segment_extender_twosides(final_extremes[0][0], final_extremes[0][1], 
                             final_extremes[1][0], final_extremes[1][1])
-    print "Trajectory: ", traj
     
-    # visualize trajectory
-#    line_mask = np.zeros(mask.shape,np.uint8)
-#    cv2.line(line_mask, (int(v[0][0]), int(v[0][1])), (int(v[1][0]), int(v[1][1])), 255)
+    # create line mask to posterior logical intersection with countour
+    line_mask = np.zeros(mask.shape,np.uint8)
+    cv2.line(line_mask, (int(long_line[0][0]), int(long_line[0][1])), 
+             (int(long_line[1][0]), int(long_line[1][1])), 255)    
+    
+    
+   # INITIAL POINT (INSIDE SUPERPIXEL)
+    # extracting countour highest superpixel
+    highest_region_mask = Superpixels.get_highest_superpixel(avg)
+    kernel = np.ones((5,5),np.uint8)
+    highest_region_mask_dilate = cv2.dilate(highest_region_mask,kernel,iterations = 1)
+    # only contour mask    
+    contour_superpixel_mask = highest_region_mask_dilate - highest_region_mask
+
+    # intersection long line and superpixel mask contour
+    intersection_img = np.logical_and( contour_superpixel_mask, line_mask )
 #    plt.figure()
-#    plt.imshow(line_mask, cmap=plt.cm.gray)
+#    plt.imshow(intersection_img, cmap=plt.cm.gray)
 #    plt.show()
+
+    # extracting countour centers (equivalent to extract intersection points)
+    (contours,_) =  cv2.findContours(img_as_ubyte(intersection_img),cv2.RETR_LIST,cv2.CHAIN_APPROX_SIMPLE)   
+    contour_intersect_points=[]
+    for i in range(len(contours)):
+        contour_intersect_points.append(np.average(contours[i], axis=0))
    
-###### FINAL SOLUTION AND PLOTTING
+    # deciding which one is the initial initial point  
+    if np.fabs(distance.euclidean(final_extremes[0],contour_intersect_points[0][0])) < \
+    np.fabs(distance.euclidean(final_extremes[1],contour_intersect_points[0][0])):
+        extended_final_extremes.append( (contour_intersect_points[0][0]).tolist() )
+        print "option 1 for initial point"
+    
+    else:
+        extended_final_extremes.append( (contour_intersect_points[1][0]).tolist()  )
+        print "option 2 for initial point"
+
+   # FINAL POINT (INSIDE IMAGE)
+    # reusing countour image and dilating
+    mask_dilate = cv2.dilate(mask,kernel,iterations = 1)
+
+    # only contour mask    
+    contour_mask = mask_dilate - mask    
+
+    # intersection long line and image mask contour
+    intersection_img_2 = np.logical_and( contour_mask, line_mask )
+
+    # extracting countour centers (equivalent to extract intersection points)    
+    (contours2,_) =  cv2.findContours(img_as_ubyte(intersection_img_2),cv2.RETR_LIST,cv2.CHAIN_APPROX_SIMPLE)   
+    contour_intersect_points2=[]
+    
+    for i in range(len(contours2)):
+        contour_intersect_points2.append(np.average(contours2[i], axis=0))
+
+    # deciding which one is the final point    
+    if np.fabs(distance.euclidean(final_extremes[0],contour_intersect_points2[0][0])) < \
+    np.fabs(distance.euclidean(final_extremes[1],contour_intersect_points2[0][0])):
+        extended_final_extremes.append( (contour_intersect_points2[1][0]).tolist() )
+        print "option 1 for final point"
+    
+    else:
+        extended_final_extremes.append( (contour_intersect_points2[0][0]).tolist()  )
+        print "option 2 for final point"
+
+
+    traj = segment_extender(extended_final_extremes[0][0], extended_final_extremes[0][1], 
+                            extended_final_extremes[1][0], extended_final_extremes[1][1])
+    
+    print "traj:", traj
+    ###### FINAL SOLUTION AND PLOTTING
     final_line = Superpixels.line_sampling_points(final_extremes[0], final_extremes[1], 1)
     fig, axis = plt.subplots(1, 1)
     axis.imshow(avg, cmap=plt.cm.gray)
@@ -344,6 +418,7 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
                final_extremes[1][1]-final_extremes[0][1], head_width=15, head_length=15, fc='red', ec='red')
                
     # trajectory
-    axis.arrow(traj[0][0], traj[0][1], traj[1][0] - traj[0][0], traj[1][1] - traj[0][1], 
+#    print int(traj[0][0]), int(traj[0][1]), int(traj[1][0]), int(traj[1][1])
+    axis.arrow(int(traj[0][0]), int(traj[0][1]), int(traj[1][0])-int(traj[0][0]), int(traj[1][1])-int(traj[0][1]), 
                head_width=15, head_length=15, fc='green', ec='green')               
 
