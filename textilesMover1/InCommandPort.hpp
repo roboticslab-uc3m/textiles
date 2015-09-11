@@ -10,6 +10,7 @@
 #include <kdl/frames.hpp>
 
 #define VOCAB_GO VOCAB2('g','o')
+#define VOCAB_MOVJ VOCAB4('m','o','v','j')
 
 // thanks! https://web.stanford.edu/~qianyizh/projects/scenedata.html
 #define DEFAULT_FX_D          525.0  // 640x480
@@ -38,8 +39,8 @@ class InCommandPort : public BufferedPort<Bottle> {
             this->inCvPortPtr = inCvPortPtr;
         }
 
-        void setIPositionControl(yarp::dev::IPositionControl *iPositionControl) {
-            this->iPositionControl = iPositionControl;
+        void setArmPortPtr(yarp::os::RpcClient *armPortPtr) {
+            this->armPortPtr = armPortPtr;
         }
 
     protected:
@@ -48,7 +49,8 @@ class InCommandPort : public BufferedPort<Bottle> {
 
         BufferedPort<Bottle>* inCvPortPtr;
 
-        yarp::dev::IPositionControl *iPositionControl;
+        yarp::os::RpcClient *armPortPtr;
+
 };
 
 }  // namespace teo

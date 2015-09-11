@@ -47,6 +47,9 @@ void InCommandPort::onRead(Bottle& b) {
         printf("H_root_point0: %f %f %f\n",H_root_point0.p.x(),H_root_point0.p.y(),H_root_point0.p.z());
         printf("H_root_point1: %f %f %f\n",H_root_point1.p.x(),H_root_point1.p.y(),H_root_point1.p.z());
 
+        Bottle out;
+        out.addVocab(VOCAB_MOVJ);
+        armPortPtr->write(out);
     }
 }
 

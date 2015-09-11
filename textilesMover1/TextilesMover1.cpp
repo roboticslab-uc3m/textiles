@@ -26,11 +26,12 @@ bool TextilesMover1::configure(ResourceFinder &rf) {
     }
 
     //
-    armDevice.open("/textilesMover1/rpc:o");
+    armPort.open("/textilesMover1/rpc:o");
     yarp::os::Network::connect("/textilesMover1/rpc:o","/teoCartesianServer/teo/leftArm/rpc:o");
 
     //-----------------OPEN LOCAL PORTS------------//
     inCommandPort.setInCvPortPtr(&inCvPort);
+    inCommandPort.setArmPortPtr(&armPort);
     inCommandPort.useCallback();
     inCommandPort.open("/textilesMover1/command:i");
     inCvPort.open("/textilesMover1/cv/state:i");
