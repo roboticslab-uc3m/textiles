@@ -7,6 +7,8 @@
 #include <yarp/dev/all.h>
 #include <stdlib.h>
 
+#include <kdl/frames.hpp>
+
 #define VOCAB_GO VOCAB2('g','o')
 
 // thanks! https://web.stanford.edu/~qianyizh/projects/scenedata.html

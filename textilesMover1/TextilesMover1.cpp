@@ -31,7 +31,6 @@ bool TextilesMover1::configure(ResourceFinder &rf) {
 
     //-----------------OPEN LOCAL PORTS------------//
     inCommandPort.setInCvPortPtr(&inCvPort);
-    inCvPort.useCallback();
     inCommandPort.useCallback();
     inCommandPort.open("/textilesMover1/command:i");
     inCvPort.open("/textilesMover1/cv/state:i");
@@ -54,7 +53,6 @@ bool TextilesMover1::updateModule() {
 
 bool TextilesMover1::interruptModule() {
     printf("TextilesMover1 closing...\n");
-    inCvPort.disableCallback();
     inCommandPort.disableCallback();
     inCvPort.interrupt();
     inCommandPort.interrupt();
