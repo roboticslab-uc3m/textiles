@@ -12,6 +12,9 @@
 #define VOCAB_GO VOCAB2('g','o')
 #define VOCAB_MOVJ VOCAB4('m','o','v','j')
 
+#define GRIPPER_OPEN 2000
+#define GRIPPER_CLOSE 2000
+
 // thanks! https://web.stanford.edu/~qianyizh/projects/scenedata.html
 #define DEFAULT_FX_D          525.0  // 640x480
 #define DEFAULT_FY_D          525.0  //
@@ -39,8 +42,11 @@ class InCommandPort : public BufferedPort<Bottle> {
             this->inCvPortPtr = inCvPortPtr;
         }
 
-        void setArmPortPtr(yarp::os::RpcClient *armPortPtr) {
-            this->armPortPtr = armPortPtr;
+        void setIPositionControl(yarp::dev::IPositionControl *iPositionControl) {
+            this->iPositionControl = iPositionControl;
+        }
+        void setCartesianPortPtr(yarp::os::RpcClient *cartesianPortPtr) {
+            this->cartesianPortPtr = cartesianPortPtr;
         }
 
     protected:
@@ -49,8 +55,11 @@ class InCommandPort : public BufferedPort<Bottle> {
 
         BufferedPort<Bottle>* inCvPortPtr;
 
-        yarp::os::RpcClient *armPortPtr;
+        yarp::os::RpcClient *cartesianPortPtr;
+        yarp::dev::IPositionControl *iPositionControl;
 
+        void movj(KDL::Frame& frame);
+        void gripper(const int& value);
 };
 
 }  // namespace teo

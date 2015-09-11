@@ -26,12 +26,26 @@ bool TextilesMover1::configure(ResourceFinder &rf) {
     }
 
     //
-    armPort.open("/textilesMover1/rpc:o");
+    Property options;
+    options.put("device","remote_controlboard");
+    options.put("remote","/teo/leftArm");
+    options.put("local","/local");
+    armDevice.open(options);
+    if(!armDevice.isValid()) {
+      printf("armDevice device not available.\n");
+      return 1;
+    }
+    if (! armDevice.view(iPositionControl) ) {
+        printf("[error] Problems acquiring robot interface\n");
+        return 1;
+    }
+    cartesianPort.open("/textilesMover1/cartesian/rpc:o");
     yarp::os::Network::connect("/textilesMover1/rpc:o","/teoCartesianServer/teo/leftArm/rpc:o");
 
     //-----------------OPEN LOCAL PORTS------------//
     inCommandPort.setInCvPortPtr(&inCvPort);
-    inCommandPort.setArmPortPtr(&armPort);
+    inCommandPort.setIPositionControl(iPositionControl);
+    inCommandPort.setCartesianPortPtr(&cartesianPort);
     inCommandPort.useCallback();
     inCommandPort.open("/textilesMover1/command:i");
     inCvPort.open("/textilesMover1/cv/state:i");
@@ -57,8 +71,11 @@ bool TextilesMover1::interruptModule() {
     inCommandPort.disableCallback();
     inCvPort.interrupt();
     inCommandPort.interrupt();
+    cartesianPort.interrupt();
+    armDevice.close();
     inCvPort.close();
     inCommandPort.close();
+    cartesianPort.close();
     return true;
 }
 

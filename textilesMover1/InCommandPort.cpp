@@ -28,7 +28,7 @@ void InCommandPort::onRead(Bottle& b) {
         KDL::Frame H_root_kinect;
         H_root_kinect.p.data[0] = 700; // x [mm]
         H_root_kinect.p.data[2] = 1205 - 55; // z [mm]
-        H_root_kinect.M = KDL::Rotation::RotY(M_PI);  // 180 deg
+        H_root_kinect.M = KDL::Rotation::RotY(M_PI);  // 180 deg, to point down
 
         KDL::Frame H_kinect_point0, H_kinect_point1;
         H_kinect_point0.p.data[0] = mmX0;
@@ -47,12 +47,50 @@ void InCommandPort::onRead(Bottle& b) {
         printf("H_root_point0: %f %f %f\n",H_root_point0.p.x(),H_root_point0.p.y(),H_root_point0.p.z());
         printf("H_root_point1: %f %f %f\n",H_root_point1.p.x(),H_root_point1.p.y(),H_root_point1.p.z());
 
-        Bottle out;
-        out.addVocab(VOCAB_MOVJ);
-        armPortPtr->write(out);
+        KDL::Frame H_root_point0_safe( H_root_point0 );
+        H_root_point0_safe.p.data[2] += 50;  // [mm]
+
+        gripper(GRIPPER_OPEN);
+
+        movj(H_root_point0_safe);
+        yarp::os::Time::delay(5);
+
+        movj(H_root_point0);
+        yarp::os::Time::delay(1);
+
+        gripper(GRIPPER_CLOSE);
+
+        movj(H_root_point0_safe);
+        yarp::os::Time::delay(1);
+
+
     }
 }
 
 /************************************************************************/
 
+void InCommandPort::movj(KDL::Frame& frame)
+{
+    KDL::Vector rotVector = frame.M.GetRot();
+    double angle = frame.M.GetRotAngle(rotVector);  // Normalizes as colateral effect
+    Bottle out;
+    out.addVocab(VOCAB_MOVJ);
+    out.addDouble(frame.p.x());
+    out.addDouble(frame.p.y());
+    out.addDouble(frame.p.z());
+    out.addDouble(rotVector[0]);
+    out.addDouble(rotVector[1]);
+    out.addDouble(rotVector[2]);
+    out.addDouble(angle);
+    cartesianPortPtr->write(out);
+}
+
+/************************************************************************/
+
+void InCommandPort::gripper(const int& value)
+{
+    iPositionControl->positionMove(6,value);
+}
+
+/************************************************************************/
 }  // namespace teo
