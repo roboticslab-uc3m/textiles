@@ -229,14 +229,22 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
 #    axes[1, 0].imshow(gradient, cmap=plt.cm.spectral, interpolation='nearest')
 #    axes[1, 1].imshow(labels, cmap=plt.cm.spectral, interpolation='nearest', alpha=.7)               
 #    plt.show()
+
+
+    fig, axes = plt.subplots(1,2)       
+    axes[0].imshow(image, cmap=plt.cm.gray, interpolation='nearest')
+    axes[1].imshow(labels, cmap=plt.cm.spectral, interpolation='nearest', alpha=.7)               
+    axes[0].set_xticks([]) 
+    axes[0].set_yticks([])                         
+    axes[1].set_xticks([]) 
+    axes[1].set_yticks([])                         
+    plt.show()
     
 
 ######### PATHS
     # calculate heights paths
     img_src= scaled_depth_map    
     avg = Superpixels.get_average_regions(img_src, labels)
-
-
 
 ######## HIGHEST POINT
     # Get highest_points 
@@ -253,6 +261,20 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
 
     profiles = []
     all_line_data=[]
+
+    idx_vp=0
+    for id, path in valid_paths:
+        if path:
+            idx_vp+=1
+
+
+    fig, ax = plt.subplots(idx_vp, 2)
+#    fig.set_size_inches(8, 3, forward=True)
+    fig.subplots_adjust(0.06, 0.08, 0.97, 0.91, 0.15, 0.05)    
+    ax[0, 0].set_title('Possible Paths')
+    ax[0, 1].set_title('Height Profile')
+  
+    idx_vp=0
     for id, path in valid_paths:
         if path:
             start = [p for p in path[0]]
@@ -263,15 +285,14 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
 
             without_white = [p for p in path_samples_avg if p != 255]
             profiles.append(without_white)  
+           
+            ax[idx_vp, 0].set_xticks([]) 
+            ax[idx_vp, 0].set_yticks([])                         
+            ax[idx_vp, 0].imshow(avg, cmap=plt.cm.gray)
+            ax[idx_vp, 0].plot(points[0], points[1], lw=3)
+            ax[idx_vp, 1].bar(range(len(without_white)), without_white, lw=0.5)
+            idx_vp+=1
 
-#            fig, ax = plt.subplots(1, 2)
-#            fig.set_size_inches(8, 3, forward=True)
-#            fig.subplots_adjust(0.06, 0.08, 0.97, 0.91, 0.15, 0.05)
-#            ax[0].set_title(str(id)+': sampled profiles')
-#            ax[0].bar(range(len(without_white)), without_white, 1)
-#            ax[1].set_title(str(id)+': sampling points')
-#            ax[1].imshow(avg, cmap=plt.cm.gray)
-#            ax[1].plot(points[0], points[1], 'b-')
 
 ###### SELECTING BEST DIRECTIONS
     adequacy = []
@@ -350,9 +371,6 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
 
     # intersection long line and superpixel mask contour
     intersection_img = np.logical_and( contour_superpixel_mask, line_mask )
-#    plt.figure()
-#    plt.imshow(intersection_img, cmap=plt.cm.gray)
-#    plt.show()
 
     # extracting countour centers (equivalent to extract intersection points)
     (contours,_) =  cv2.findContours(img_as_ubyte(intersection_img),cv2.RETR_LIST,cv2.CHAIN_APPROX_SIMPLE)   
@@ -406,6 +424,8 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
 #    final_line = Superpixels.line_sampling_points(final_extremes[0], final_extremes[1], 1)
     fig, axis = plt.subplots(1, 1)
     axis.imshow(avg, cmap=plt.cm.gray)
+    axis.set_xticks([]) 
+    axis.set_yticks([]) 
 
     # in case of direction composed by two vectors
 #    for i in range(len(selected_directions)):
@@ -414,10 +434,11 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
 #                   selected_directions[i][1][1]-selected_directions[i][0][1], head_width=15, head_length=15, fc='blue', ec='blue')    
     
     # final direction
-    axis.arrow(final_extremes[0][0], final_extremes[0][1], final_extremes[1][0]-final_extremes[0][0], 
-               final_extremes[1][1]-final_extremes[0][1], head_width=15, head_length=15, fc='red', ec='red')
-               
+#    axis.arrow(final_extremes[0][0], final_extremes[0][1], final_extremes[1][0]-final_extremes[0][0], 
+#               final_extremes[1][1]-final_extremes[0][1], head_width=15, head_length=15, 
+#                fc='red', ec='red', lw=5)
+#               
     # final trajectory
     axis.arrow(int(traj[0][0]), int(traj[0][1]), int(traj[1][0])-int(traj[0][0]), int(traj[1][1])-int(traj[0][1]), 
-               head_width=15, head_length=15, fc='green', ec='green')               
+               head_width=15, head_length=15, fc='blue', ec='blue', lw=5)               
 
