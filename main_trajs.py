@@ -398,13 +398,13 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
         extended_final_extremes.append( (contour_intersect_points2[0][0]).tolist()  )
         print "option 2 for final point"
 
-
+    # extending the segment out of the garment
     traj = segment_extender(extended_final_extremes[0][0], extended_final_extremes[0][1], 
                             extended_final_extremes[1][0], extended_final_extremes[1][1])
     
-    print "traj:", traj
-    ###### FINAL SOLUTION AND PLOTTING
-    final_line = Superpixels.line_sampling_points(final_extremes[0], final_extremes[1], 1)
+    ###### PLOTTING
+    # in case you need to sample a segment
+#    final_line = Superpixels.line_sampling_points(final_extremes[0], final_extremes[1], 1)
     fig, axis = plt.subplots(1, 1)
     axis.imshow(avg, cmap=plt.cm.gray)
 
@@ -418,7 +418,6 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
                final_extremes[1][1]-final_extremes[0][1], head_width=15, head_length=15, fc='red', ec='red')
                
     # trajectory
-#    print int(traj[0][0]), int(traj[0][1]), int(traj[1][0]), int(traj[1][1])
     axis.arrow(int(traj[0][0]), int(traj[0][1]), int(traj[1][0])-int(traj[0][0]), int(traj[1][1])-int(traj[0][1]), 
                head_width=15, head_length=15, fc='green', ec='green')               
 
