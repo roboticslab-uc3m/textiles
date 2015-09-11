@@ -325,7 +325,6 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
     final_extremes = selected_directions[0]
     print "Final Direction: ", final_extremes
     
-    
 ############ SEGMENT EXTENDER
     # VARIABLE FOR FINAL POINTS (ONE IN SUPERPIXEL BORDER, THE OTHER IN IMAGE BORDER)    
     extended_final_extremes = []    
@@ -408,16 +407,17 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
     fig, axis = plt.subplots(1, 1)
     axis.imshow(avg, cmap=plt.cm.gray)
 
-    for i in range(len(selected_directions)):
-        axis.arrow(selected_directions[i][0][0], selected_directions[i][0][1], 
-                   selected_directions[i][1][0]-selected_directions[i][0][0], 
-                   selected_directions[i][1][1]-selected_directions[i][0][1], head_width=15, head_length=15, fc='blue', ec='blue')    
+    # in case of direction composed by two vectors
+#    for i in range(len(selected_directions)):
+#        axis.arrow(selected_directions[i][0][0], selected_directions[i][0][1], 
+#                   selected_directions[i][1][0]-selected_directions[i][0][0], 
+#                   selected_directions[i][1][1]-selected_directions[i][0][1], head_width=15, head_length=15, fc='blue', ec='blue')    
     
-    # direction
+    # final direction
     axis.arrow(final_extremes[0][0], final_extremes[0][1], final_extremes[1][0]-final_extremes[0][0], 
                final_extremes[1][1]-final_extremes[0][1], head_width=15, head_length=15, fc='red', ec='red')
                
-    # trajectory
+    # final trajectory
     axis.arrow(int(traj[0][0]), int(traj[0][1]), int(traj[1][0])-int(traj[0][0]), int(traj[1][1])-int(traj[0][1]), 
                head_width=15, head_length=15, fc='green', ec='green')               
 
