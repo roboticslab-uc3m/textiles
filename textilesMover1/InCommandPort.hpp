@@ -13,7 +13,7 @@
 #define VOCAB_MOVJ VOCAB4('m','o','v','j')
 
 #define GRIPPER_OPEN 2000
-#define GRIPPER_CLOSE 2000
+#define GRIPPER_CLOSE -2000
 
 // thanks! https://web.stanford.edu/~qianyizh/projects/scenedata.html
 #define DEFAULT_FX_D          525.0  // 640x480
