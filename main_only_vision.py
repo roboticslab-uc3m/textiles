@@ -99,7 +99,7 @@ def normalize_1Channel_image(image):
 
     return scaled_depth_map
     
-def calculate_adequacy(profile, selection):
+def calculate_bumpiness(profile, selection):
     var=0
     if selection==1:
         for i in range(1,len(profile)):            
@@ -221,15 +221,15 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
 #            ax[1].plot(points[0], points[1], 'b-')
 
 ###### SELECTING BEST DIRECTIONS
-    adequacy = []
+    bumpiness = []
 
     for elem in profiles:
-        adequacy.append(calculate_adequacy(elem,1))
+        bumpiness.append(calculate_bumpiness(elem,1))
    
-    print "Adequacy:", adequacy
+    print "bumpiness:", bumpiness
     selected_directions=[]
     ### ASSUMING ONLY ONE DIRECTIONS FOR NOW (UNTIL WE CAME UP WITH ANOTHER STRATEGY)
-    selected_directions.append(all_line_data[ np.argmin(adequacy) ])          
+    selected_directions.append(all_line_data[ np.argmin(bumpiness) ])          
     
     final_extremes = selected_directions[0]
     print "Final Direction: ", final_extremes

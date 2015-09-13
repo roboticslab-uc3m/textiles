@@ -109,23 +109,13 @@ def normalize_1Channel_image(image):
 #    cv2.imshow("scaled", scaled_depth_map)
     return scaled_depth_map
     
-def calculate_adequacy(profile, selection):
+def calculate_bumpiness(profile, selection):
     var=0
     if selection==1:
         for i in range(1,len(profile)):            
-#            # cast to int becasue they were unit8 and failed to substract them
+#            # cast to int because they were unit8 and failed to substract them
             var+=np.abs(int(profile[i])-int(profile[i-1]))
         return var
- 
-    if selection==2:
-        return np.sum(profile)
-  
-    if selection==3:
-        return np.sum(profile)
-
-    if selection==4:
-        return np.sum(profile)
-  
     else:
         return False
     
@@ -231,14 +221,14 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
 #    plt.show()
 
 
-    fig, axes = plt.subplots(1,2)       
-    axes[0].imshow(image, cmap=plt.cm.gray, interpolation='nearest')
-    axes[1].imshow(labels, cmap=plt.cm.spectral, interpolation='nearest', alpha=.7)               
-    axes[0].set_xticks([]) 
-    axes[0].set_yticks([])                         
-    axes[1].set_xticks([]) 
-    axes[1].set_yticks([])                         
-    plt.show()
+#    fig, axes = plt.subplots(1,2)       
+#    axes[0].imshow(image, cmap=plt.cm.gray, interpolation='nearest')
+#    axes[1].imshow(labels, cmap=plt.cm.spectral, interpolation='nearest', alpha=.7)               
+#    axes[0].set_xticks([]) 
+#    axes[0].set_yticks([])                         
+#    axes[1].set_xticks([]) 
+#    axes[1].set_yticks([])                         
+#    plt.show()
     
 
 ######### PATHS
@@ -295,19 +285,19 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
 
 
 ###### SELECTING BEST DIRECTIONS
-    adequacy = []
+    bumpiness = []
 
     for elem in profiles:
-        adequacy.append(calculate_adequacy(elem,1))
+        bumpiness.append(calculate_bumpiness(elem,1))
    
-    print "Adequacy:", adequacy
+    print "bumpiness:", bumpiness
     selected_directions=[]
     ### ASSUMING ONLY ONE DIRECTIONS FOR NOW (UNTIL WE CAME UP WITH ANOTHER STRATEGY)
-    selected_directions.append(all_line_data[ np.argmin(adequacy) ])          
+    selected_directions.append(all_line_data[ np.argmin(bumpiness) ])          
 
 ###### AVERAGING DIRECTIONS
 ################## TO BE IMPROVED    
-#    boolzscores, zscores = get_outlier(adequacy, thresh=ALPHA)
+#    boolzscores, zscores = get_outlier(bumpiness, thresh=ALPHA)
 #    print "[INFO] Detected outliers: ", boolzscores, zscores
 #    plot_zscores(ALPHA, zscores)
 #
