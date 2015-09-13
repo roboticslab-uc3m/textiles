@@ -71,13 +71,13 @@ public:
      * @param delta relative command
      * @return true/false on success/failure
      */
-    virtual bool relativeMove(int j, double delta);
+    virtual bool relativeMove(int j, double delta) { return true; }
 
     /** Set relative position, all joints.
      * @param deltas pointer to the relative commands
      * @return true/false on success/failure
      */
-    virtual bool relativeMove(const double *deltas);
+    virtual bool relativeMove(const double *deltas) { return true; }
 
     /** Check if the current trajectory is terminated. Non blocking.
      * @param j is the axis number
@@ -85,14 +85,14 @@ public:
      * @return true/false on network communication (value you actually want
         is stored in *flag)
      */
-    virtual bool checkMotionDone(int j, bool *flag);
+    virtual bool checkMotionDone(int j, bool *flag) { return true; }
 
     /** Check if the current trajectory is terminated. Non blocking.
      * @param flag is a pointer to return value ("and" of all joints)
      * @return true/false on network communication (value you actually want
         is stored in *flag)
      */
-    virtual bool checkMotionDone(bool *flag);
+    virtual bool checkMotionDone(bool *flag) { return true; }
 
     /** Set reference speed for a joint, this is the speed used during the
      * interpolation of the trajectory.
@@ -100,14 +100,14 @@ public:
      * @param sp speed value
      * @return true/false upon success/failure
      */
-    virtual bool setRefSpeed(int j, double sp);
+    virtual bool setRefSpeed(int j, double sp) { return true; }
 
     /** Set reference speed on all joints. These values are used during the
      * interpolation of the trajectory.
      * @param spds pointer to the array of speed values.
      * @return true/false upon success/failure
      */
-    virtual bool setRefSpeeds(const double *spds);
+    virtual bool setRefSpeeds(const double *spds) { return true; }
 
     /** Set reference acceleration for a joint. This value is used during the
      * trajectory generation.
@@ -115,14 +115,14 @@ public:
      * @param acc acceleration value
      * @return true/false upon success/failure
      */
-    virtual bool setRefAcceleration(int j, double acc);
+    virtual bool setRefAcceleration(int j, double acc) { return true; }
 
     /** Set reference acceleration on all joints. This is the valure that is
      * used during the generation of the trajectory.
      * @param accs pointer to the array of acceleration values
      * @return true/false upon success/failure
      */
-    virtual bool setRefAccelerations(const double *accs);
+    virtual bool setRefAccelerations(const double *accs) { return true; }
 
     /** Get reference speed for a joint. Returns the speed used to
      * generate the trajectory profile.
@@ -130,13 +130,13 @@ public:
      * @param ref pointer to storage for the return value
      * @return true/false on success or failure
      */
-    virtual bool getRefSpeed(int j, double *ref);
+    virtual bool getRefSpeed(int j, double *ref) { return true; }
 
     /** Get reference speed of all joints. These are the  values used during the
      * interpolation of the trajectory.
      * @param spds pointer to the array that will store the speed values.
      */
-    virtual bool getRefSpeeds(double *spds);
+    virtual bool getRefSpeeds(double *spds) { return true; }
 
     /** Get reference acceleration for a joint. Returns the acceleration used to
      * generate the trajectory profile.
@@ -144,25 +144,25 @@ public:
      * @param acc pointer to storage for the return value
      * @return true/false on success/failure
      */
-    virtual bool getRefAcceleration(int j, double *acc);
+    virtual bool getRefAcceleration(int j, double *acc) { return true; }
 
     /** Get reference acceleration of all joints. These are the values used during the
      * interpolation of the trajectory.
      * @param accs pointer to the array that will store the acceleration values.
      * @return true/false on success or failure
      */
-    virtual bool getRefAccelerations(double *accs);
+    virtual bool getRefAccelerations(double *accs) { return true; }
 
     /** Stop motion, single joint
      * @param j joint number
      * @return true/false on success/failure
      */
-    virtual bool stop(int j);
+    virtual bool stop(int j) { return true; }
 
     /** Stop motion, multiple joints
      * @return true/false on success/failure
      */
-    virtual bool stop();
+    virtual bool stop() { return true; }
 
 
 // -- Helper Funcion declarations. Implementation in HelperFuncs.cpp --

@@ -4,7 +4,7 @@
 
 cmake_minimum_required(VERSION 2.6)
 
-YARP_PREPARE_DEVICE(TextilesHand TYPE TextilesHand INCLUDE TextilesHand.h WRAPPER controlboard)
+YARP_PREPARE_DEVICE(TextilesHand TYPE TextilesHand INCLUDE TextilesHand.hpp WRAPPER controlboard)
 
 #IF (NOT SKIP_TextilesHand)
 

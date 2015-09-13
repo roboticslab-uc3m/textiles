@@ -32,12 +32,13 @@ bool TextilesHand::getAxes(int *axes) {
 bool TextilesHand::positionMove(int j, double ref) {
     printf("[TextilesHand] velocityMove(%d, %f)\n",j,ref);
     if (j>DEFAULT_NUM_MOTORS) return false;
-    unsigned char cmdByte = (unsigned int)ref/46;  // 3000/64 = 46; usamos 6 bits -> 64
-    //printf("cmdByte (pre-dir): 0x%x\n",cmdByte);
-    unsigned char direccion = j;
-    direccion <<= 6;  // shift 6 positions
-    cmdByte |= direccion;
-    //printf("cmdByte (post-dir): 0x%x\n",cmdByte);
+    unsigned char cmdByte;
+    if (ref == 0)
+        cmdByte = 'a';
+    else if (ref == 1)
+        cmdByte = 'b';
+    else
+        return false;
     int res = serialport_writebyte(fd, cmdByte);
     if(res==-1) return false;
     return true;
@@ -53,38 +54,3 @@ bool TextilesHand::positionMove(const double *refs) {
 }
 
 // -----------------------------------------------------------------------------
-
-bool TextilesHand::setRefAcceleration(int j, double acc) {
-    return false;
-}
-
-// -----------------------------------------------------------------------------
-
-bool TextilesHand::setRefAccelerations(const double *accs) {
-    return false;
-}
-
-// -----------------------------------------------------------------------------
-
-bool TextilesHand::getRefAcceleration(int j, double *acc) {
-    return false;
-}
-
-// -----------------------------------------------------------------------------
-
-bool TextilesHand::getRefAccelerations(double *accs) {
-    return false;
-}
-
-// -----------------------------------------------------------------------------
-
-bool TextilesHand::stop(int j) {
-    return false;
-}
-
-// -----------------------------------------------------------------------------
-
-bool TextilesHand::stop() {
-    return false;
-}
-
