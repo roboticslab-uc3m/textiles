@@ -29,16 +29,10 @@ bool TextilesHand::getAxes(int *axes) {
 
 // -----------------------------------------------------------------------------
 
-bool TextilesHand::setVelocityMode() {
-    return false;
-}
-
-// -----------------------------------------------------------------------------
-
-bool TextilesHand::velocityMove(int j, double sp) {
-    printf("[TextilesHand] velocityMove(%d, %f)\n",j,sp);
+bool TextilesHand::positionMove(int j, double ref) {
+    printf("[TextilesHand] velocityMove(%d, %f)\n",j,ref);
     if (j>DEFAULT_NUM_MOTORS) return false;
-    unsigned char cmdByte = (unsigned int)sp/46;  // 3000/64 = 46; usamos 6 bits -> 64
+    unsigned char cmdByte = (unsigned int)ref/46;  // 3000/64 = 46; usamos 6 bits -> 64
     //printf("cmdByte (pre-dir): 0x%x\n",cmdByte);
     unsigned char direccion = j;
     direccion <<= 6;  // shift 6 positions
@@ -51,10 +45,10 @@ bool TextilesHand::velocityMove(int j, double sp) {
 
 // -----------------------------------------------------------------------------
 
-bool TextilesHand::velocityMove(const double *sp) {
+bool TextilesHand::positionMove(const double *refs) {
     bool ok = true;
     for(int i=0;i<DEFAULT_NUM_MOTORS;i++)
-        ok &= velocityMove(i,sp[i]);
+        ok &= positionMove(i,refs[i]);
     return ok;
 }
 
