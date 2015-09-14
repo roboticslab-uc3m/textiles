@@ -89,7 +89,7 @@ void InCommandPort::movj(KDL::Frame& frame)
 
 void InCommandPort::gripper(const int& value)
 {
-    iPositionControl->positionMove(6,value);
+    iPositionControl->positionMove(0,value);
 }
 
 /************************************************************************/

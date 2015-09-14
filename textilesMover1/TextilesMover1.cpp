@@ -28,14 +28,14 @@ bool TextilesMover1::configure(ResourceFinder &rf) {
     //
     Property options;
     options.put("device","remote_controlboard");
-    options.put("remote","/teo/leftArm");
+    options.put("remote","/controlboard");
     options.put("local","/local");
-    armDevice.open(options);
-    if(!armDevice.isValid()) {
+    handDevice.open(options);
+    if(!handDevice.isValid()) {
       printf("armDevice device not available.\n");
       return 1;
     }
-    if (! armDevice.view(iPositionControl) ) {
+    if (! handDevice.view(iPositionControl) ) {
         printf("[error] Problems acquiring robot interface\n");
         return 1;
     }
@@ -72,7 +72,7 @@ bool TextilesMover1::interruptModule() {
     inCvPort.interrupt();
     inCommandPort.interrupt();
     cartesianPort.interrupt();
-    armDevice.close();
+    handDevice.close();
     inCvPort.close();
     inCommandPort.close();
     cartesianPort.close();
