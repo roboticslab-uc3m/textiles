@@ -82,6 +82,8 @@ void InCommandPort::movj(KDL::Frame& frame)
     out.addDouble(rotVector[1]);
     out.addDouble(rotVector[2]);
     out.addDouble(angle);
+    out.addString("wait");
+    out.addInt(1);
     cartesianPortPtr->write(out);
 }
 
