@@ -167,6 +167,8 @@ def segment_extender_twosides(x_start, y_start, x_end, y_end):
     end = [x_end + 10*(x_end-x_start), y_end + 10*(y_end-y_start)]
     
     return [start, end]    
+    
+        
 #####################################################################
 #####################################################################
 #####################################################################
@@ -258,13 +260,14 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
             idx_vp+=1
 
 
-    fig, ax = plt.subplots(idx_vp, 2)
-#    fig.set_size_inches(8, 3, forward=True)
-    fig.subplots_adjust(0.06, 0.08, 0.97, 0.91, 0.15, 0.05)    
-    ax[0, 0].set_title('Possible Paths')
-    ax[0, 1].set_title('Height Profile')
+#    fig, ax = plt.subplots(idx_vp, 2)
+##    fig.set_size_inches(8, 3, forward=True)
+#    fig.subplots_adjust(0.06, 0.08, 0.97, 0.91, 0.15, 0.05)    
+#    ax[0, 0].set_title('Possible Paths')
+#    ax[0, 1].set_title('Height Profile')
   
     idx_vp=0
+    edges_to_profiles = {}
     for id, path in valid_paths:
         if path:
             start = [p for p in path[0]]
@@ -276,12 +279,13 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
             without_white = [p for p in path_samples_avg if p != 255]
             profiles.append(without_white)  
            
-            ax[idx_vp, 0].set_xticks([]) 
-            ax[idx_vp, 0].set_yticks([])                         
-            ax[idx_vp, 0].imshow(avg, cmap=plt.cm.gray)
-            ax[idx_vp, 0].plot(points[0], points[1], lw=3)
-            ax[idx_vp, 1].bar(range(len(without_white)), without_white, lw=0.5)
+#            ax[idx_vp, 0].set_xticks([]) 
+#            ax[idx_vp, 0].set_yticks([])                         
+#            ax[idx_vp, 0].imshow(avg, cmap=plt.cm.gray)
+#            ax[idx_vp, 0].plot(points[0], points[1], lw=3)
+#            ax[idx_vp, 1].bar(range(len(without_white)), without_white, lw=0.5)
             idx_vp+=1
+            edges_to_profiles[len(profiles)-1] = id
 
 
 ###### SELECTING BEST DIRECTIONS
@@ -340,10 +344,23 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
     # VARIABLE FOR FINAL POINTS (ONE IN SUPERPIXEL BORDER, THE OTHER IN IMAGE BORDER)    
     extended_final_extremes = []    
 
+    # PROTOLINE
+
+    from intersect import perp, line_intersect
+    
+    id_segment = edges_to_profiles[np.argmin(bumpiness)]
+
+    perp_vector = perp(np.array(contour_segments[id_segment][1])-np.array(contour_segments[id_segment][0]))
+    intersect_fold_axis = line_intersect(np.array(contour_segments[id_segment][0]),
+                                         np.array(contour_segments[id_segment][1]),
+                                         np.array(final_extremes[0]),
+                                         np.array(final_extremes[0])+perp_vector)
+
+
    # LONG LINE MASK 
     # extending final_extremes a lot to be sure it cuts countour highest superpixel
     long_line = segment_extender_twosides(final_extremes[0][0], final_extremes[0][1], 
-                            final_extremes[1][0], final_extremes[1][1])
+                            intersect_fold_axis[0], intersect_fold_axis[1])
     
     # create line mask to posterior logical intersection with countour
     line_mask = np.zeros(mask.shape,np.uint8)
@@ -424,11 +441,19 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
 #                   selected_directions[i][1][1]-selected_directions[i][0][1], head_width=15, head_length=15, fc='blue', ec='blue')    
     
     # final direction
-#    axis.arrow(final_extremes[0][0], final_extremes[0][1], final_extremes[1][0]-final_extremes[0][0], 
-#               final_extremes[1][1]-final_extremes[0][1], head_width=15, head_length=15, 
-#                fc='red', ec='red', lw=5)
-#               
+    axis.arrow(final_extremes[0][0], final_extremes[0][1], final_extremes[1][0]-final_extremes[0][0], 
+               final_extremes[1][1]-final_extremes[0][1], head_width=15, head_length=15, 
+                fc='pink', ec='pink', lw=5)
+               
     # final trajectory
     axis.arrow(int(traj[0][0]), int(traj[0][1]), int(traj[1][0])-int(traj[0][0]), int(traj[1][1])-int(traj[0][1]), 
                head_width=15, head_length=15, fc='blue', ec='blue', lw=5)               
 
+    axis.arrow(int(traj[0][0]), int(traj[0][1]), int(perp_vector[0]), int(perp_vector[1]), 
+               head_width=15, head_length=15, fc='green', ec='green', lw=5)  
+               
+    axis.arrow(int(contour_segments[id_segment][0][0]), int(contour_segments[id_segment][0][1]), int(contour_segments[id_segment][1][0])-int(contour_segments[id_segment][0][0]), int(contour_segments[id_segment][1][1])-int(contour_segments[id_segment][0][1]), 
+               head_width=15, head_length=15, fc='yellow', ec='yellow', lw=5) 
+    
+    axis.plot(intersect_fold_axis[0],intersect_fold_axis[1], 'r*')
+    axis.plot([x[0][0] for x in approx], [x[0][1] for x in approx], 'r-*')
