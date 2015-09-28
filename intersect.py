@@ -12,6 +12,16 @@ def perp( a ) :
     b[1] = a[0]
     return b
 
+
+def line_intersect(a1, a2, b1, b2):
+    da = a2-a1
+    db = b2-b1
+    dp = a1-b1
+    dap = perp(da)
+    denom = np.dot( dap, db)
+    num = np.dot( dap, dp )
+    return (num / denom.astype(float))*db + b1
+    
 # line segment a given by endpoints a1, a2
 # line segment b given by endpoints b1, b2
 # return
@@ -19,13 +29,7 @@ def seg_intersect(a1,a2, b1,b2) :
     with warnings.catch_warnings():
         warnings.filterwarnings('error')
         try:
-            da = a2-a1
-            db = b2-b1
-            dp = a1-b1
-            dap = perp(da)
-            denom = np.dot( dap, db)
-            num = np.dot( dap, dp )
-            intersection = (num / denom.astype(float))*db + b1
+            intersection = line_intersect(a1, a2, b1, b2)
             # print 'Intersection: ' + str(intersection)
 
             # Check if intersection found is within limits to ensure that belongs to segment
