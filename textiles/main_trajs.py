@@ -254,10 +254,10 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
     profiles = []
     all_line_data=[]
 
-    idx_vp=0
+    index_valid_path=0
     for id, path in valid_paths:
         if path:
-            idx_vp+=1
+            index_valid_path+=1
 
 
 #    fig, ax = plt.subplots(idx_vp, 2)
@@ -266,7 +266,7 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
 #    ax[0, 0].set_title('Possible Paths')
 #    ax[0, 1].set_title('Height Profile')
   
-    idx_vp=0
+    index_valid_path=0
     edges_to_profiles = {}
     for id, path in valid_paths:
         if path:
@@ -284,7 +284,7 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
 #            ax[idx_vp, 0].imshow(avg, cmap=plt.cm.gray)
 #            ax[idx_vp, 0].plot(points[0], points[1], lw=3)
 #            ax[idx_vp, 1].bar(range(len(without_white)), without_white, lw=0.5)
-            idx_vp+=1
+            index_valid_path+=1
             edges_to_profiles[len(profiles)-1] = id
 
 
