@@ -113,7 +113,7 @@ def calculate_bumpiness(profile, selection):
     var=0
     if selection==1:
         for i in range(1,len(profile)):            
-#            # cast to int because they were unit8 and failed to substract them
+            # cast to int because they were unit8 and failed to substract them
             var+=np.abs(int(profile[i])-int(profile[i-1]))
         return var
     else:
@@ -289,15 +289,12 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
 
 
 ###### SELECTING BEST DIRECTIONS
-    bumpiness = []
-
-    for elem in profiles:
-        bumpiness.append(calculate_bumpiness(elem,1))
-   
+    bumpiness = [calculate_bumpiness(elem,1) for elem in profiles]
     print "bumpiness:", bumpiness
-    selected_directions=[]
+
     ### ASSUMING ONLY ONE DIRECTIONS FOR NOW (UNTIL WE CAME UP WITH ANOTHER STRATEGY)
-    selected_directions.append(all_line_data[ np.argmin(bumpiness) ])          
+    selected_directions=[all_line_data[ np.argmin(bumpiness) ]]
+
 
 ###### AVERAGING DIRECTIONS
 ################## TO BE IMPROVED    
