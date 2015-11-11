@@ -6,7 +6,9 @@
 #include <pcl/console/parse.h>
 #include <pcl/common/transforms.h>
 #include <pcl/visualization/pcl_visualizer.h>
-
+#include <pcl/point_types.h>
+#include <pcl/features/normal_3d.h>
+#include <pcl/filters/filter.h>
 
 void show_usage(char * program_name)
 {
@@ -69,15 +71,30 @@ int main(int argc, char* argv[])
 
 
     //-- Stuff goes on here
+    //-- Find normals
+    pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> normalEstimator;
+    pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>());
+    pcl::PointCloud<pcl::Normal>::Ptr cloud_normals(new pcl::PointCloud<pcl::Normal>);
 
+    normalEstimator.setInputCloud(source_cloud);
+    normalEstimator.setSearchMethod(tree);
+    normalEstimator.setRadiusSearch(3);
+    normalEstimator.compute(*cloud_normals);
+    std::cout << "Found: " << cloud_normals->size() << " normals." << std::endl;
+    pcl::PointCloud<pcl::Normal>::Ptr filtered_normals(new pcl::PointCloud<pcl::Normal>);
+    std::vector<int> new_ordering;
+    pcl::removeNaNNormalsFromPointCloud(*cloud_normals, *filtered_normals, new_ordering);
+    std::cout << "After NaN removal: " << filtered_normals->size() << " normals." << std::endl;
 
     //-- Visualization Setup
     pcl::visualization::PCLVisualizer viewer("Folding clothes");
     pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> cloud_color_handler(source_cloud, 255, 0, 0);
     viewer.addPointCloud(source_cloud, cloud_color_handler, "loaded_point_cloud");
+    viewer.addPointCloudNormals<pcl::PointXYZ, pcl::Normal> (source_cloud, cloud_normals, 1, 0.8, "normals");
     viewer.addCoordinateSystem(1.0, "cloud", 0);
     viewer.setBackgroundColor(0.05, 0.05, 0.05, 0);
     viewer.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 2, "loaded_point_cloud");
+    viewer.setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_COLOR, 0, 0, 255, "normals");
 
     //-- Visualization thread
     while(!viewer.wasStopped())
