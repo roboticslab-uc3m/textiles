@@ -15,6 +15,9 @@
 #include <pcl/sample_consensus/method_types.h>
 #include <pcl/sample_consensus/model_types.h>
 #include <pcl/segmentation/sac_segmentation.h>
+//-- Contours
+#include <pcl/filters/extract_indices.h>
+
 
 void show_usage(char * program_name)
 {
@@ -116,6 +119,38 @@ int main(int argc, char* argv[])
         std::cout << "Model inliers: " << inliers->indices.size() << std::endl;
     }
 
+    //-- Look for contour (JGVictores suggested method)
+    Eigen::Vector3f plane_normal(coefficients->values[0], coefficients->values[1], coefficients->values[2]);
+    double plane_normal_norm = plane_normal.norm();
+    std::vector<int> contour_points_indices;
+
+    double threshold = 5; //-- In degrees
+    double lower_limit = sin(-threshold*M_PI/180.0);
+    double upper_limit = sin(threshold*M_PI/180.0);
+    std::cout << "With a threshold of " << threshold << " degrees, limits are: (" << lower_limit << ", " << upper_limit
+              << ")" << std::endl;
+
+    for (int i = 0; i < filtered_normals->size(); i++)
+    {
+        Eigen::Vector3f point_normal(filtered_normals->at(i).normal[0], filtered_normals->at(i).normal[1], filtered_normals->at(i).normal[2]);
+        double point_normal_norm = point_normal.norm();
+
+        double scalar_product = (plane_normal.dot(point_normal))/(plane_normal_norm*point_normal_norm);
+        if (lower_limit <= scalar_product && scalar_product <= upper_limit )
+            contour_points_indices.push_back(new_ordering[i]);
+    }
+
+    std::cout << "Obtained " << contour_points_indices.size() << " contour points." << std::endl;
+
+    //-- Get points from the contour
+    pcl::PointCloud<pcl::PointXYZ>::Ptr contour_points(new pcl::PointCloud<pcl::PointXYZ>);
+    boost::shared_ptr<std::vector<int> > contour_indices (new std::vector<int> (contour_points_indices));
+    pcl::ExtractIndices<pcl::PointXYZ> extract_indices;
+    extract_indices.setInputCloud(source_cloud);
+    extract_indices.setIndices(contour_indices);
+    extract_indices.setNegative(false);
+    extract_indices.filter(*contour_points);
+
     //-- Visualization Setup
     pcl::visualization::PCLVisualizer viewer("Folding clothes");
     pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> cloud_color_handler(source_cloud, 255, 0, 0);
@@ -140,10 +175,18 @@ int main(int argc, char* argv[])
     //viewer.addPlane(*coefficients,"ransac_plane");
     //viewer.setShapeRenderingProperties(pcl::visualization::PCL_VISUALIZER_COLOR, 0, 255, 0, "ransac_plane");
 
+    //-- View contours
+    pcl::visualization::PCLVisualizer viewer2("Contour");
+    viewer2.addCoordinateSystem(1.0, "cloud", 0);
+    viewer2.setBackgroundColor(0.05, 0.05, 0.05, 0);
+    viewer2.addPointCloud(contour_points, cloud_color_handler, "contour_points");
+    viewer2.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 2, "contour_points");
+
     //-- Visualization thread
-    while(!viewer.wasStopped())
+    while(!viewer.wasStopped() && !viewer2.wasStopped())
     {
         viewer.spinOnce();
+        viewer2.spinOnce();
     }
 
     return 0;
