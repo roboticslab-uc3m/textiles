@@ -24,16 +24,40 @@ void show_usage(char * program_name)
   std::cout << std::endl;
   std::cout << "Usage: " << program_name << " cloud_filename.[pcd|ply]" << std::endl;
   std::cout << "-h:  Show this help." << std::endl;
+  std::cout << "-b, --background:  Background points size (default: 1)" << std::endl;
+  std::cout << "-f, --foreground:  Foreground points size (default: 5)" << std::endl;
+  std::cout << "-t, --threshold:  Angular threshold for contour points (default: 5º)" << std::endl;
 }
 
 int main(int argc, char* argv[])
 {
+    //-- Main program parameters (default values)
+    int viewer_point_size_background = 1;
+    int viewer_point_size_foreground = 5;
+    double threshold = 5; //-- In degrees
+
     //-- Show usage
     if (pcl::console::find_switch(argc, argv, "-h") || pcl::console::find_switch(argc, argv, "--help"))
     {
         show_usage(argv[0]);
         return 0;
     }
+
+    //-- Check for parameters in arguments
+    if (pcl::console::find_switch(argc, argv, "-b"))
+        pcl::console::parse_argument(argc, argv, "-b", viewer_point_size_background);
+    else if (pcl::console::find_switch(argc, argv, "--background"))
+        pcl::console::parse_argument(argc, argv, "--background", viewer_point_size_background);
+
+    if (pcl::console::find_switch(argc, argv, "-f"))
+        pcl::console::parse_argument(argc, argv, "-f", viewer_point_size_foreground);
+    else if (pcl::console::find_switch(argc, argv, "--foreground"))
+        pcl::console::parse_argument(argc, argv, "--foreground", viewer_point_size_foreground);
+
+    if (pcl::console::find_switch(argc, argv, "-t"))
+        pcl::console::parse_argument(argc, argv, "-t", threshold);
+    else if (pcl::console::find_switch(argc, argv, "--threshold"))
+        pcl::console::parse_argument(argc, argv, "--threshold", threshold);
 
     //-- Get point cloud file from arguments
     std::vector<int> filenames;
@@ -55,6 +79,13 @@ int main(int argc, char* argv[])
             file_is_pcd = true;
         }
     }
+
+    //-- Print arguments to user
+    std::cout << "Selected arguments: " << std::endl
+              << "\tBackground point size: " << viewer_point_size_background << std::endl
+              << "\tForeground point size: " << viewer_point_size_foreground << std::endl
+              << "\tAngular threshold (degrees): " << threshold << std::endl
+              << "\tInput file: " << argv[filenames[0]] << std::endl;
 
     //-- Load point cloud data
     pcl::PointCloud<pcl::PointXYZ>::Ptr source_cloud(new pcl::PointCloud<pcl::PointXYZ>);
@@ -124,7 +155,6 @@ int main(int argc, char* argv[])
     double plane_normal_norm = plane_normal.norm();
     std::vector<int> contour_points_indices;
 
-    double threshold = 5; //-- In degrees
     double lower_limit = sin(-threshold*M_PI/180.0);
     double upper_limit = sin(threshold*M_PI/180.0);
     std::cout << "With a threshold of " << threshold << " degrees, limits are: (" << lower_limit << ", " << upper_limit
@@ -153,18 +183,19 @@ int main(int argc, char* argv[])
 
     //-- Visualization Setup
     pcl::visualization::PCLVisualizer viewer("Folding clothes");
-    pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> cloud_color_handler(source_cloud, 255, 0, 0);
+    pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> red_color_handler(source_cloud, 255, 0, 0);
+    pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> green_color_handler(source_cloud, 0, 255, 0);
+    pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> blue_color_handler(source_cloud, 0, 0, 255);
     viewer.addCoordinateSystem(1.0, "cloud", 0);
     viewer.setBackgroundColor(0.05, 0.05, 0.05, 0);
 
     //-- Add point cloud
-    viewer.addPointCloud(source_cloud, cloud_color_handler, "loaded_point_cloud");
+    viewer.addPointCloud(source_cloud, red_color_handler, "loaded_point_cloud");
     viewer.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 2, "loaded_point_cloud");
 
     //-- Add plane inliers
     pcl::PointCloud<pcl::PointXYZ>::Ptr plane_points(new pcl::PointCloud<pcl::PointXYZ>(*source_cloud, inliers->indices));
-    pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> plane_color_handler(plane_points, 0, 255, 0);
-    viewer.addPointCloud(plane_points, plane_color_handler, "plane_point_cloud");
+    viewer.addPointCloud(plane_points, green_color_handler, "plane_point_cloud");
     viewer.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 2, "plane_point_cloud");
 
     //-- Add normals
@@ -179,8 +210,10 @@ int main(int argc, char* argv[])
     pcl::visualization::PCLVisualizer viewer2("Contour");
     viewer2.addCoordinateSystem(1.0, "cloud", 0);
     viewer2.setBackgroundColor(0.05, 0.05, 0.05, 0);
-    viewer2.addPointCloud(contour_points, cloud_color_handler, "contour_points");
-    viewer2.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 2, "contour_points");
+    viewer2.addPointCloud(source_cloud, green_color_handler, "source_cloud");
+    viewer2.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, viewer_point_size_background, "source_cloud");
+    viewer2.addPointCloud(contour_points, red_color_handler, "contour_points");
+    viewer2.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, viewer_point_size_foreground, "contour_points");
 
     //-- Visualization thread
     while(!viewer.wasStopped() && !viewer2.wasStopped())
