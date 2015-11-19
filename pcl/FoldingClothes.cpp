@@ -17,7 +17,11 @@
 #include <pcl/segmentation/sac_segmentation.h>
 //-- Contours
 #include <pcl/filters/extract_indices.h>
-
+//-- Octree
+#include <pcl/octree/octree.h>
+//-- Projection
+#include <pcl/ModelCoefficients.h>
+#include <pcl/filters/project_inliers.h>
 
 void show_usage(char * program_name)
 {
@@ -143,10 +147,10 @@ int main(int argc, char* argv[])
     }
     else
     {
-        std::cout << "Model coefficients: " << coefficients->values[0] << " "
-                                            << coefficients->values[1] << " "
-                                            << coefficients->values[2] << " "
-                                            << coefficients->values[3] << std::endl;
+        std::cout << "Plane equation: (" << coefficients->values[0] << ") x + ("
+                                         << coefficients->values[1] << ") y + ("
+                                         << coefficients->values[2] << ") z + ("
+                                         << coefficients->values[3] << ") = 0" << std::endl;
         std::cout << "Model inliers: " << inliers->indices.size() << std::endl;
     }
 
@@ -180,6 +184,14 @@ int main(int argc, char* argv[])
     extract_indices.setIndices(contour_indices);
     extract_indices.setNegative(false);
     extract_indices.filter(*contour_points);
+
+    //-- Project things onto table:
+    pcl::ProjectInliers<pcl::PointXYZ> proj;
+    pcl::PointCloud<pcl::PointXYZ>::Ptr contour_projected(new pcl::PointCloud<pcl::PointXYZ>);
+    proj.setModelType (pcl::SACMODEL_PLANE);
+    proj.setInputCloud (contour_points);
+    proj.setModelCoefficients (coefficients);
+    proj.filter (*contour_projected);
 
     //-- Visualization Setup
     pcl::visualization::PCLVisualizer viewer("Folding clothes");
@@ -215,11 +227,21 @@ int main(int argc, char* argv[])
     viewer2.addPointCloud(contour_points, red_color_handler, "contour_points");
     viewer2.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, viewer_point_size_foreground, "contour_points");
 
+    //-- View projection
+    pcl::visualization::PCLVisualizer viewer3("Projection");
+    viewer3.addCoordinateSystem(1.0, "cloud", 0);
+    viewer3.setBackgroundColor(0.05, 0.05, 0.05, 0);
+    //viewer3.addPointCloud(source_cloud, green_color_handler, "source_cloud");
+    //viewer3.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, viewer_point_size_background, "source_cloud");
+    viewer3.addPointCloud(contour_projected, red_color_handler, "projection");
+    viewer3.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 1, "projection");
+
     //-- Visualization thread
-    while(!viewer.wasStopped() && !viewer2.wasStopped())
+    while(!viewer.wasStopped() && !viewer2.wasStopped() && !viewer3.wasStopped())
     {
-        viewer.spinOnce();
+        //viewer.spinOnce();
         viewer2.spinOnce();
+        viewer3.spinOnce();
     }
 
     return 0;
