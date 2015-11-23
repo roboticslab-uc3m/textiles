@@ -154,7 +154,7 @@ int main(int argc, char* argv[])
         std::cout << "Model inliers: " << inliers->indices.size() << std::endl;
     }
 
-    //-- Look for contour (JGVictores suggested method)
+    //-- Look for contour
     Eigen::Vector3f plane_normal(coefficients->values[0], coefficients->values[1], coefficients->values[2]);
     double plane_normal_norm = plane_normal.norm();
     std::vector<int> contour_points_indices;
