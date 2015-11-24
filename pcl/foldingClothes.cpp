@@ -29,6 +29,11 @@
 #include <boost/thread/thread.hpp>
 //-- Passthrough filter
 #include <pcl/filters/passthrough.h>
+//-- Range images
+#include <pcl/range_image/range_image.h>
+#include <pcl/visualization/range_image_visualizer.h>
+
+#include <fstream>
 
 void show_usage(char * program_name)
 {
@@ -85,10 +90,8 @@ int main(int argc, char* argv[])
             show_usage(argv[0]);
             return -1;
         }
-        else
-        {
-            file_is_pcd = true;
-        }
+
+        file_is_pcd = true;
     }
 
     //-- Print arguments to user
@@ -161,28 +164,15 @@ int main(int argc, char* argv[])
     //-- Find bounding box:
     //-----------------------------------------------------------------------------------
     pcl::MomentOfInertiaEstimation <pcl::PointXYZ> feature_extractor;
-    feature_extractor.setInputCloud(not_table_points);
-    feature_extractor.compute();
-
-    std::vector <float> moment_of_inertia;
-    std::vector <float> eccentricity;
-    pcl::PointXYZ min_point_AABB;
-    pcl::PointXYZ max_point_AABB;
-    pcl::PointXYZ min_point_OBB;
-    pcl::PointXYZ max_point_OBB;
+    pcl::PointXYZ min_point_AABB, max_point_AABB;
+    pcl::PointXYZ min_point_OBB,  max_point_OBB;
     pcl::PointXYZ position_OBB;
     Eigen::Matrix3f rotational_matrix_OBB;
-    float major_value, middle_value, minor_value;
-    Eigen::Vector3f major_vector, middle_vector, minor_vector;
-    Eigen::Vector3f mass_center;
 
-    feature_extractor.getMomentOfInertia (moment_of_inertia);
-    feature_extractor.getEccentricity (eccentricity);
-    feature_extractor.getAABB (min_point_AABB, max_point_AABB);
-    feature_extractor.getOBB (min_point_OBB, max_point_OBB, position_OBB, rotational_matrix_OBB);
-    feature_extractor.getEigenValues (major_value, middle_value, minor_value);
-    feature_extractor.getEigenVectors (major_vector, middle_vector, minor_vector);
-    feature_extractor.getMassCenter (mass_center);
+    feature_extractor.setInputCloud(not_table_points);
+    feature_extractor.compute();
+    feature_extractor.getAABB(min_point_AABB, max_point_AABB);
+    feature_extractor.getOBB(min_point_OBB, max_point_OBB, position_OBB, rotational_matrix_OBB);
 
     //-- Transform point cloud
     //-----------------------------------------------------------------------------------
@@ -210,14 +200,41 @@ int main(int argc, char* argv[])
     //-- Find bounding box
     feature_extractor.setInputCloud(garment_points);
     feature_extractor.compute();
+    feature_extractor.getAABB(min_point_AABB, max_point_AABB);
+    feature_extractor.getOBB(min_point_OBB, max_point_OBB, position_OBB, rotational_matrix_OBB);
 
-    feature_extractor.getMomentOfInertia (moment_of_inertia);
-    feature_extractor.getEccentricity (eccentricity);
-    feature_extractor.getAABB (min_point_AABB, max_point_AABB);
-    feature_extractor.getOBB (min_point_OBB, max_point_OBB, position_OBB, rotational_matrix_OBB);
-    feature_extractor.getEigenValues (major_value, middle_value, minor_value);
-    feature_extractor.getEigenVectors (major_vector, middle_vector, minor_vector);
-    feature_extractor.getMassCenter (mass_center);
+    //-- Obtain range image
+    //-----------------------------------------------------------------------------------
+    /*ZBufferDepthImageCreator depth_image_creator;
+    depth_image_creator.setInputPointCloud(garment_points);
+    depth_image_creator.setResolution(1024,768);
+    depth_image_creator.compute();
+    Eigen::Matrix image = depth_image_creator.getDepthImageAsMatrix();*/
+
+    int width = 240, height = 320;
+    float bin_size_x = abs(max_point_AABB.x - min_point_AABB.x)/(float)width;
+    float bin_size_y = abs(max_point_AABB.y - min_point_AABB.y)/(float)height;
+    Eigen::MatrixXf image = Eigen::MatrixXf::Zero(height, width);
+
+    for (int i = 0; i < garment_points->points.size(); i++)
+    {
+        int index_x = (garment_points->points[i].x-min_point_AABB.x) / bin_size_x;
+        int index_y = (max_point_AABB.y - garment_points->points[i].y) / bin_size_y;
+
+        if (index_x >= width) index_x = width-1;
+        if (index_y >= height) index_y = height-1;
+
+        std::cout << "Point " << i << " in bin (" << index_x << ", " << index_y << ")" << std::endl;
+
+        float old_z = image(index_y, index_x);
+        if (garment_points->points[i].z > old_z)
+            image(index_y, index_x) = garment_points->points[i].z;
+    }
+
+    //-- Temporal fix to get image (through file)
+    std::ofstream file("depth_image.m");
+    file << image;
+    file.close();
 
 
     /********************************************************************************************************
@@ -254,7 +271,8 @@ int main(int argc, char* argv[])
 
     //viewer.addLine(pcl::PointXYZ(0,0,0), position_OBB, "line");
     //viewer.addLine(pcl::PointXYZ(0,0,0), pcl::PointXYZ(mass_center[0], mass_center[1], mass_center[2]), "line2");
-    viewer.addLine(pcl::PointXYZ(0,0,0), pcl::PointXYZ(30*normal_vector[0], 30*normal_vector[1], 30*normal_vector[2]), "normal");
+    //viewer.addLine(pcl::PointXYZ(0,0,0), pcl::PointXYZ(30*normal_vector[0], 30*normal_vector[1], 30*normal_vector[2]), "normal");
+
 
     //-- Visualization thread
     while(!viewer.wasStopped())
