@@ -26,7 +26,7 @@
 #include <pcl/features/moment_of_inertia_estimation.h>
 #include <vector>
 #include <pcl/visualization/cloud_viewer.h>
-#include <boost/thread/thread.hpp>
+//#include <boost/thread/thread.hpp>
 //-- Passthrough filter
 #include <pcl/filters/passthrough.h>
 //-- Range images
@@ -209,29 +209,9 @@ int main(int argc, char* argv[])
     //-----------------------------------------------------------------------------------
     ZBufferDepthImageCreator<pcl::PointXYZ> depth_image_creator;
     depth_image_creator.setInputPointCloud(garment_points);
-    depth_image_creator.setResolution(1024,768);
+    depth_image_creator.setResolution(240,320);
     depth_image_creator.compute();
     Eigen::MatrixXf image = depth_image_creator.getDepthImageAsMatrix();
-
-    int width = 240, height = 320;
-    float bin_size_x = abs(max_point_AABB.x - min_point_AABB.x)/(float)width;
-    float bin_size_y = abs(max_point_AABB.y - min_point_AABB.y)/(float)height;
-    /*Eigen::MatrixXf*/ image = Eigen::MatrixXf::Zero(height, width);
-
-    for (int i = 0; i < garment_points->points.size(); i++)
-    {
-        int index_x = (garment_points->points[i].x-min_point_AABB.x) / bin_size_x;
-        int index_y = (max_point_AABB.y - garment_points->points[i].y) / bin_size_y;
-
-        if (index_x >= width) index_x = width-1;
-        if (index_y >= height) index_y = height-1;
-
-        std::cout << "Point " << i << " in bin (" << index_x << ", " << index_y << ")" << std::endl;
-
-        float old_z = image(index_y, index_x);
-        if (garment_points->points[i].z > old_z)
-            image(index_y, index_x) = garment_points->points[i].z;
-    }
 
     //-- Temporal fix to get image (through file)
     std::ofstream file("depth_image.m");
