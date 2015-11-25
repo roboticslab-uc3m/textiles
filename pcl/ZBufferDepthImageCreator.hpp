@@ -11,18 +11,16 @@ class ZBufferDepthImageCreator
 
     public:
         ZBufferDepthImageCreator() {
-            width = 0;
-            height = 0;
+            resolution = 0;
         }
 
         void setInputPointCloud(const PointCloudConstPtr& pc) { point_cloud = pc; }
 
-        bool setResolution(const int& width, const int& height)
+        bool setResolution(const int& resolution)
         {
-            if (width > 0 && height > 0)
+            if (resolution > 0)
             {
-                this->width = width;
-                this->height = height;
+                this->resolution = resolution;
                 return true;
             }
             else
@@ -34,7 +32,7 @@ class ZBufferDepthImageCreator
 
         bool compute()
         {
-            if (width <= 0 || height <= 0)
+            if (resolution <= 0)
             {
                 std::cerr << "Error: resolution not set" << std::endl;
                 return false;
@@ -52,8 +50,28 @@ class ZBufferDepthImageCreator
             feature_extractor.getAABB(min_point_AABB, max_point_AABB);
             feature_extractor.getOBB(min_point_OBB, max_point_OBB, position_OBB, rotational_matrix_OBB);
 
-            float bin_size_x = abs(max_point_AABB.x - min_point_AABB.x)/(float)width;
-            float bin_size_y = abs(max_point_AABB.y - min_point_AABB.y)/(float)height;
+            //-- Calculate aspect ratio and bin size
+            int AABB_width = abs(max_point_AABB.x - min_point_AABB.x);
+            int AABB_height = abs(max_point_AABB.y - min_point_AABB.y);
+            float aspect_ratio = AABB_width / (float)AABB_height;
+
+            int width, height;
+            if (aspect_ratio >= 1)
+            {
+                width = resolution;
+                height = resolution/aspect_ratio;
+            }
+            else
+            {
+                height = resolution;
+                width = resolution*aspect_ratio;
+            }
+
+            float bin_size_x = AABB_width/(float)width;
+            float bin_size_y = AABB_height/(float)height;
+
+            //-- Fill bins with z values
+
             this->depth_image = Eigen::MatrixXf::Zero(height, width);
 
             for (int i = 0; i < point_cloud->points.size(); i++)
@@ -76,7 +94,7 @@ class ZBufferDepthImageCreator
 
     private:
         PointCloudConstPtr point_cloud;
-        int width, height;
+        int resolution;
         Eigen::MatrixXf depth_image;
 };
 

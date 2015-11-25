@@ -209,7 +209,7 @@ int main(int argc, char* argv[])
     //-----------------------------------------------------------------------------------
     ZBufferDepthImageCreator<pcl::PointXYZ> depth_image_creator;
     depth_image_creator.setInputPointCloud(garment_points);
-    depth_image_creator.setResolution(240,320);
+    depth_image_creator.setResolution(320);
     depth_image_creator.compute();
     Eigen::MatrixXf image = depth_image_creator.getDepthImageAsMatrix();
 
