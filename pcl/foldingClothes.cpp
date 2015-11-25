@@ -33,6 +33,8 @@
 #include <pcl/range_image/range_image.h>
 #include <pcl/visualization/range_image_visualizer.h>
 
+#include "ZBufferDepthImageCreator.hpp"
+
 #include <fstream>
 
 void show_usage(char * program_name)
@@ -205,16 +207,16 @@ int main(int argc, char* argv[])
 
     //-- Obtain range image
     //-----------------------------------------------------------------------------------
-    /*ZBufferDepthImageCreator depth_image_creator;
+    ZBufferDepthImageCreator<pcl::PointXYZ> depth_image_creator;
     depth_image_creator.setInputPointCloud(garment_points);
     depth_image_creator.setResolution(1024,768);
     depth_image_creator.compute();
-    Eigen::Matrix image = depth_image_creator.getDepthImageAsMatrix();*/
+    Eigen::MatrixXf image = depth_image_creator.getDepthImageAsMatrix();
 
     int width = 240, height = 320;
     float bin_size_x = abs(max_point_AABB.x - min_point_AABB.x)/(float)width;
     float bin_size_y = abs(max_point_AABB.y - min_point_AABB.y)/(float)height;
-    Eigen::MatrixXf image = Eigen::MatrixXf::Zero(height, width);
+    /*Eigen::MatrixXf*/ image = Eigen::MatrixXf::Zero(height, width);
 
     for (int i = 0; i < garment_points->points.size(); i++)
     {
