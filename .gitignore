@@ -1,8 +1,4 @@
 .idea
-/ClothContour.pyc
-/Superpixels.pyc
-/intersect.pyc
-/libdbscan.pyc
-/new.pyc
-/segmentation.pyc
-/utils.pyc
+*.pyc
+pcl/build
+*.txt.user
