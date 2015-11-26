@@ -3,6 +3,7 @@
 
 #include <pcl/point_cloud.h>
 #include <pcl/features/moment_of_inertia_estimation.h>
+#include <pcl/surface/mls.h> //-- Upsampling
 
 template<typename PointT>
 class ZBufferDepthImageCreator
@@ -12,6 +13,7 @@ class ZBufferDepthImageCreator
     public:
         ZBufferDepthImageCreator() {
             resolution = 0;
+            do_upsampling = false;
         }
 
         void setInputPointCloud(const PointCloudConstPtr& pc) { point_cloud = pc; }
@@ -27,6 +29,8 @@ class ZBufferDepthImageCreator
                 return false;
         }
 
+        bool setUpsampling(bool do_upsampling) { this->do_upsampling = do_upsampling; }
+
         Eigen::MatrixXf getDepthImageAsMatrix() { return depth_image; }
 
 
@@ -38,6 +42,31 @@ class ZBufferDepthImageCreator
                 return false;
             }
 
+            //-- Upsampling (if enabled)
+            typename pcl::PointCloud<PointT>::Ptr processed_cloud(new pcl::PointCloud<PointT>);
+            if (do_upsampling)
+            {
+                pcl::MovingLeastSquares<PointT, PointT> mls_filter;
+                typename pcl::search::KdTree<PointT>::Ptr kd_tree;
+                mls_filter.setInputCloud(point_cloud);
+                mls_filter.setSearchMethod(kd_tree);
+                mls_filter.setSearchRadius(0.03);
+                mls_filter.setUpsamplingMethod(pcl::MovingLeastSquares<PointT, PointT>::SAMPLE_LOCAL_PLANE);
+                mls_filter.setUpsamplingRadius(0.03);
+                mls_filter.setUpsamplingStepSize(0.01);
+                mls_filter.process(*processed_cloud);
+
+                if (processed_cloud->points.size() == 0)
+                {
+                    std::cerr << "Some error happened at upsampling state. Aborting..." << std::endl;
+                    return false;
+                }
+            }
+            else
+            {
+                *processed_cloud = *point_cloud;
+            }
+
             //-- Find bounding box of input point_cloud
             pcl::MomentOfInertiaEstimation<PointT> feature_extractor;
             PointT min_point_AABB, max_point_AABB;
@@ -45,7 +74,7 @@ class ZBufferDepthImageCreator
             PointT position_OBB;
             Eigen::Matrix3f rotational_matrix_OBB;
 
-            feature_extractor.setInputCloud(point_cloud);
+            feature_extractor.setInputCloud(processed_cloud);
             feature_extractor.compute();
             feature_extractor.getAABB(min_point_AABB, max_point_AABB);
             feature_extractor.getOBB(min_point_OBB, max_point_OBB, position_OBB, rotational_matrix_OBB);
@@ -74,10 +103,10 @@ class ZBufferDepthImageCreator
 
             this->depth_image = Eigen::MatrixXf::Zero(height, width);
 
-            for (int i = 0; i < point_cloud->points.size(); i++)
+            for (int i = 0; i < processed_cloud->points.size(); i++)
             {
-                int index_x = (point_cloud->points[i].x-min_point_AABB.x) / bin_size_x;
-                int index_y = (max_point_AABB.y - point_cloud->points[i].y) / bin_size_y;
+                int index_x = (processed_cloud->points[i].x-min_point_AABB.x) / bin_size_x;
+                int index_y = (max_point_AABB.y - processed_cloud->points[i].y) / bin_size_y;
 
                 if (index_x >= width) index_x = width-1;
                 if (index_y >= height) index_y = height-1;
@@ -85,8 +114,8 @@ class ZBufferDepthImageCreator
                 //std::cout << "Point " << i << " in bin (" << index_x << ", " << index_y << ")" << std::endl;
 
                 float old_z = depth_image(index_y, index_x);
-                if (point_cloud->points[i].z > old_z)
-                    depth_image(index_y, index_x) = point_cloud->points[i].z;
+                if (processed_cloud->points[i].z > old_z)
+                    depth_image(index_y, index_x) = processed_cloud->points[i].z;
             }
             return true;
         }
@@ -95,6 +124,7 @@ class ZBufferDepthImageCreator
     private:
         PointCloudConstPtr point_cloud;
         int resolution;
+        bool do_upsampling;
         Eigen::MatrixXf depth_image;
 };
 
