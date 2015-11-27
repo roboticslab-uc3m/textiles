@@ -197,8 +197,8 @@ int main(int argc, char* argv[])
     proj.filter (*contour_projected);
 
     //-- MLS
-    pcl::search::KdTree<pcl::PointXYZ>::Ptr kd_tree (new pcl::search::KdTree<pcl::PointXYZ>);
-    pcl::PointCloud<pcl::PointNormal> mls_points;
+    pcl::search::KdTree<pcl::PointXYZ>::Ptr kd_tree;
+    pcl::PointCloud<pcl::PointNormal>::Ptr mls_points;
     pcl::MovingLeastSquares<pcl::PointXYZ, pcl::PointNormal> mls;
     mls.setComputeNormals (true);
 
@@ -206,11 +206,11 @@ int main(int argc, char* argv[])
     mls.setInputCloud (source_cloud);
     mls.setPolynomialFit (true);
     mls.setSearchMethod (kd_tree);
-    mls.setSearchRadius (0.03);
+    mls.setSearchRadius (3);
 
     // Reconstruct
-    mls.process (mls_points);
-    std::cout << "MLS resulting points: " << mls_points.points.size() << " points!" << std::endl;
+    mls.process (*mls_points);
+    std::cout << "MLS resulting points: " << mls_points->points.size() << " points!" << std::endl;
 
 
     //-- Visualization Setup
@@ -260,8 +260,7 @@ int main(int argc, char* argv[])
     pcl::visualization::PCLVisualizer viewer3("MLS");
     viewer3.addCoordinateSystem(1.0, "cloud", 0);
     viewer3.setBackgroundColor(0.05, 0.05, 0.05, 0);
-    pcl::PointCloud<pcl::PointNormal>::Ptr normals(&mls_points);
-    viewer3.addPointCloudNormals<pcl::PointNormal>(normals, 1, 0.8, "mls");
+    viewer3.addPointCloudNormals<pcl::PointNormal>(mls_points, 1, 0.8, "mls");
     viewer3.setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_COLOR, 0, 0, 255, "mls");
 
 

@@ -2,6 +2,7 @@
 #define ZBUFFERDEPTHIMAGECREATOR_H
 
 #include <pcl/point_cloud.h>
+#include <pcl/filters/filter.h>
 #include <pcl/features/moment_of_inertia_estimation.h>
 #include <pcl/surface/mls.h> //-- Upsampling
 
@@ -50,11 +51,20 @@ class ZBufferDepthImageCreator
                 typename pcl::search::KdTree<PointT>::Ptr kd_tree;
                 mls_filter.setInputCloud(point_cloud);
                 mls_filter.setSearchMethod(kd_tree);
-                mls_filter.setSearchRadius(0.03);
+                mls_filter.setSearchRadius(3);
                 mls_filter.setUpsamplingMethod(pcl::MovingLeastSquares<PointT, PointT>::SAMPLE_LOCAL_PLANE);
-                mls_filter.setUpsamplingRadius(0.03);
-                mls_filter.setUpsamplingStepSize(0.01);
+                mls_filter.setUpsamplingRadius(3);
+                mls_filter.setUpsamplingStepSize(1);
                 mls_filter.process(*processed_cloud);
+
+                std::cout << "Upsampling from " << point_cloud->points.size()
+                          << "points to " << processed_cloud->points.size()
+                          << " points." << std::endl;
+
+                std::vector<int> mapping;
+                pcl::removeNaNFromPointCloud(*processed_cloud, *processed_cloud, mapping);
+
+                std::cout << "After NaN removal: " << processed_cloud->points.size() << " points." << std::endl;
 
                 if (processed_cloud->points.size() == 0)
                 {
@@ -105,13 +115,18 @@ class ZBufferDepthImageCreator
 
             for (int i = 0; i < processed_cloud->points.size(); i++)
             {
+                if (isnan(processed_cloud->points[i].x) || isnan(processed_cloud->points[i].x ))
+                    continue;
+
                 int index_x = (processed_cloud->points[i].x-min_point_AABB.x) / bin_size_x;
                 int index_y = (max_point_AABB.y - processed_cloud->points[i].y) / bin_size_y;
 
                 if (index_x >= width) index_x = width-1;
                 if (index_y >= height) index_y = height-1;
 
-                //std::cout << "Point " << i << " in bin (" << index_x << ", " << index_y << ")" << std::endl;
+                std::cout << "Point " << i << "(" << processed_cloud->points[i].x << ", "
+                          << processed_cloud->points[i].y << ", "<< processed_cloud->points[i].z
+                          << ") in bin (" << index_x << ", " << index_y << ")" << std::endl;
 
                 float old_z = depth_image(index_y, index_x);
                 if (processed_cloud->points[i].z > old_z)
