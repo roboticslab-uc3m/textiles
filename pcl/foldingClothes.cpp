@@ -153,6 +153,10 @@ int main(int argc, char* argv[])
         //-- Apply transformation
         pcl::transformPointCloud(*source_cloud, *preprocessed_cloud, scale_transform);
     }
+    else
+    {
+        *preprocessed_cloud = *source_cloud;
+    }
 
     //-- Find table's plane
     //------------------------------------------------------------------------------------
