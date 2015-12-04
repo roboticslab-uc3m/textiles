@@ -45,6 +45,7 @@ void show_usage(char * program_name)
   std::cout << "-b, --background:  Background points size (default: 1)" << std::endl;
   std::cout << "-f, --foreground:  Foreground points size (default: 5)" << std::endl;
   std::cout << "-t, --threshold:  Angular threshold for contour points (default: 5º)" << std::endl;
+  std::cout << "--TSDF: Input cloud is a TSDF cloud, params are cube and voxel dimensions (Default: 3m, 512 voxels)" << std::endl;
 }
 
 int main(int argc, char* argv[])
@@ -53,6 +54,9 @@ int main(int argc, char* argv[])
     int viewer_point_size_background = 1;
     int viewer_point_size_foreground = 5;
     double threshold = 5; //-- In degrees
+    bool TSDF_enable_scale = false;
+    int TSDF_cube_dimensions = 3; //-- In meters
+    int TSDF_voxels = 512;
 
     //-- Show usage
     if (pcl::console::find_switch(argc, argv, "-h") || pcl::console::find_switch(argc, argv, "--help"))
@@ -76,6 +80,12 @@ int main(int argc, char* argv[])
         pcl::console::parse_argument(argc, argv, "-t", threshold);
     else if (pcl::console::find_switch(argc, argv, "--threshold"))
         pcl::console::parse_argument(argc, argv, "--threshold", threshold);
+
+    if (pcl::console::find_switch(argc, argv, "--TSDF"))
+    {
+        TSDF_enable_scale = true;
+        pcl::console::parse_2x_arguments(argc, argv, "--TSDF", TSDF_cube_dimensions, TSDF_voxels);
+    }
 
     //-- Get point cloud file from arguments
     std::vector<int> filenames;
@@ -103,6 +113,10 @@ int main(int argc, char* argv[])
               << "\tAngular threshold (degrees): " << threshold << std::endl
               << "\tInput file: " << argv[filenames[0]] << std::endl;
 
+    if (TSDF_enable_scale)
+        std::cout << "\tTSDF enabled with params: " << TSDF_cube_dimensions << " meters/side, "
+                  << TSDF_voxels << " voxels" << std::endl;
+
     //-- Load point cloud data
     pcl::PointCloud<pcl::PointXYZ>::Ptr source_cloud(new pcl::PointCloud<pcl::PointXYZ>);
 
@@ -128,6 +142,18 @@ int main(int argc, char* argv[])
     /********************************************************************************************
     * Stuff goes on here
     *********************************************************************************************/
+    //-- Initial pre-processing of the mesh
+    //------------------------------------------------------------------------------------
+    pcl::PointCloud<pcl::PointXYZ>::Ptr preprocessed_cloud(new pcl::PointCloud<pcl::PointXYZ>);
+    if (TSDF_enable_scale)
+    {
+        Eigen::Affine3f scale_transform = Eigen::Affine3f::Identity();
+        scale_transform.scale(TSDF_cube_dimensions/(float)TSDF_voxels);
+
+        //-- Apply transformation
+        pcl::transformPointCloud(*source_cloud, *preprocessed_cloud, scale_transform);
+    }
+
     //-- Find table's plane
     //------------------------------------------------------------------------------------
     pcl::ModelCoefficients::Ptr table_plane_coefficients(new pcl::ModelCoefficients);
@@ -136,8 +162,8 @@ int main(int argc, char* argv[])
     segmentation.setOptimizeCoefficients(true);
     segmentation.setModelType(pcl::SACMODEL_PLANE);
     segmentation.setMethodType(pcl::SAC_RANSAC);
-    segmentation.setDistanceThreshold(5);
-    segmentation.setInputCloud(source_cloud);
+    segmentation.setDistanceThreshold(0.03);
+    segmentation.setInputCloud(preprocessed_cloud);
     segmentation.segment(*table_plane_points, *table_plane_coefficients);
 
     if (table_plane_points->indices.size() == 0)
@@ -158,7 +184,7 @@ int main(int argc, char* argv[])
     //-- Get points from the contour
     pcl::PointCloud<pcl::PointXYZ>::Ptr not_table_points (new pcl::PointCloud<pcl::PointXYZ>);
     pcl::ExtractIndices<pcl::PointXYZ> extract_indices;
-    extract_indices.setInputCloud(source_cloud);
+    extract_indices.setInputCloud(preprocessed_cloud);
     extract_indices.setIndices(table_plane_points);
     extract_indices.setNegative(true);
     extract_indices.filter(*not_table_points);
