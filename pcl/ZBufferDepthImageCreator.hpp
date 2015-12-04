@@ -115,7 +115,7 @@ class ZBufferDepthImageCreator
 
             for (int i = 0; i < processed_cloud->points.size(); i++)
             {
-                if (isnan(processed_cloud->points[i].x) || isnan(processed_cloud->points[i].x ))
+                if (isnan(processed_cloud->points[i].x) || isnan(processed_cloud->points[i].y ))
                     continue;
 
                 int index_x = (processed_cloud->points[i].x-min_point_AABB.x) / bin_size_x;
