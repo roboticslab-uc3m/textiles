@@ -51,14 +51,14 @@ class ZBufferDepthImageCreator
                 typename pcl::search::KdTree<PointT>::Ptr kd_tree;
                 mls_filter.setInputCloud(point_cloud);
                 mls_filter.setSearchMethod(kd_tree);
-                mls_filter.setSearchRadius(3);
+                mls_filter.setSearchRadius(0.03);
                 mls_filter.setUpsamplingMethod(pcl::MovingLeastSquares<PointT, PointT>::SAMPLE_LOCAL_PLANE);
-                mls_filter.setUpsamplingRadius(3);
-                mls_filter.setUpsamplingStepSize(1);
+                mls_filter.setUpsamplingRadius(0.03);
+                mls_filter.setUpsamplingStepSize(0.01);
                 mls_filter.process(*processed_cloud);
 
                 std::cout << "Upsampling from " << point_cloud->points.size()
-                          << "points to " << processed_cloud->points.size()
+                          << " points to " << processed_cloud->points.size()
                           << " points." << std::endl;
 
                 std::vector<int> mapping;
@@ -124,8 +124,8 @@ class ZBufferDepthImageCreator
                 if (index_x >= width) index_x = width-1;
                 if (index_y >= height) index_y = height-1;
 
-                std::cout << "Point " << i << "(" << processed_cloud->points[i].x << ", "
-                          << processed_cloud->points[i].y << ", "<< processed_cloud->points[i].z
+                std::cout << "Point " << i << "/" << processed_cloud->points.size()
+                          <<" (" << processed_cloud->points[i].x << ", " << processed_cloud->points[i].y << ", "<< processed_cloud->points[i].z
                           << ") in bin (" << index_x << ", " << index_y << ")" << std::endl;
 
                 float old_z = depth_image(index_y, index_x);

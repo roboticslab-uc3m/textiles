@@ -258,7 +258,7 @@ int main(int argc, char* argv[])
     pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> red_color_handler(source_cloud, 255, 0, 0);
     pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> green_color_handler(source_cloud, 0, 255, 0);
     pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> blue_color_handler(source_cloud, 0, 0, 255);
-    viewer.addCoordinateSystem(50.0, "origin", 0);
+    viewer.addCoordinateSystem(1.0, "origin", 0);
     viewer.setBackgroundColor(0.05, 0.05, 0.05, 0);
 
     //-- Add point cloud
