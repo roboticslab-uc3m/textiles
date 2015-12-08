@@ -22,6 +22,9 @@
 //-- Projection
 #include <pcl/ModelCoefficients.h>
 #include <pcl/filters/project_inliers.h>
+//-- Moving Least Squares for pc fixing
+#include <pcl/kdtree/kdtree_flann.h>
+#include <pcl/surface/mls.h>
 
 void show_usage(char * program_name)
 {
@@ -193,6 +196,23 @@ int main(int argc, char* argv[])
     proj.setModelCoefficients (coefficients);
     proj.filter (*contour_projected);
 
+    //-- MLS
+    pcl::search::KdTree<pcl::PointXYZ>::Ptr kd_tree;
+    pcl::PointCloud<pcl::PointNormal>::Ptr mls_points;
+    pcl::MovingLeastSquares<pcl::PointXYZ, pcl::PointNormal> mls;
+    mls.setComputeNormals (true);
+
+    // Set parameters
+    mls.setInputCloud (source_cloud);
+    mls.setPolynomialFit (true);
+    mls.setSearchMethod (kd_tree);
+    mls.setSearchRadius (3);
+
+    // Reconstruct
+    mls.process (*mls_points);
+    std::cout << "MLS resulting points: " << mls_points->points.size() << " points!" << std::endl;
+
+
     //-- Visualization Setup
     pcl::visualization::PCLVisualizer viewer("Folding clothes");
     pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> red_color_handler(source_cloud, 255, 0, 0);
@@ -228,13 +248,21 @@ int main(int argc, char* argv[])
     viewer2.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, viewer_point_size_foreground, "contour_points");
 
     //-- View projection
-    pcl::visualization::PCLVisualizer viewer3("Projection");
+//    pcl::visualization::PCLVisualizer viewer3("Projection");
+//    viewer3.addCoordinateSystem(1.0, "cloud", 0);
+//    viewer3.setBackgroundColor(0.05, 0.05, 0.05, 0);
+//    //viewer3.addPointCloud(source_cloud, green_color_handler, "source_cloud");
+//    //viewer3.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, viewer_point_size_background, "source_cloud");
+//    viewer3.addPointCloud(contour_projected, red_color_handler, "projection");
+//    viewer3.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 1, "projection");
+
+    //-- View MLS
+    pcl::visualization::PCLVisualizer viewer3("MLS");
     viewer3.addCoordinateSystem(1.0, "cloud", 0);
     viewer3.setBackgroundColor(0.05, 0.05, 0.05, 0);
-    //viewer3.addPointCloud(source_cloud, green_color_handler, "source_cloud");
-    //viewer3.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, viewer_point_size_background, "source_cloud");
-    viewer3.addPointCloud(contour_projected, red_color_handler, "projection");
-    viewer3.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 1, "projection");
+    viewer3.addPointCloudNormals<pcl::PointNormal>(mls_points, 1, 0.8, "mls");
+    viewer3.setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_COLOR, 0, 0, 255, "mls");
+
 
     //-- Visualization thread
     while(!viewer.wasStopped() && !viewer2.wasStopped() && !viewer3.wasStopped())

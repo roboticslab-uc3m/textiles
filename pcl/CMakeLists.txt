@@ -8,7 +8,7 @@ include_directories(${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 
-add_executable(foldingClothes foldingClothes.cpp ZBufferDepthImageCreator.cpp)
+add_executable(foldingClothes foldingClothes.cpp PointCloudPreprocessor.hpp ZBufferDepthImageCreator.hpp)
 target_link_libraries (foldingClothes ${PCL_LIBRARIES})
 
 add_executable(draftCode draftCode.cpp)

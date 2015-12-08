@@ -10,11 +10,6 @@
 #include <pcl/point_types.h>
 #include <pcl/features/normal_3d.h>
 #include <pcl/filters/filter.h>
-//-- Plane fitting
-#include <pcl/ModelCoefficients.h>
-#include <pcl/sample_consensus/method_types.h>
-#include <pcl/sample_consensus/model_types.h>
-#include <pcl/segmentation/sac_segmentation.h>
 //-- Contours
 #include <pcl/filters/extract_indices.h>
 //-- Octree
@@ -26,13 +21,11 @@
 #include <pcl/features/moment_of_inertia_estimation.h>
 #include <vector>
 #include <pcl/visualization/cloud_viewer.h>
-//#include <boost/thread/thread.hpp>
-//-- Passthrough filter
-#include <pcl/filters/passthrough.h>
 //-- Range images
 #include <pcl/range_image/range_image.h>
 #include <pcl/visualization/range_image_visualizer.h>
 
+#include "PointCloudPreprocessor.hpp"
 #include "ZBufferDepthImageCreator.hpp"
 
 #include <fstream>
@@ -44,7 +37,8 @@ void show_usage(char * program_name)
   std::cout << "-h:  Show this help." << std::endl;
   std::cout << "-b, --background:  Background points size (default: 1)" << std::endl;
   std::cout << "-f, --foreground:  Foreground points size (default: 5)" << std::endl;
-  std::cout << "-t, --threshold:  Angular threshold for contour points (default: 5º)" << std::endl;
+  std::cout << "-t, --threshold:  Distance threshold for RANSAC (default: 0.03)" << std::endl;
+  std::cout << "--TSDF: Input cloud is a TSDF cloud, params are cube and voxel dimensions (Default: 3m, 512 voxels)" << std::endl;
 }
 
 int main(int argc, char* argv[])
@@ -52,7 +46,10 @@ int main(int argc, char* argv[])
     //-- Main program parameters (default values)
     int viewer_point_size_background = 1;
     int viewer_point_size_foreground = 5;
-    double threshold = 5; //-- In degrees
+    double threshold = 0.03;
+    bool TSDF_enable_scale = false;
+    int TSDF_cube_dimensions = 3; //-- In meters
+    int TSDF_voxels = 512;
 
     //-- Show usage
     if (pcl::console::find_switch(argc, argv, "-h") || pcl::console::find_switch(argc, argv, "--help"))
@@ -76,6 +73,12 @@ int main(int argc, char* argv[])
         pcl::console::parse_argument(argc, argv, "-t", threshold);
     else if (pcl::console::find_switch(argc, argv, "--threshold"))
         pcl::console::parse_argument(argc, argv, "--threshold", threshold);
+
+    if (pcl::console::find_switch(argc, argv, "--TSDF"))
+    {
+        TSDF_enable_scale = true;
+        pcl::console::parse_2x_arguments(argc, argv, "--TSDF", TSDF_cube_dimensions, TSDF_voxels);
+    }
 
     //-- Get point cloud file from arguments
     std::vector<int> filenames;
@@ -103,6 +106,10 @@ int main(int argc, char* argv[])
               << "\tAngular threshold (degrees): " << threshold << std::endl
               << "\tInput file: " << argv[filenames[0]] << std::endl;
 
+    if (TSDF_enable_scale)
+        std::cout << "\tTSDF enabled with params: " << TSDF_cube_dimensions << " meters/side, "
+                  << TSDF_voxels << " voxels" << std::endl;
+
     //-- Load point cloud data
     pcl::PointCloud<pcl::PointXYZ>::Ptr source_cloud(new pcl::PointCloud<pcl::PointXYZ>);
 
@@ -128,78 +135,23 @@ int main(int argc, char* argv[])
     /********************************************************************************************
     * Stuff goes on here
     *********************************************************************************************/
-    //-- Find table's plane
+    //-- Initial pre-processing of the mesh
     //------------------------------------------------------------------------------------
-    pcl::ModelCoefficients::Ptr table_plane_coefficients(new pcl::ModelCoefficients);
-    pcl::PointIndices::Ptr table_plane_points(new pcl::PointIndices);
-    pcl::SACSegmentation<pcl::PointXYZ> segmentation;
-    segmentation.setOptimizeCoefficients(true);
-    segmentation.setModelType(pcl::SACMODEL_PLANE);
-    segmentation.setMethodType(pcl::SAC_RANSAC);
-    segmentation.setDistanceThreshold(5);
-    segmentation.setInputCloud(source_cloud);
-    segmentation.segment(*table_plane_points, *table_plane_coefficients);
+    pcl::PointCloud<pcl::PointXYZ>::Ptr garment_points(new pcl::PointCloud<pcl::PointXYZ>);
+    PointCloudPreprocessor<pcl::PointXYZ> preprocessor;
+    preprocessor.setScalingTSDF(TSDF_enable_scale);
+    preprocessor.setScalingTSDFParams(TSDF_cube_dimensions, TSDF_voxels);
+    preprocessor.setRANSACThresholdDistance(threshold);
+    preprocessor.setInputCloud(source_cloud);
+    preprocessor.process(*garment_points);
 
-    if (table_plane_points->indices.size() == 0)
-    {
-        std::cerr << "Could not estimate a planar model for input point cloud." << std::endl;
-    }
-    else
-    {
-        std::cout << "Plane equation: (" << table_plane_coefficients->values[0] << ") x + ("
-                                         << table_plane_coefficients->values[1] << ") y + ("
-                                         << table_plane_coefficients->values[2] << ") z + ("
-                                         << table_plane_coefficients->values[3] << ") = 0" << std::endl;
-        std::cout << "Model inliers: " << table_plane_points->indices.size() << std::endl;
-    }
-
-    //-- Find points that do not belong to the plane
-    //----------------------------------------------------------------------------------
-    //-- Get points from the contour
-    pcl::PointCloud<pcl::PointXYZ>::Ptr not_table_points (new pcl::PointCloud<pcl::PointXYZ>);
-    pcl::ExtractIndices<pcl::PointXYZ> extract_indices;
-    extract_indices.setInputCloud(source_cloud);
-    extract_indices.setIndices(table_plane_points);
-    extract_indices.setNegative(true);
-    extract_indices.filter(*not_table_points);
-
-    //-- Find bounding box:
-    //-----------------------------------------------------------------------------------
-    pcl::MomentOfInertiaEstimation <pcl::PointXYZ> feature_extractor;
+    //-- Find bounding box (not really required)
+    pcl::MomentOfInertiaEstimation<pcl::PointXYZ> feature_extractor;
     pcl::PointXYZ min_point_AABB, max_point_AABB;
     pcl::PointXYZ min_point_OBB,  max_point_OBB;
     pcl::PointXYZ position_OBB;
     Eigen::Matrix3f rotational_matrix_OBB;
 
-    feature_extractor.setInputCloud(not_table_points);
-    feature_extractor.compute();
-    feature_extractor.getAABB(min_point_AABB, max_point_AABB);
-    feature_extractor.getOBB(min_point_OBB, max_point_OBB, position_OBB, rotational_matrix_OBB);
-
-    //-- Transform point cloud
-    //-----------------------------------------------------------------------------------
-    //-- Translating to center
-    pcl::PointCloud<pcl::PointXYZ>::Ptr centered_cloud (new pcl::PointCloud<pcl::PointXYZ> ());
-    Eigen::Affine3f translation_transform = Eigen::Affine3f::Identity();
-    translation_transform.translation() << -position_OBB.x, -position_OBB.y, -position_OBB.z;
-    pcl::transformPointCloud (*not_table_points, *centered_cloud, translation_transform);
-
-    //-- Orient using the plane normal
-    pcl::PointCloud<pcl::PointXYZ>::Ptr oriented_cloud (new pcl::PointCloud<pcl::PointXYZ> ());
-    Eigen::Vector3f normal_vector(table_plane_coefficients->values[0], table_plane_coefficients->values[1], table_plane_coefficients->values[2]);
-    Eigen::Quaternionf rotation_quaternion = Eigen::Quaternionf().setFromTwoVectors(normal_vector, Eigen::Vector3f::UnitZ());
-    pcl::transformPointCloud(*centered_cloud, *oriented_cloud, Eigen::Vector3f(0,0,0), rotation_quaternion);
-
-    //-- Remove negative outliers (table noise)
-    pcl::PointCloud<pcl::PointXYZ>::Ptr garment_points (new pcl::PointCloud<pcl::PointXYZ>);
-    pcl::PassThrough<pcl::PointXYZ> passthrough_filter;
-    passthrough_filter.setInputCloud(oriented_cloud);
-    passthrough_filter.setFilterFieldName("z");
-    passthrough_filter.setFilterLimits(0.0, FLT_MAX);
-    passthrough_filter.setFilterLimitsNegative(false);
-    passthrough_filter.filter(*garment_points);
-
-    //-- Find bounding box
     feature_extractor.setInputCloud(garment_points);
     feature_extractor.compute();
     feature_extractor.getAABB(min_point_AABB, max_point_AABB);
@@ -209,7 +161,8 @@ int main(int argc, char* argv[])
     //-----------------------------------------------------------------------------------
     ZBufferDepthImageCreator<pcl::PointXYZ> depth_image_creator;
     depth_image_creator.setInputPointCloud(garment_points);
-    depth_image_creator.setResolution(320);
+    depth_image_creator.setResolution(640);
+    depth_image_creator.setUpsampling(true);
     depth_image_creator.compute();
     Eigen::MatrixXf image = depth_image_creator.getDepthImageAsMatrix();
 
@@ -227,7 +180,7 @@ int main(int argc, char* argv[])
     pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> red_color_handler(source_cloud, 255, 0, 0);
     pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> green_color_handler(source_cloud, 0, 255, 0);
     pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> blue_color_handler(source_cloud, 0, 0, 255);
-    viewer.addCoordinateSystem(50.0, "origin", 0);
+    viewer.addCoordinateSystem(1.0, "origin", 0);
     viewer.setBackgroundColor(0.05, 0.05, 0.05, 0);
 
     //-- Add point cloud
