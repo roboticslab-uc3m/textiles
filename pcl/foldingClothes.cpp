@@ -37,7 +37,7 @@ void show_usage(char * program_name)
   std::cout << "-h:  Show this help." << std::endl;
   std::cout << "-b, --background:  Background points size (default: 1)" << std::endl;
   std::cout << "-f, --foreground:  Foreground points size (default: 5)" << std::endl;
-  std::cout << "-t, --threshold:  Angular threshold for contour points (default: 5º)" << std::endl;
+  std::cout << "-t, --threshold:  Distance threshold for RANSAC (default: 0.03)" << std::endl;
   std::cout << "--TSDF: Input cloud is a TSDF cloud, params are cube and voxel dimensions (Default: 3m, 512 voxels)" << std::endl;
 }
 
@@ -46,7 +46,7 @@ int main(int argc, char* argv[])
     //-- Main program parameters (default values)
     int viewer_point_size_background = 1;
     int viewer_point_size_foreground = 5;
-    double threshold = 5; //-- In degrees
+    double threshold = 0.03;
     bool TSDF_enable_scale = false;
     int TSDF_cube_dimensions = 3; //-- In meters
     int TSDF_voxels = 512;
@@ -141,7 +141,7 @@ int main(int argc, char* argv[])
     PointCloudPreprocessor<pcl::PointXYZ> preprocessor;
     preprocessor.setScalingTSDF(TSDF_enable_scale);
     preprocessor.setScalingTSDFParams(TSDF_cube_dimensions, TSDF_voxels);
-    preprocessor.setRANSACThresholdDistance(0.03);
+    preprocessor.setRANSACThresholdDistance(threshold);
     preprocessor.setInputCloud(source_cloud);
     preprocessor.process(*garment_points);
 
@@ -161,7 +161,7 @@ int main(int argc, char* argv[])
     //-----------------------------------------------------------------------------------
     ZBufferDepthImageCreator<pcl::PointXYZ> depth_image_creator;
     depth_image_creator.setInputPointCloud(garment_points);
-    depth_image_creator.setResolution(320);
+    depth_image_creator.setResolution(640);
     depth_image_creator.setUpsampling(true);
     depth_image_creator.compute();
     Eigen::MatrixXf image = depth_image_creator.getDepthImageAsMatrix();

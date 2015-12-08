@@ -6,6 +6,8 @@
 #include <pcl/features/moment_of_inertia_estimation.h>
 #include <pcl/surface/mls.h> //-- Upsampling
 
+#include <cmath>
+
 template<typename PointT>
 class ZBufferDepthImageCreator
 {
@@ -54,7 +56,7 @@ class ZBufferDepthImageCreator
                 mls_filter.setSearchRadius(0.03);
                 mls_filter.setUpsamplingMethod(pcl::MovingLeastSquares<PointT, PointT>::SAMPLE_LOCAL_PLANE);
                 mls_filter.setUpsamplingRadius(0.03);
-                mls_filter.setUpsamplingStepSize(0.01);
+                mls_filter.setUpsamplingStepSize(0.02);
                 mls_filter.process(*processed_cloud);
 
                 std::cout << "Upsampling from " << point_cloud->points.size()
@@ -90,9 +92,11 @@ class ZBufferDepthImageCreator
             feature_extractor.getOBB(min_point_OBB, max_point_OBB, position_OBB, rotational_matrix_OBB);
 
             //-- Calculate aspect ratio and bin size
-            int AABB_width = abs(max_point_AABB.x - min_point_AABB.x);
-            int AABB_height = abs(max_point_AABB.y - min_point_AABB.y);
-            float aspect_ratio = AABB_width / (float)AABB_height;
+            /* Note: if not using std::abs, floating abs function seems to be
+             * not supported :-/ */
+            float AABB_width = std::abs(max_point_AABB.x - min_point_AABB.x);
+            float AABB_height = std::abs(max_point_AABB.y - min_point_AABB.y);
+            float aspect_ratio = AABB_width / AABB_height;
 
             int width, height;
             if (aspect_ratio >= 1)
