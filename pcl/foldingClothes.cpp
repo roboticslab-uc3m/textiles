@@ -10,11 +10,6 @@
 #include <pcl/point_types.h>
 #include <pcl/features/normal_3d.h>
 #include <pcl/filters/filter.h>
-//-- Plane fitting
-#include <pcl/ModelCoefficients.h>
-#include <pcl/sample_consensus/method_types.h>
-#include <pcl/sample_consensus/model_types.h>
-#include <pcl/segmentation/sac_segmentation.h>
 //-- Contours
 #include <pcl/filters/extract_indices.h>
 //-- Octree
@@ -26,13 +21,11 @@
 #include <pcl/features/moment_of_inertia_estimation.h>
 #include <vector>
 #include <pcl/visualization/cloud_viewer.h>
-//#include <boost/thread/thread.hpp>
-//-- Passthrough filter
-#include <pcl/filters/passthrough.h>
 //-- Range images
 #include <pcl/range_image/range_image.h>
 #include <pcl/visualization/range_image_visualizer.h>
 
+#include "PointCloudPreprocessor.hpp"
 #include "ZBufferDepthImageCreator.hpp"
 
 #include <fstream>
@@ -144,92 +137,21 @@ int main(int argc, char* argv[])
     *********************************************************************************************/
     //-- Initial pre-processing of the mesh
     //------------------------------------------------------------------------------------
-    pcl::PointCloud<pcl::PointXYZ>::Ptr preprocessed_cloud(new pcl::PointCloud<pcl::PointXYZ>);
-    if (TSDF_enable_scale)
-    {
-        Eigen::Affine3f scale_transform = Eigen::Affine3f::Identity();
-        scale_transform.scale(TSDF_cube_dimensions/(float)TSDF_voxels);
+    pcl::PointCloud<pcl::PointXYZ>::Ptr garment_points(new pcl::PointCloud<pcl::PointXYZ>);
+    PointCloudPreprocessor<pcl::PointXYZ> preprocessor;
+    preprocessor.setScalingTSDF(TSDF_enable_scale);
+    preprocessor.setScalingTSDFParams(TSDF_cube_dimensions, TSDF_voxels);
+    preprocessor.setRANSACThresholdDistance(0.03);
+    preprocessor.setInputCloud(source_cloud);
+    preprocessor.process(*garment_points);
 
-        //-- Apply transformation
-        pcl::transformPointCloud(*source_cloud, *preprocessed_cloud, scale_transform);
-    }
-    else
-    {
-        *preprocessed_cloud = *source_cloud;
-    }
-
-    //-- Find table's plane
-    //------------------------------------------------------------------------------------
-    pcl::ModelCoefficients::Ptr table_plane_coefficients(new pcl::ModelCoefficients);
-    pcl::PointIndices::Ptr table_plane_points(new pcl::PointIndices);
-    pcl::SACSegmentation<pcl::PointXYZ> segmentation;
-    segmentation.setOptimizeCoefficients(true);
-    segmentation.setModelType(pcl::SACMODEL_PLANE);
-    segmentation.setMethodType(pcl::SAC_RANSAC);
-    segmentation.setDistanceThreshold(0.03);
-    segmentation.setInputCloud(preprocessed_cloud);
-    segmentation.segment(*table_plane_points, *table_plane_coefficients);
-
-    if (table_plane_points->indices.size() == 0)
-    {
-        std::cerr << "Could not estimate a planar model for input point cloud." << std::endl;
-    }
-    else
-    {
-        std::cout << "Plane equation: (" << table_plane_coefficients->values[0] << ") x + ("
-                                         << table_plane_coefficients->values[1] << ") y + ("
-                                         << table_plane_coefficients->values[2] << ") z + ("
-                                         << table_plane_coefficients->values[3] << ") = 0" << std::endl;
-        std::cout << "Model inliers: " << table_plane_points->indices.size() << std::endl;
-    }
-
-    //-- Find points that do not belong to the plane
-    //----------------------------------------------------------------------------------
-    //-- Get points from the contour
-    pcl::PointCloud<pcl::PointXYZ>::Ptr not_table_points (new pcl::PointCloud<pcl::PointXYZ>);
-    pcl::ExtractIndices<pcl::PointXYZ> extract_indices;
-    extract_indices.setInputCloud(preprocessed_cloud);
-    extract_indices.setIndices(table_plane_points);
-    extract_indices.setNegative(true);
-    extract_indices.filter(*not_table_points);
-
-    //-- Find bounding box:
-    //-----------------------------------------------------------------------------------
-    pcl::MomentOfInertiaEstimation <pcl::PointXYZ> feature_extractor;
+    //-- Find bounding box (not really required)
+    pcl::MomentOfInertiaEstimation<pcl::PointXYZ> feature_extractor;
     pcl::PointXYZ min_point_AABB, max_point_AABB;
     pcl::PointXYZ min_point_OBB,  max_point_OBB;
     pcl::PointXYZ position_OBB;
     Eigen::Matrix3f rotational_matrix_OBB;
 
-    feature_extractor.setInputCloud(not_table_points);
-    feature_extractor.compute();
-    feature_extractor.getAABB(min_point_AABB, max_point_AABB);
-    feature_extractor.getOBB(min_point_OBB, max_point_OBB, position_OBB, rotational_matrix_OBB);
-
-    //-- Transform point cloud
-    //-----------------------------------------------------------------------------------
-    //-- Translating to center
-    pcl::PointCloud<pcl::PointXYZ>::Ptr centered_cloud (new pcl::PointCloud<pcl::PointXYZ> ());
-    Eigen::Affine3f translation_transform = Eigen::Affine3f::Identity();
-    translation_transform.translation() << -position_OBB.x, -position_OBB.y, -position_OBB.z;
-    pcl::transformPointCloud (*not_table_points, *centered_cloud, translation_transform);
-
-    //-- Orient using the plane normal
-    pcl::PointCloud<pcl::PointXYZ>::Ptr oriented_cloud (new pcl::PointCloud<pcl::PointXYZ> ());
-    Eigen::Vector3f normal_vector(table_plane_coefficients->values[0], table_plane_coefficients->values[1], table_plane_coefficients->values[2]);
-    Eigen::Quaternionf rotation_quaternion = Eigen::Quaternionf().setFromTwoVectors(normal_vector, Eigen::Vector3f::UnitZ());
-    pcl::transformPointCloud(*centered_cloud, *oriented_cloud, Eigen::Vector3f(0,0,0), rotation_quaternion);
-
-    //-- Remove negative outliers (table noise)
-    pcl::PointCloud<pcl::PointXYZ>::Ptr garment_points (new pcl::PointCloud<pcl::PointXYZ>);
-    pcl::PassThrough<pcl::PointXYZ> passthrough_filter;
-    passthrough_filter.setInputCloud(oriented_cloud);
-    passthrough_filter.setFilterFieldName("z");
-    passthrough_filter.setFilterLimits(0.0, FLT_MAX);
-    passthrough_filter.setFilterLimitsNegative(false);
-    passthrough_filter.filter(*garment_points);
-
-    //-- Find bounding box
     feature_extractor.setInputCloud(garment_points);
     feature_extractor.compute();
     feature_extractor.getAABB(min_point_AABB, max_point_AABB);
