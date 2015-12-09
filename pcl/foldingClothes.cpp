@@ -196,11 +196,11 @@ int main(int argc, char* argv[])
     std::ofstream rsd_file("rsd_data.m");
     for (int i = 0; i < garment_points->points.size(); i++)
     {
-        rsd_file << garment_points->points.x << " "
-                 << garment_points->points.y << " "
-                 << garment_points->points.z << " "
-                 << descriptors->points.data().r_min << " "
-                 << descriptors->points.data().r_max << "\n";
+        rsd_file << garment_points->points[i].x << " "
+                 << garment_points->points[i].y << " "
+                 << garment_points->points[i].z << " "
+                 << descriptors->points[i].r_min << " "
+                 << descriptors->points[i].r_max << "\n";
     }
     rsd_file.close();
 
