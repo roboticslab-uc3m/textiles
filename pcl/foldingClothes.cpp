@@ -21,10 +21,11 @@
 #include <pcl/features/moment_of_inertia_estimation.h>
 #include <vector>
 #include <pcl/visualization/cloud_viewer.h>
-//-- Range images
-#include <pcl/range_image/range_image.h>
-#include <pcl/visualization/range_image_visualizer.h>
+//-- RSD estimation
+#include <pcl/features/normal_3d.h>
+#include <pcl/features/rsd.h>
 
+//-- My classes
 #include "PointCloudPreprocessor.hpp"
 #include "ZBufferDepthImageCreator.hpp"
 
@@ -157,17 +158,63 @@ int main(int argc, char* argv[])
     feature_extractor.getAABB(min_point_AABB, max_point_AABB);
     feature_extractor.getOBB(min_point_OBB, max_point_OBB, position_OBB, rotational_matrix_OBB);
 
+    //-- Curvature stuff
+    //-----------------------------------------------------------------------------------
+    // Object for storing the normals.
+    pcl::PointCloud<pcl::Normal>::Ptr normals(new pcl::PointCloud<pcl::Normal>);
+    // Object for storing the RSD descriptors for each point.
+    pcl::PointCloud<pcl::PrincipalRadiiRSD>::Ptr descriptors(new pcl::PointCloud<pcl::PrincipalRadiiRSD>());
+
+
+    // Note: you would usually perform downsampling now. It has been omitted here
+    // for simplicity, but be aware that computation can take a long time.
+
+    // Estimate the normals.
+    pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> normalEstimation;
+    normalEstimation.setInputCloud(garment_points);
+    normalEstimation.setRadiusSearch(0.03);
+    pcl::search::KdTree<pcl::PointXYZ>::Ptr kdtree(new pcl::search::KdTree<pcl::PointXYZ>);
+    normalEstimation.setSearchMethod(kdtree);
+    normalEstimation.compute(*normals);
+
+    // RSD estimation object.
+    pcl::RSDEstimation<pcl::PointXYZ, pcl::Normal, pcl::PrincipalRadiiRSD> rsd;
+    rsd.setInputCloud(garment_points);
+    rsd.setInputNormals(normals);
+    rsd.setSearchMethod(kdtree);
+    // Search radius, to look for neighbors. Note: the value given here has to be
+    // larger than the radius used to estimate the normals.
+    rsd.setRadiusSearch(0.05);
+    // Plane radius. Any radius larger than this is considered infinite (a plane).
+    rsd.setPlaneRadius(0.1);
+    // Do we want to save the full distance-angle histograms?
+    rsd.setSaveHistograms(false);
+
+    rsd.compute(*descriptors);
+
+    //-- Save to mat file
+    std::ofstream rsd_file("rsd_data.m");
+    for (int i = 0; i < garment_points->points.size(); i++)
+    {
+        rsd_file << garment_points->points.x << " "
+                 << garment_points->points.y << " "
+                 << garment_points->points.z << " "
+                 << descriptors->points.data().r_min << " "
+                 << descriptors->points.data().r_max << "\n";
+    }
+    rsd_file.close();
+
     //-- Obtain range image
     //-----------------------------------------------------------------------------------
     ZBufferDepthImageCreator<pcl::PointXYZ> depth_image_creator;
     depth_image_creator.setInputPointCloud(garment_points);
-    depth_image_creator.setResolution(640);
+    depth_image_creator.setResolution(1024);
     depth_image_creator.setUpsampling(true);
     depth_image_creator.compute();
     Eigen::MatrixXf image = depth_image_creator.getDepthImageAsMatrix();
 
     //-- Temporal fix to get image (through file)
-    std::ofstream file("depth_image.m");
+    std::ofstream file("depth_image2.m");
     file << image;
     file.close();
 
