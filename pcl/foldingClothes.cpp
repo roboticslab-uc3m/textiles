@@ -40,6 +40,7 @@ void show_usage(char * program_name)
   std::cout << "-f, --foreground:  Foreground points size (default: 5)" << std::endl;
   std::cout << "-t, --threshold:  Distance threshold for RANSAC (default: 0.03)" << std::endl;
   std::cout << "--TSDF: Input cloud is a TSDF cloud, params are cube and voxel dimensions (Default: 3m, 512 voxels)" << std::endl;
+  std::cout << "-d, --depth: Output file for depth image" << std::endl;
 }
 
 int main(int argc, char* argv[])
@@ -51,6 +52,7 @@ int main(int argc, char* argv[])
     bool TSDF_enable_scale = false;
     int TSDF_cube_dimensions = 3; //-- In meters
     int TSDF_voxels = 512;
+    std::string output_depth_image = "depth_image.m";
 
     //-- Show usage
     if (pcl::console::find_switch(argc, argv, "-h") || pcl::console::find_switch(argc, argv, "--help"))
@@ -80,6 +82,11 @@ int main(int argc, char* argv[])
         TSDF_enable_scale = true;
         pcl::console::parse_2x_arguments(argc, argv, "--TSDF", TSDF_cube_dimensions, TSDF_voxels);
     }
+
+    if (pcl::console::find_switch(argc, argv, "-d"))
+        pcl::console::parse_argument(argc, argv, "-d", output_depth_image);
+    else if (pcl::console::find_switch(argc, argv, "--depth"))
+        pcl::console::parse_argument(argc, argv, "--depth", output_depth_image);
 
     //-- Get point cloud file from arguments
     std::vector<int> filenames;
@@ -214,7 +221,7 @@ int main(int argc, char* argv[])
     Eigen::MatrixXf image = depth_image_creator.getDepthImageAsMatrix();
 
     //-- Temporal fix to get image (through file)
-    std::ofstream file("depth_image2.m");
+    std::ofstream file(output_depth_image.c_str());
     file << image;
     file.close();
 
