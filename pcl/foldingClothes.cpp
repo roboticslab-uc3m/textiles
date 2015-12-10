@@ -41,6 +41,7 @@ void show_usage(char * program_name)
   std::cout << "-t, --threshold:  Distance threshold for RANSAC (default: 0.03)" << std::endl;
   std::cout << "--TSDF: Input cloud is a TSDF cloud, params are cube and voxel dimensions (Default: 3m, 512 voxels)" << std::endl;
   std::cout << "-d, --depth: Output file for depth image" << std::endl;
+  std::cout << "-r, --rsd: Output file for RSD data" << std::endl;
 }
 
 int main(int argc, char* argv[])
@@ -53,6 +54,7 @@ int main(int argc, char* argv[])
     int TSDF_cube_dimensions = 3; //-- In meters
     int TSDF_voxels = 512;
     std::string output_depth_image = "depth_image.m";
+    std::string output_rsd_data = "rsd_data.m";
 
     //-- Show usage
     if (pcl::console::find_switch(argc, argv, "-h") || pcl::console::find_switch(argc, argv, "--help"))
@@ -87,6 +89,11 @@ int main(int argc, char* argv[])
         pcl::console::parse_argument(argc, argv, "-d", output_depth_image);
     else if (pcl::console::find_switch(argc, argv, "--depth"))
         pcl::console::parse_argument(argc, argv, "--depth", output_depth_image);
+
+    if (pcl::console::find_switch(argc, argv, "-r"))
+        pcl::console::parse_argument(argc, argv, "-r", output_rsd_data);
+    else if (pcl::console::find_switch(argc, argv, "--rsd"))
+        pcl::console::parse_argument(argc, argv, "--rsd", output_rsd_data);
 
     //-- Get point cloud file from arguments
     std::vector<int> filenames;
@@ -200,7 +207,7 @@ int main(int argc, char* argv[])
     rsd.compute(*descriptors);
 
     //-- Save to mat file
-    std::ofstream rsd_file("rsd_data.m");
+    std::ofstream rsd_file(output_rsd_data.c_str());
     for (int i = 0; i < garment_points->points.size(); i++)
     {
         rsd_file << garment_points->points[i].x << " "
