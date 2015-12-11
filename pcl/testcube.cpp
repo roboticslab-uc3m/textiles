@@ -3,7 +3,13 @@
 #include <pcl/point_types.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/console/parse.h>
+#include <pcl/visualization/pcl_visualizer.h>
+//-- RSD estimation
+#include <pcl/features/normal_3d.h>
+#include <pcl/features/normal_3d_omp.h>
+#include <pcl/features/rsd.h>
 
+#include <fstream>
 
 void show_usage(char * program_name)
 {
@@ -18,9 +24,9 @@ void show_usage(char * program_name)
 int main (int argc, char** argv)
 {
     //-- input data
-    int side = 10;
-    int samples = 100;
-    std::string filename = "cube.pcd";
+    float side = 1;
+    int samples = 50;
+    std::string filename = "cube.m";
 
     //-- Show usage
     if (pcl::console::find_switch(argc, argv, "-h") || pcl::console::find_switch(argc, argv, "--help"))
@@ -41,21 +47,93 @@ int main (int argc, char** argv)
 
     //-- Fill in the cloud data
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
-    cloud->width  = pow(100,3);
+    cloud->width  = pow(samples,3);
     cloud->height = 1;
     cloud->points.resize (cloud->width * cloud->height);
+    std::cout << "Working with " << cloud->points.size() << " points." << std::endl;
+
+
+    float point_distance = side/samples;
+    std::cout << "Resolution: " << point_distance << std::endl;
+    std::cout << "Creating point cloud..." << std::endl;
 
     for (int k = 0; k < samples; k++)
         for (int j = 0; j < samples; j++)
             for (int i = 0; i < samples; i++)
             {
-                cloud->points[i+j*samples+k*samples].x = i * samples;
-                cloud->points[i+j*samples+k*samples].y = j * samples;
-                cloud->points[i+j*samples+k*samples].z = k * samples;
+                cloud->points[i+j*samples+k*samples].x = i * point_distance;
+                cloud->points[i+j*samples+k*samples].y = j * point_distance;
+                cloud->points[i+j*samples+k*samples].z = k * point_distance;
             }
 
-    //-- Save to file
-    pcl::io::savePCDFileASCII(filename, *cloud);
+    //-- Visualization
+    //--------------------------------------------------------------------------------------
+    //-- Visualization Setup
+    pcl::visualization::PCLVisualizer viewer("Magic cube");
+    pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> red_color_handler(cloud, 255, 0, 0);
+    viewer.addCoordinateSystem(1.0, "origin", 0);
+    viewer.setBackgroundColor(0.05, 0.05, 0.05, 0);
+
+    //-- Add point cloud
+    viewer.addPointCloud(cloud, red_color_handler, "cube");
+    viewer.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 2, "cube");
+
+    //-- Visualization thread
+    while(!viewer.wasStopped())
+    {
+        viewer.spinOnce();
+    }
+
+    //-- Curvature stuff
+    //-----------------------------------------------------------------------------------
+    // Object for storing the normals.
+    pcl::PointCloud<pcl::Normal>::Ptr normals(new pcl::PointCloud<pcl::Normal>);
+    // Object for storing the RSD descriptors for each point.
+    pcl::PointCloud<pcl::PrincipalRadiiRSD>::Ptr descriptors(new pcl::PointCloud<pcl::PrincipalRadiiRSD>());
+
+
+    // Note: you would usually perform downsampling now. It has been omitted here
+    // for simplicity, but be aware that computation can take a long time.
+
+    // Estimate the normals.
+    std::cout << "Computing normals..." << std::endl;
+    pcl::NormalEstimationOMP<pcl::PointXYZ, pcl::Normal> normalEstimation;
+    normalEstimation.setInputCloud(cloud);
+    normalEstimation.setRadiusSearch(0.03);
+    pcl::search::KdTree<pcl::PointXYZ>::Ptr kdtree(new pcl::search::KdTree<pcl::PointXYZ>);
+    normalEstimation.setSearchMethod(kdtree);
+    normalEstimation.compute(*normals);
+    std::cout << "Found " << normals->points.size() << " normals." << std::endl;
+
+    // RSD estimation object.
+    std::cout << "Computing RSD descriptors..." << std::endl;
+    pcl::RSDEstimation<pcl::PointXYZ, pcl::Normal, pcl::PrincipalRadiiRSD> rsd;
+    rsd.setInputCloud(cloud);
+    rsd.setInputNormals(normals);
+    rsd.setSearchMethod(kdtree);
+    // Search radius, to look for neighbors. Note: the value given here has to be
+    // larger than the radius used to estimate the normals.
+    rsd.setRadiusSearch(0.03);
+    // Plane radius. Any radius larger than this is considered infinite (a plane).
+    rsd.setPlaneRadius(0.02);
+    // Do we want to save the full distance-angle histograms?
+    rsd.setSaveHistograms(false);
+
+    rsd.compute(*descriptors);
+    std::cout << "Found " << descriptors->points.size() << " descriptors." << std::endl;
+
+    //-- Save to mat file
+    std::cout << "Saving to file " << filename <<  " ..." << std::endl;
+    std::ofstream rsd_file(filename.c_str());
+    for (int i = 0; i < cloud->points.size(); i++)
+    {
+        rsd_file << cloud->points[i].x << " "
+                 << cloud->points[i].y << " "
+                 << cloud->points[i].z << " "
+                 << descriptors->points[i].r_min << " "
+                 << descriptors->points[i].r_max << "\n";
+    }
+    rsd_file.close();
 
     return 0;
 }
