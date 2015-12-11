@@ -97,29 +97,15 @@ int main (int argc, char** argv)
                 pcl::PointXYZ p2;
                 p2.x = side;
                 p2.y = j * point_distance;
-                p.z = k * point_distance;
+                p2.z = k * point_distance;
                 cloud->points.push_back(p2);
             }
 
+    cloud->width = cloud->points.size();
+    cloud->height = 1;
+
     std::cout << "Working with " << cloud->points.size() << " points." << std::endl;
 
-    //-- Visualization
-    //--------------------------------------------------------------------------------------
-    //-- Visualization Setup
-    pcl::visualization::PCLVisualizer viewer("Magic cube");
-    pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> red_color_handler(cloud, 255, 0, 0);
-    viewer.addCoordinateSystem(1.0, "origin", 0);
-    viewer.setBackgroundColor(0.05, 0.05, 0.05, 0);
-
-    //-- Add point cloud
-    viewer.addPointCloud(cloud, red_color_handler, "cube");
-    viewer.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 2, "cube");
-
-    //-- Visualization thread
-    while(!viewer.wasStopped())
-    {
-        viewer.spinOnce();
-    }
 
     //-- Curvature stuff
     //-----------------------------------------------------------------------------------
@@ -136,7 +122,7 @@ int main (int argc, char** argv)
     std::cout << "Computing normals..." << std::endl;
     pcl::NormalEstimationOMP<pcl::PointXYZ, pcl::Normal> normalEstimation;
     normalEstimation.setInputCloud(cloud);
-    normalEstimation.setRadiusSearch(0.03);
+    normalEstimation.setRadiusSearch(0.005);
     pcl::search::KdTree<pcl::PointXYZ>::Ptr kdtree(new pcl::search::KdTree<pcl::PointXYZ>);
     normalEstimation.setSearchMethod(kdtree);
     normalEstimation.compute(*normals);
@@ -150,9 +136,9 @@ int main (int argc, char** argv)
     rsd.setSearchMethod(kdtree);
     // Search radius, to look for neighbors. Note: the value given here has to be
     // larger than the radius used to estimate the normals.
-    rsd.setRadiusSearch(0.03);
+    rsd.setRadiusSearch(0.007);
     // Plane radius. Any radius larger than this is considered infinite (a plane).
-    rsd.setPlaneRadius(0.02);
+    rsd.setPlaneRadius(0.005);
     // Do we want to save the full distance-angle histograms?
     rsd.setSaveHistograms(false);
 
@@ -171,6 +157,32 @@ int main (int argc, char** argv)
                  << descriptors->points[i].r_max << "\n";
     }
     rsd_file.close();
+
+    //-- Save point cloud
+    pcl::io::savePCDFileASCII((filename+".pcd").c_str(), *cloud);
+
+    //-- Visualization
+    //--------------------------------------------------------------------------------------
+    //-- Visualization Setup
+    pcl::visualization::PCLVisualizer viewer("Magic cube");
+    pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> red_color_handler(cloud, 255, 0, 0);
+    viewer.addCoordinateSystem(1.0, "origin", 0);
+    viewer.setBackgroundColor(0.05, 0.05, 0.05, 0);
+
+    //-- Add point cloud
+    viewer.addPointCloud(cloud, red_color_handler, "cube");
+    viewer.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 2, "cube");
+
+    //-- Add normals
+    viewer.addPointCloudNormals<pcl::PointXYZ, pcl::Normal> (cloud, normals, 1, 0.05, "normals");
+    viewer.setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_COLOR, 0, 0, 255, "normals");
+
+
+    //-- Visualization thread
+    while(!viewer.wasStopped())
+    {
+        viewer.spinOnce();
+    }
 
     return 0;
 }
