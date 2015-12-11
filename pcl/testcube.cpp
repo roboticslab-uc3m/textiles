@@ -47,24 +47,61 @@ int main (int argc, char** argv)
 
     //-- Fill in the cloud data
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
-    cloud->width  = pow(samples,3);
-    cloud->height = 1;
-    cloud->points.resize (cloud->width * cloud->height);
-    std::cout << "Working with " << cloud->points.size() << " points." << std::endl;
+    //cloud->width  = pow(samples,3);
+    //cloud->height = 1;
+    //cloud->points.resize (cloud->width * cloud->height);
+    //std::cout << "Working with " << cloud->points.size() << " points." << std::endl;
 
 
     float point_distance = side/samples;
     std::cout << "Resolution: " << point_distance << std::endl;
     std::cout << "Creating point cloud..." << std::endl;
 
-    for (int k = 0; k < samples; k++)
+    for (int j = 0; j < samples; j++)
+        for (int i = 0; i < samples; i++)
+        {
+            pcl::PointXYZ p;
+            p.x = i * point_distance;
+            p.y = j * point_distance;
+            p.z = 0;
+            cloud->points.push_back(p);
+
+            pcl::PointXYZ p2;
+            p2.x = i * point_distance;
+            p2.y = j * point_distance;
+            p2.z = side;
+            cloud->points.push_back(p2);
+        }
+
+    for (int k = 1; k < samples-1; k++)
         for (int j = 0; j < samples; j++)
-            for (int i = 0; i < samples; i++)
+            if (j == 0 || j == samples-1)
             {
-                cloud->points[i+j*samples+k*samples].x = i * point_distance;
-                cloud->points[i+j*samples+k*samples].y = j * point_distance;
-                cloud->points[i+j*samples+k*samples].z = k * point_distance;
+                for (int i = 0; i < samples; i++)
+                {
+                    pcl::PointXYZ p;
+                    p.x = i * point_distance;
+                    p.y = j * point_distance;
+                    p.z = k * point_distance;
+                    cloud->points.push_back(p);
+                }
             }
+            else
+            {
+                pcl::PointXYZ p;
+                p.x = 0;
+                p.y = j * point_distance;
+                p.z = k * point_distance;
+                cloud->points.push_back(p);
+
+                pcl::PointXYZ p2;
+                p2.x = side;
+                p2.y = j * point_distance;
+                p.z = k * point_distance;
+                cloud->points.push_back(p2);
+            }
+
+    std::cout << "Working with " << cloud->points.size() << " points." << std::endl;
 
     //-- Visualization
     //--------------------------------------------------------------------------------------
