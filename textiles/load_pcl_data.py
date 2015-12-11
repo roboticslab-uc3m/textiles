@@ -34,18 +34,25 @@ def surface_plot(data):
     #     linewidth=0, antialiased=False, shade=False)
     plt.show()
 
+def bin(a):
+    s=''
+    t={'0':'000','1':'001','2':'010','3':'011',
+       '4':'100','5':'101','6':'110','7':'111'}
+    for c in oct(a)[1:]:
+        s+=t[c]
+    return s
 
 def colorize_point_cloud(data, output_file):
     X = data[:,0]
     Y = data[:,1]
     Z = data[:,2]
     r_min = data[:,3]
-    # r_max = data[:,4]
+    r_max = data[:,4]
 
     r_min_norm = (r_min - r_min.min()) / (r_min.max()-r_min.min())
     # r_max_norm = (r_max - r_max.min()) / (r_max.max()-r_max.min())
 
-    r_min_rgba = pylab.cm.jet(r_min_norm)
+    r_min_rgba = pylab.cm.cool(r_min_norm)
     # r_max_rgba = pylab.cm.spectral(r_max_norm)
 
 
@@ -66,7 +73,7 @@ def colorize_point_cloud(data, output_file):
 
         # Write data
         for x, y, z, color in zip(X, Y, Z, r_min_rgba):
-            color_packed = int(color[0]) << 16 | int(color[1]) << 8 | int(color[2])
+            color_packed = int(color[0]*255) << 16 | int(color[1]*255) << 8 | int(color[2]*255)
             f.write("{:f} {:f} {:f} {:f}\n".format(x, y, z, color_packed))
 
 
@@ -84,7 +91,7 @@ if __name__ == '__main__':
     # ga.compute(filtered_src)
     # print "Found %d pathes" % ga.n_patches
 
-    data = np.loadtxt('../pcl/build/cube.m')
+    data = np.loadtxt('../pcl/build/rsd_data2.m')
     # surface_plot(data)
 
     colorize_point_cloud(data, 'cloud.pcd')
