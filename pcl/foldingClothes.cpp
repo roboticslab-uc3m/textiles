@@ -189,6 +189,7 @@ int main(int argc, char* argv[])
     normalEstimation.setRadiusSearch(0.03);
     pcl::search::KdTree<pcl::PointXYZ>::Ptr kdtree(new pcl::search::KdTree<pcl::PointXYZ>);
     normalEstimation.setSearchMethod(kdtree);
+    normalEstimation.setViewPoint(0, 0 , 2);
     normalEstimation.compute(*normals);
 
     // RSD estimation object.
@@ -220,17 +221,17 @@ int main(int argc, char* argv[])
 
     //-- Obtain range image
     //-----------------------------------------------------------------------------------
-    ZBufferDepthImageCreator<pcl::PointXYZ> depth_image_creator;
-    depth_image_creator.setInputPointCloud(garment_points);
-    depth_image_creator.setResolution(1024);
-    depth_image_creator.setUpsampling(true);
-    depth_image_creator.compute();
-    Eigen::MatrixXf image = depth_image_creator.getDepthImageAsMatrix();
+//    ZBufferDepthImageCreator<pcl::PointXYZ> depth_image_creator;
+//    depth_image_creator.setInputPointCloud(garment_points);
+//    depth_image_creator.setResolution(1024);
+//    depth_image_creator.setUpsampling(true);
+//    depth_image_creator.compute();
+//    Eigen::MatrixXf image = depth_image_creator.getDepthImageAsMatrix();
 
-    //-- Temporal fix to get image (through file)
-    std::ofstream file(output_depth_image.c_str());
-    file << image;
-    file.close();
+//    //-- Temporal fix to get image (through file)
+//    std::ofstream file(output_depth_image.c_str());
+//    file << image;
+//    file.close();
 
 
     /********************************************************************************************************
@@ -254,7 +255,7 @@ int main(int argc, char* argv[])
     //viewer.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 2, "plane_point_cloud");
 
     //-- Add normals
-    viewer.addPointCloudNormals<pcl::PointXYZ, pcl::Normal> (garment_points, normals, 1, 0.2, "normals");
+    viewer.addPointCloudNormals<pcl::PointXYZ, pcl::Normal> (garment_points, normals, 1, 0.1, "normals");
     viewer.setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_COLOR, 0, 0, 255, "normals");
 
     //-- View AABB

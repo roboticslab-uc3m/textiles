@@ -5,8 +5,8 @@ import subprocess
 import numpy as np
 from pcl_utils import  colorize_point_cloud
 
-garment_data_names = ["chaqueta1", "chupa1", "chupa2", "chupa3", "chupa4", "sudadera1"]
-garment_data_pattern = "~/Research/point_clouds/{0}/world-cut.ply"
+garment_data_names = ["chupa1", "chupa2", "chupa3", "chupa4", "sudadera1"]
+garment_data_pattern = "~/Research/point_clouds/{0}/textured_mesh.ply"
 
 pcl_processing_binary = "foldingClothes"
 pcl_processing_folder = "~/Repositories/textiles/pcl/build"
@@ -20,7 +20,7 @@ if __name__ == "__main__":
     for name in garment_data_names:
         # Call the processing program:
         args = [ os.path.expanduser(os.path.join(pcl_processing_folder, pcl_processing_binary)),
-                 "--TSDF", "-t",  str(0.02),
+                 "-t",  str(0.02),
                  os.path.expanduser(garment_data_pattern.format(name)),
                  "-d",
                  os.path.expanduser(os.path.join(output_folder, output_depthmap_prefix + name + ".m" )),
@@ -29,7 +29,7 @@ if __name__ == "__main__":
         p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = p.communicate()
 
-        print "Command: " + str("".join(args))
+        print "Command: " + str(" ".join(args))
         print "Processing...\n" + str(out)
         print str(err)
 
