@@ -34,27 +34,17 @@ def surface_plot(data):
     #     linewidth=0, antialiased=False, shade=False)
     plt.show()
 
-def bin(a):
-    s=''
-    t={'0':'000','1':'001','2':'010','3':'011',
-       '4':'100','5':'101','6':'110','7':'111'}
-    for c in oct(a)[1:]:
-        s+=t[c]
-    return s
+def colorize_point_cloud(xyz_data, color_data, output_file, cmap=pylab.cm.cool):
+    X = xyz_data[:,0]
+    Y = xyz_data[:,1]
+    Z = xyz_data[:,2]
 
-def colorize_point_cloud(data, output_file):
-    X = data[:,0]
-    Y = data[:,1]
-    Z = data[:,2]
-    r_min = data[:,3]
-    r_max = data[:,4]
-
-    r_min_norm = (r_min - r_min.min()) / (r_min.max()-r_min.min())
-    # r_max_norm = (r_max - r_max.min()) / (r_max.max()-r_max.min())
-
-    r_min_rgba = pylab.cm.cool(r_min_norm)
-    # r_max_rgba = pylab.cm.spectral(r_max_norm)
-
+    try:
+        color_data_norm = (color_data - color_data.min()) / (color_data.max()-color_data.min())
+        color_data_rgba = cmap(color_data_norm)
+    except RuntimeError, e:
+        print "Error colorizing point cloud: \n" + str(e)
+        return
 
     with open(output_file, 'w') as f:
         # Write pcd header
@@ -69,10 +59,10 @@ def colorize_point_cloud(data, output_file):
         HEIGHT 1
         VIEWPOINT 0 0 0 1 0 0 0
         POINTS {0:d}
-        DATA ascii""".format(len(r_min_rgba)-1))
+        DATA ascii""".format(len(color_data_rgba)-1))
 
         # Write data
-        for x, y, z, color in zip(X, Y, Z, r_min_rgba):
+        for x, y, z, color in zip(X, Y, Z, color_data_rgba):
             color_packed = int(color[0]*255) << 16 | int(color[1]*255) << 8 | int(color[2]*255)
             f.write("{:f} {:f} {:f} {:f}\n".format(x, y, z, color_packed))
 
@@ -94,4 +84,5 @@ if __name__ == '__main__':
     data = np.loadtxt('../pcl/build/rsd_data2.m')
     # surface_plot(data)
 
-    colorize_point_cloud(data, 'cloud.pcd')
+    colorize_point_cloud(data[:,0:3], data[:,3], 'cloud-r_min.pcd')
+    colorize_point_cloud(data[:,0:3], data[:,4], 'cloud-r_max.pcd')
