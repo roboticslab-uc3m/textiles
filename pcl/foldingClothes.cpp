@@ -21,10 +21,11 @@
 #include <pcl/features/moment_of_inertia_estimation.h>
 #include <vector>
 #include <pcl/visualization/cloud_viewer.h>
-//-- Range images
-#include <pcl/range_image/range_image.h>
-#include <pcl/visualization/range_image_visualizer.h>
+//-- RSD estimation
+#include <pcl/features/normal_3d.h>
+#include <pcl/features/rsd.h>
 
+//-- My classes
 #include "PointCloudPreprocessor.hpp"
 #include "ZBufferDepthImageCreator.hpp"
 
@@ -39,6 +40,8 @@ void show_usage(char * program_name)
   std::cout << "-f, --foreground:  Foreground points size (default: 5)" << std::endl;
   std::cout << "-t, --threshold:  Distance threshold for RANSAC (default: 0.03)" << std::endl;
   std::cout << "--TSDF: Input cloud is a TSDF cloud, params are cube and voxel dimensions (Default: 3m, 512 voxels)" << std::endl;
+  std::cout << "-d, --depth: Output file for depth image" << std::endl;
+  std::cout << "-r, --rsd: Output file for RSD data" << std::endl;
 }
 
 int main(int argc, char* argv[])
@@ -50,6 +53,8 @@ int main(int argc, char* argv[])
     bool TSDF_enable_scale = false;
     int TSDF_cube_dimensions = 3; //-- In meters
     int TSDF_voxels = 512;
+    std::string output_depth_image = "depth_image.m";
+    std::string output_rsd_data = "rsd_data.m";
 
     //-- Show usage
     if (pcl::console::find_switch(argc, argv, "-h") || pcl::console::find_switch(argc, argv, "--help"))
@@ -79,6 +84,16 @@ int main(int argc, char* argv[])
         TSDF_enable_scale = true;
         pcl::console::parse_2x_arguments(argc, argv, "--TSDF", TSDF_cube_dimensions, TSDF_voxels);
     }
+
+    if (pcl::console::find_switch(argc, argv, "-d"))
+        pcl::console::parse_argument(argc, argv, "-d", output_depth_image);
+    else if (pcl::console::find_switch(argc, argv, "--depth"))
+        pcl::console::parse_argument(argc, argv, "--depth", output_depth_image);
+
+    if (pcl::console::find_switch(argc, argv, "-r"))
+        pcl::console::parse_argument(argc, argv, "-r", output_rsd_data);
+    else if (pcl::console::find_switch(argc, argv, "--rsd"))
+        pcl::console::parse_argument(argc, argv, "--rsd", output_rsd_data);
 
     //-- Get point cloud file from arguments
     std::vector<int> filenames;
@@ -157,17 +172,63 @@ int main(int argc, char* argv[])
     feature_extractor.getAABB(min_point_AABB, max_point_AABB);
     feature_extractor.getOBB(min_point_OBB, max_point_OBB, position_OBB, rotational_matrix_OBB);
 
+    //-- Curvature stuff
+    //-----------------------------------------------------------------------------------
+    // Object for storing the normals.
+    pcl::PointCloud<pcl::Normal>::Ptr normals(new pcl::PointCloud<pcl::Normal>);
+    // Object for storing the RSD descriptors for each point.
+    pcl::PointCloud<pcl::PrincipalRadiiRSD>::Ptr descriptors(new pcl::PointCloud<pcl::PrincipalRadiiRSD>());
+
+
+    // Note: you would usually perform downsampling now. It has been omitted here
+    // for simplicity, but be aware that computation can take a long time.
+
+    // Estimate the normals.
+    pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> normalEstimation;
+    normalEstimation.setInputCloud(garment_points);
+    normalEstimation.setRadiusSearch(0.03);
+    pcl::search::KdTree<pcl::PointXYZ>::Ptr kdtree(new pcl::search::KdTree<pcl::PointXYZ>);
+    normalEstimation.setSearchMethod(kdtree);
+    normalEstimation.compute(*normals);
+
+    // RSD estimation object.
+    pcl::RSDEstimation<pcl::PointXYZ, pcl::Normal, pcl::PrincipalRadiiRSD> rsd;
+    rsd.setInputCloud(garment_points);
+    rsd.setInputNormals(normals);
+    rsd.setSearchMethod(kdtree);
+    // Search radius, to look for neighbors. Note: the value given here has to be
+    // larger than the radius used to estimate the normals.
+    rsd.setRadiusSearch(0.05);
+    // Plane radius. Any radius larger than this is considered infinite (a plane).
+    rsd.setPlaneRadius(0.1);
+    // Do we want to save the full distance-angle histograms?
+    rsd.setSaveHistograms(false);
+
+    rsd.compute(*descriptors);
+
+    //-- Save to mat file
+    std::ofstream rsd_file(output_rsd_data.c_str());
+    for (int i = 0; i < garment_points->points.size(); i++)
+    {
+        rsd_file << garment_points->points[i].x << " "
+                 << garment_points->points[i].y << " "
+                 << garment_points->points[i].z << " "
+                 << descriptors->points[i].r_min << " "
+                 << descriptors->points[i].r_max << "\n";
+    }
+    rsd_file.close();
+
     //-- Obtain range image
     //-----------------------------------------------------------------------------------
     ZBufferDepthImageCreator<pcl::PointXYZ> depth_image_creator;
     depth_image_creator.setInputPointCloud(garment_points);
-    depth_image_creator.setResolution(640);
+    depth_image_creator.setResolution(1024);
     depth_image_creator.setUpsampling(true);
     depth_image_creator.compute();
     Eigen::MatrixXf image = depth_image_creator.getDepthImageAsMatrix();
 
     //-- Temporal fix to get image (through file)
-    std::ofstream file("depth_image.m");
+    std::ofstream file(output_depth_image.c_str());
     file << image;
     file.close();
 
@@ -193,11 +254,11 @@ int main(int argc, char* argv[])
     //viewer.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 2, "plane_point_cloud");
 
     //-- Add normals
-    //viewer.addPointCloudNormals<pcl::PointXYZ, pcl::Normal> (source_cloud, cloud_normals, 1, 0.8, "normals");
-    //viewer.setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_COLOR, 0, 0, 255, "normals");
+    viewer.addPointCloudNormals<pcl::PointXYZ, pcl::Normal> (garment_points, normals, 1, 0.2, "normals");
+    viewer.setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_COLOR, 0, 0, 255, "normals");
 
     //-- View AABB
-    viewer.addCube(min_point_AABB.x, max_point_AABB.x, min_point_AABB.y, max_point_AABB.y, min_point_AABB.z, max_point_AABB.z, 1.0, 1.0, 0.0, "AABB");
+    // viewer.addCube(min_point_AABB.x, max_point_AABB.x, min_point_AABB.y, max_point_AABB.y, min_point_AABB.z, max_point_AABB.z, 1.0, 1.0, 0.0, "AABB");
 
     //-- View OBB
     Eigen::Vector3f position(position_OBB.x, position_OBB.y, position_OBB.z);
