@@ -36,8 +36,8 @@ void show_usage(char * program_name)
   std::cout << std::endl;
   std::cout << "Usage: " << program_name << " cloud_filename.[pcd|ply]" << std::endl;
   std::cout << "-h:  Show this help." << std::endl;
-  std::cout << "-b, --background:  Background points size (default: 1)" << std::endl;
-  std::cout << "-f, --foreground:  Foreground points size (default: 5)" << std::endl;
+  //std::cout << "-b, --background:  Background points size (default: 1)" << std::endl;
+  //std::cout << "-f, --foreground:  Foreground points size (default: 5)" << std::endl;
   std::cout << "-t, --threshold:  Distance threshold for RANSAC (default: 0.03)" << std::endl;
   std::cout << "--TSDF: Input cloud is a TSDF cloud, params are cube and voxel dimensions (Default: 3m, 512 voxels)" << std::endl;
   std::cout << "-d, --depth: Output file for depth image" << std::endl;
@@ -271,10 +271,10 @@ int main(int argc, char* argv[])
 
 
     //-- Visualization thread
-    while(!viewer.wasStopped())
-    {
-        viewer.spinOnce();
-    }
+//    while(!viewer.wasStopped())
+//    {
+//        viewer.spinOnce();
+//    }
 
     return 0;
 }
