@@ -2,8 +2,7 @@ __author__ = 'def'
 
 import numpy as np
 import pylab
-from skimage.filters.rank import median
-from skimage.morphology import disk
+
 
 import GarmentAnalysis
 
@@ -68,19 +67,6 @@ def colorize_point_cloud(xyz_data, color_data, output_file, cmap=pylab.cm.cool):
 
 
 if __name__ == '__main__':
-    src = np.loadtxt('../pcl/build/cube.m')
-    print np.unique(src).shape
-    filtered_src = median(src, disk(5))
-    pylab.figure(0)
-    pylab.imshow(src)
-    pylab.figure(1)
-    pylab.imshow(filtered_src)
-    # pylab.show()
-
-    # ga = GarmentAnalysis.GarmentAnalysis()
-    # ga.compute(filtered_src)
-    # print "Found %d pathes" % ga.n_patches
-
     data = np.loadtxt('../pcl/build/rsd_data2.m')
     # surface_plot(data)
 
