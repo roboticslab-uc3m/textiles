@@ -86,6 +86,7 @@ int main(int argc, char* argv[])
 
         if (filenames.size() != 1)
         {
+            std::cerr << "No input file specified!" << std::endl;
             show_usage(argv[0]);
             return -1;
         }
@@ -203,8 +204,14 @@ int main(int argc, char* argv[])
     Eigen::Quaternionf rotation_quaternion = Eigen::Quaternionf().setFromTwoVectors(normal_vector, Eigen::Vector3f::UnitZ());
     pcl::transformPointCloud(*centered_cloud, *oriented_cloud, Eigen::Vector3f(0,0,0), rotation_quaternion);
 
+    //-- Remove negative outliers (table noise)
     pcl::PointCloud<pcl::PointXYZ>::Ptr garment_points(new pcl::PointCloud<pcl::PointXYZ>);
-    *garment_points = *oriented_cloud;
+    pcl::PassThrough<pcl::PointXYZ> passthrough_filter;
+    passthrough_filter.setInputCloud(oriented_cloud);
+    passthrough_filter.setFilterFieldName("z");
+    passthrough_filter.setFilterLimits(-0.1, FLT_MAX);
+    passthrough_filter.setFilterLimitsNegative(false);
+    passthrough_filter.filter(*garment_points);
 
     //-- Find bounding box (not really required)
     feature_extractor.setInputCloud(garment_points);
@@ -280,8 +287,8 @@ int main(int argc, char* argv[])
     //viewer.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 2, "plane_point_cloud");
 
     //-- Add normals
-    viewer.addPointCloudNormals<pcl::PointXYZ, pcl::Normal> (garment_points, normals, 1, 0.03, "normals");
-    viewer.setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_COLOR, 0, 0, 255, "normals");
+    //viewer.addPointCloudNormals<pcl::PointXYZ, pcl::Normal> (garment_points, normals, 1, 0.03, "normals");
+    //viewer.setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_COLOR, 0, 0, 255, "normals");
 
     //-- View AABB
     // viewer.addCube(min_point_AABB.x, max_point_AABB.x, min_point_AABB.y, max_point_AABB.y, min_point_AABB.z, max_point_AABB.z, 1.0, 1.0, 0.0, "AABB");
