@@ -45,18 +45,9 @@ class MeshPreprocessor
         bool process(pcl::PointCloud<PointT>& output_cloud) {
             //-- Do stuff here
             PointCloudPtr preprocessed_cloud(new PointCloud);
-            if (TSDF_enable_scale)
-            {
-                Eigen::Affine3f scale_transform = Eigen::Affine3f::Identity();
-                scale_transform.scale(TSDF_cube_dimensions/(float)TSDF_voxels);
 
-                //-- Apply transformation
-                pcl::transformPointCloud(*input_cloud, *preprocessed_cloud, scale_transform);
-            }
-            else
-            {
-                *preprocessed_cloud = *input_cloud;
-            }
+            *preprocessed_cloud = *input_cloud;
+
 
             //-- Find table's plane
             //------------------------------------------------------------------------------------
@@ -141,6 +132,10 @@ class MeshPreprocessor
         float RANSAC_threshold_distance;
 
         PointCloudConstPtr input_cloud;
+
+    public:
+        PointCloudPtr preprocessed_cloud;
+
 };
 
 #endif // MESH_PREPROCESSOR_HPP
