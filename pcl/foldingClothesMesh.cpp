@@ -190,6 +190,17 @@ int main(int argc, char* argv[])
     feature_extractor.getAABB(min_point_AABB, max_point_AABB);
     feature_extractor.getOBB(min_point_OBB, max_point_OBB, position_OBB, rotational_matrix_OBB);
 
+    //-- Project things onto table:
+    pcl::ProjectInliers<pcl::PointXYZ> project_inliners;
+    pcl::PointCloud<pcl::PointXYZ>::Ptr OBB_position_to_be_projected(new pcl::PointCloud<pcl::PointXYZ>);
+    OBB_position_to_be_projected->points.push_back(position_OBB);
+    pcl::PointCloud<pcl::PointXYZ>::Ptr OBB_position_projected(new pcl::PointCloud<pcl::PointXYZ>);
+    project_inliners.setModelType(pcl::SACMODEL_PLANE);
+    project_inliners.setInputCloud(OBB_position_to_be_projected);
+    project_inliners.setModelCoefficients(table_plane_coefficients);
+    project_inliners.filter(*OBB_position_projected);
+    position_OBB = OBB_position_projected->points[0];
+
     //-- Transform point cloud
     //-----------------------------------------------------------------------------------
     //-- Translating to center
@@ -209,7 +220,7 @@ int main(int argc, char* argv[])
     pcl::PassThrough<pcl::PointXYZ> passthrough_filter;
     passthrough_filter.setInputCloud(oriented_cloud);
     passthrough_filter.setFilterFieldName("z");
-    passthrough_filter.setFilterLimits(-0.1, FLT_MAX);
+    passthrough_filter.setFilterLimits(0, FLT_MAX);
     passthrough_filter.setFilterLimitsNegative(false);
     passthrough_filter.filter(*garment_points);
 
