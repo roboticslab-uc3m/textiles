@@ -42,6 +42,7 @@ void show_usage(char * program_name)
   std::cout << "--TSDF: Input cloud is a TSDF cloud, params are cube and voxel dimensions (Default: 3m, 512 voxels)" << std::endl;
   std::cout << "-d, --depth: Output file for depth image" << std::endl;
   std::cout << "-r, --rsd: Output file for RSD data" << std::endl;
+  std::cout << "--rsd-params: Parameters for RSD (kdtree radius for normals, for curvature and plane threshold" << std::endl;
 }
 
 int main(int argc, char* argv[])
@@ -55,6 +56,9 @@ int main(int argc, char* argv[])
     int TSDF_voxels = 512;
     std::string output_depth_image = "depth_image.m";
     std::string output_rsd_data = "rsd_data.m";
+    double rsd_normal_radius = 0.05;
+    double rsd_curvature_radius = 0.07;
+    double rsd_plane_threshold = 0.2;
 
     //-- Show usage
     if (pcl::console::find_switch(argc, argv, "-h") || pcl::console::find_switch(argc, argv, "--help"))
@@ -94,6 +98,9 @@ int main(int argc, char* argv[])
         pcl::console::parse_argument(argc, argv, "-r", output_rsd_data);
     else if (pcl::console::find_switch(argc, argv, "--rsd"))
         pcl::console::parse_argument(argc, argv, "--rsd", output_rsd_data);
+    if (pcl::console::find_switch(argc, argv, "--rsd-params"))
+        pcl::console::parse_3x_arguments(argc, argv, "--rsd-params", rsd_normal_radius, rsd_curvature_radius,
+                                         rsd_plane_threshold);
 
     //-- Get point cloud file from arguments
     std::vector<int> filenames;
@@ -186,7 +193,7 @@ int main(int argc, char* argv[])
     // Estimate the normals.
     pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> normalEstimation;
     normalEstimation.setInputCloud(garment_points);
-    normalEstimation.setRadiusSearch(0.03);
+    normalEstimation.setRadiusSearch(rsd_normal_radius);
     pcl::search::KdTree<pcl::PointXYZ>::Ptr kdtree(new pcl::search::KdTree<pcl::PointXYZ>);
     normalEstimation.setSearchMethod(kdtree);
     normalEstimation.setViewPoint(0, 0 , 2);
@@ -199,9 +206,9 @@ int main(int argc, char* argv[])
     rsd.setSearchMethod(kdtree);
     // Search radius, to look for neighbors. Note: the value given here has to be
     // larger than the radius used to estimate the normals.
-    rsd.setRadiusSearch(0.05);
+    rsd.setRadiusSearch(rsd_curvature_radius);
     // Plane radius. Any radius larger than this is considered infinite (a plane).
-    rsd.setPlaneRadius(0.1);
+    rsd.setPlaneRadius(rsd_plane_threshold);
     // Do we want to save the full distance-angle histograms?
     rsd.setSaveHistograms(false);
 
@@ -255,7 +262,7 @@ int main(int argc, char* argv[])
     //viewer.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 2, "plane_point_cloud");
 
     //-- Add normals
-    viewer.addPointCloudNormals<pcl::PointXYZ, pcl::Normal> (garment_points, normals, 1, 0.1, "normals");
+    viewer.addPointCloudNormals<pcl::PointXYZ, pcl::Normal> (garment_points, normals, 1, 0.03, "normals");
     viewer.setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_COLOR, 0, 0, 255, "normals");
 
     //-- View AABB
@@ -272,10 +279,10 @@ int main(int argc, char* argv[])
 
 
     //-- Visualization thread
-//    while(!viewer.wasStopped())
-//    {
-//        viewer.spinOnce();
-//    }
+    while(!viewer.wasStopped())
+    {
+        viewer.spinOnce();
+    }
 
     return 0;
 }
