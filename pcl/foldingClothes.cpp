@@ -36,8 +36,8 @@ void show_usage(char * program_name)
   std::cout << std::endl;
   std::cout << "Usage: " << program_name << " cloud_filename.[pcd|ply]" << std::endl;
   std::cout << "-h:  Show this help." << std::endl;
-  std::cout << "-b, --background:  Background points size (default: 1)" << std::endl;
-  std::cout << "-f, --foreground:  Foreground points size (default: 5)" << std::endl;
+  //std::cout << "-b, --background:  Background points size (default: 1)" << std::endl;
+  //std::cout << "-f, --foreground:  Foreground points size (default: 5)" << std::endl;
   std::cout << "-t, --threshold:  Distance threshold for RANSAC (default: 0.03)" << std::endl;
   std::cout << "--TSDF: Input cloud is a TSDF cloud, params are cube and voxel dimensions (Default: 3m, 512 voxels)" << std::endl;
   std::cout << "-d, --depth: Output file for depth image" << std::endl;
@@ -189,6 +189,7 @@ int main(int argc, char* argv[])
     normalEstimation.setRadiusSearch(0.03);
     pcl::search::KdTree<pcl::PointXYZ>::Ptr kdtree(new pcl::search::KdTree<pcl::PointXYZ>);
     normalEstimation.setSearchMethod(kdtree);
+    normalEstimation.setViewPoint(0, 0 , 2);
     normalEstimation.compute(*normals);
 
     // RSD estimation object.
@@ -220,17 +221,17 @@ int main(int argc, char* argv[])
 
     //-- Obtain range image
     //-----------------------------------------------------------------------------------
-    ZBufferDepthImageCreator<pcl::PointXYZ> depth_image_creator;
-    depth_image_creator.setInputPointCloud(garment_points);
-    depth_image_creator.setResolution(1024);
-    depth_image_creator.setUpsampling(true);
-    depth_image_creator.compute();
-    Eigen::MatrixXf image = depth_image_creator.getDepthImageAsMatrix();
+//    ZBufferDepthImageCreator<pcl::PointXYZ> depth_image_creator;
+//    depth_image_creator.setInputPointCloud(garment_points);
+//    depth_image_creator.setResolution(1024);
+//    depth_image_creator.setUpsampling(true);
+//    depth_image_creator.compute();
+//    Eigen::MatrixXf image = depth_image_creator.getDepthImageAsMatrix();
 
-    //-- Temporal fix to get image (through file)
-    std::ofstream file(output_depth_image.c_str());
-    file << image;
-    file.close();
+//    //-- Temporal fix to get image (through file)
+//    std::ofstream file(output_depth_image.c_str());
+//    file << image;
+//    file.close();
 
 
     /********************************************************************************************************
@@ -254,7 +255,7 @@ int main(int argc, char* argv[])
     //viewer.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 2, "plane_point_cloud");
 
     //-- Add normals
-    viewer.addPointCloudNormals<pcl::PointXYZ, pcl::Normal> (garment_points, normals, 1, 0.2, "normals");
+    viewer.addPointCloudNormals<pcl::PointXYZ, pcl::Normal> (garment_points, normals, 1, 0.1, "normals");
     viewer.setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_COLOR, 0, 0, 255, "normals");
 
     //-- View AABB
@@ -271,10 +272,10 @@ int main(int argc, char* argv[])
 
 
     //-- Visualization thread
-    while(!viewer.wasStopped())
-    {
-        viewer.spinOnce();
-    }
+//    while(!viewer.wasStopped())
+//    {
+//        viewer.spinOnce();
+//    }
 
     return 0;
 }

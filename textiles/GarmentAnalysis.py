@@ -6,6 +6,7 @@ from skimage.filters import rank
 from skimage.util import img_as_ubyte
 from skimage.restoration import denoise_tv_chambolle
 from skimage import exposure
+
 import matplotlib.pyplot as plt
 
 class GarmentAnalysis:
@@ -39,3 +40,18 @@ class GarmentAnalysis:
         plt.show()
 
 
+if __name__ == '__main__':
+    import numpy as np
+
+    src = np.loadtxt('../pcl/build/cube.m')
+    print "Loaded point cloud data with %d unique values" % np.unique(src).shape[0]
+    filtered_src = rank.median(src, disk(5))
+    plt.figure(0)
+    plt.imshow(src)
+    plt.figure(1)
+    plt.imshow(filtered_src)
+    plt.show()
+
+    # ga = GarmentAnalysis.GarmentAnalysis()
+    # ga.compute(filtered_src)
+    # print "Found %d pathes" % ga.n_patches
