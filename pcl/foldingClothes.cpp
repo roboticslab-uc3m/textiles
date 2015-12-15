@@ -23,6 +23,7 @@
 #include <pcl/visualization/cloud_viewer.h>
 //-- RSD estimation
 #include <pcl/features/normal_3d.h>
+#include <pcl/features/normal_3d_omp.h>
 #include <pcl/features/rsd.h>
 
 //-- My classes
@@ -191,7 +192,7 @@ int main(int argc, char* argv[])
     // for simplicity, but be aware that computation can take a long time.
 
     // Estimate the normals.
-    pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> normalEstimation;
+    pcl::NormalEstimationOMP<pcl::PointXYZ, pcl::Normal> normalEstimation;
     normalEstimation.setInputCloud(garment_points);
     normalEstimation.setRadiusSearch(rsd_normal_radius);
     pcl::search::KdTree<pcl::PointXYZ>::Ptr kdtree(new pcl::search::KdTree<pcl::PointXYZ>);
