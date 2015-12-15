@@ -207,7 +207,7 @@ int main(int argc, char* argv[])
     pcl::PointCloud<pcl::PointXYZ>::Ptr centered_cloud(new pcl::PointCloud<pcl::PointXYZ>);
     Eigen::Affine3f translation_transform = Eigen::Affine3f::Identity();
     translation_transform.translation() << -position_OBB.x, -position_OBB.y, -position_OBB.z;
-    pcl::transformPointCloud(*not_table_points, *centered_cloud, translation_transform);
+    pcl::transformPointCloud(*source_cloud, *centered_cloud, translation_transform);
 
     //-- Orient using the plane normal
     pcl::PointCloud<pcl::PointXYZ>::Ptr oriented_cloud(new pcl::PointCloud<pcl::PointXYZ>);
@@ -220,7 +220,7 @@ int main(int argc, char* argv[])
     pcl::PassThrough<pcl::PointXYZ> passthrough_filter;
     passthrough_filter.setInputCloud(oriented_cloud);
     passthrough_filter.setFilterFieldName("z");
-    passthrough_filter.setFilterLimits(0, FLT_MAX);
+    passthrough_filter.setFilterLimits(threshold/2.0f, FLT_MAX);
     passthrough_filter.setFilterLimitsNegative(false);
     passthrough_filter.filter(*garment_points);
 
