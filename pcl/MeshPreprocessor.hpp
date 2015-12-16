@@ -18,6 +18,8 @@
 #include <pcl/features/moment_of_inertia_estimation.h>
 //-- Passthrough filter
 #include <pcl/filters/passthrough.h>
+//-- Voxels
+#include <pcl/filters/voxel_grid.h>
 
 
 template<typename PointT>
@@ -43,11 +45,12 @@ class MeshPreprocessor
         }
 
         bool process(pcl::PointCloud<PointT>& output_cloud) {
-            //-- Do stuff here
-            PointCloudPtr preprocessed_cloud(new PointCloud);
-
-            *preprocessed_cloud = *input_cloud;
-
+            //-- Downsampling the mesh prior to RANSAC
+            PointCloudPtr downsampled_point_cloud(new PointCloud);
+            typename pcl::VoxelGrid<PointT> voxel_grid_filter;
+            voxel_grid_filter.setInputCloud(input_cloud);
+            voxel_grid_filter.setLeafSize(0.01f, 0.01f, 0.01f); //-- 1cm^3
+            voxel_grid_filter.filter(*downsampled_point_cloud);
 
             //-- Find table's plane
             //------------------------------------------------------------------------------------
@@ -58,7 +61,7 @@ class MeshPreprocessor
             segmentation.setModelType(pcl::SACMODEL_PLANE);
             segmentation.setMethodType(pcl::SAC_RANSAC);
             segmentation.setDistanceThreshold(RANSAC_threshold_distance);
-            segmentation.setInputCloud(preprocessed_cloud);
+            segmentation.setInputCloud(downsampled_point_cloud);
             segmentation.segment(*table_plane_points, *table_plane_coefficients);
 
             if (table_plane_points->indices.size() == 0)
@@ -80,7 +83,7 @@ class MeshPreprocessor
             //-- Filter table points
             PointCloudPtr not_table_points (new PointCloud);
             typename pcl::ExtractIndices<PointT> extract_indices;
-            extract_indices.setInputCloud(preprocessed_cloud);
+            extract_indices.setInputCloud(downsampled_point_cloud);
             extract_indices.setIndices(table_plane_points);
             extract_indices.setNegative(true);
             extract_indices.filter(*not_table_points);
@@ -99,13 +102,24 @@ class MeshPreprocessor
             feature_extractor.getAABB(min_point_AABB, max_point_AABB);
             feature_extractor.getOBB(min_point_OBB, max_point_OBB, position_OBB, rotational_matrix_OBB);
 
+            //-- Project transformation point onto table plane:
+            typename pcl::ProjectInliers<PointT> project_inliners;
+            PointCloudPtr OBB_position_to_be_projected(new PointCloud);
+            OBB_position_to_be_projected->points.push_back(position_OBB);
+            PointCloudPtr OBB_position_projected(new PointCloud);
+            project_inliners.setModelType(pcl::SACMODEL_PLANE);
+            project_inliners.setInputCloud(OBB_position_to_be_projected);
+            project_inliners.setModelCoefficients(table_plane_coefficients);
+            project_inliners.filter(*OBB_position_projected);
+            PointT projected_OBB = OBB_position_projected->points[0];
+
             //-- Transform point cloud
             //-----------------------------------------------------------------------------------
             //-- Translating to center
             PointCloudPtr centered_cloud(new PointCloud);
             Eigen::Affine3f translation_transform = Eigen::Affine3f::Identity();
-            translation_transform.translation() << -position_OBB.x, -position_OBB.y, -position_OBB.z;
-            pcl::transformPointCloud(*preprocessed_cloud, *centered_cloud, translation_transform);
+            translation_transform.translation() << -projected_OBB.x, -projected_OBB.y, -projected_OBB.z;
+            pcl::transformPointCloud(*input_cloud, *centered_cloud, translation_transform);
 
             //-- Orient using the plane normal
             PointCloudPtr oriented_cloud(new PointCloud);
@@ -114,15 +128,12 @@ class MeshPreprocessor
             pcl::transformPointCloud(*centered_cloud, *oriented_cloud, Eigen::Vector3f(0,0,0), rotation_quaternion);
 
             //-- Remove negative outliers (table noise)
-            PointCloudPtr garment_points(new PointCloud);
             typename pcl::PassThrough<PointT> passthrough_filter;
             passthrough_filter.setInputCloud(oriented_cloud);
             passthrough_filter.setFilterFieldName("z");
-            passthrough_filter.setFilterLimits(0.0, FLT_MAX);
+            passthrough_filter.setFilterLimits(RANSAC_threshold_distance/2.0f, FLT_MAX);
             passthrough_filter.setFilterLimitsNegative(false);
-            passthrough_filter.filter(garment_points);
-            *output_cloud = *garment_points;
-            output_cloud = *oriented_cloud;
+            passthrough_filter.filter(output_cloud);
 
             return true;
         }
@@ -132,10 +143,6 @@ class MeshPreprocessor
         float RANSAC_threshold_distance;
 
         PointCloudConstPtr input_cloud;
-
-    public:
-        PointCloudPtr preprocessed_cloud;
-
 };
 
 #endif // MESH_PREPROCESSOR_HPP

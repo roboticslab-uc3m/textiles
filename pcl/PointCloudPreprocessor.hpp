@@ -98,13 +98,14 @@ class PointCloudPreprocessor
 
             //-- Find points that do not belong to the plane
             //----------------------------------------------------------------------------------
-            //-- Get points from the contour
+            //-- Filter table points
             PointCloudPtr not_table_points (new PointCloud);
             typename pcl::ExtractIndices<PointT> extract_indices;
             extract_indices.setInputCloud(preprocessed_cloud);
             extract_indices.setIndices(table_plane_points);
             extract_indices.setNegative(true);
             extract_indices.filter(*not_table_points);
+
 
             //-- Find bounding box:
             //-----------------------------------------------------------------------------------
@@ -125,7 +126,7 @@ class PointCloudPreprocessor
             PointCloudPtr centered_cloud(new PointCloud);
             Eigen::Affine3f translation_transform = Eigen::Affine3f::Identity();
             translation_transform.translation() << -position_OBB.x, -position_OBB.y, -position_OBB.z;
-            pcl::transformPointCloud(*not_table_points, *centered_cloud, translation_transform);
+            pcl::transformPointCloud(*preprocessed_cloud, *centered_cloud, translation_transform);
 
             //-- Orient using the plane normal
             PointCloudPtr oriented_cloud(new PointCloud);

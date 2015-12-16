@@ -25,8 +25,7 @@
 #include <pcl/features/normal_3d.h>
 #include <pcl/features/normal_3d_omp.h>
 #include <pcl/features/rsd.h>
-//-- Voxels
-#include <pcl/filters/voxel_grid.h>
+
 
 //-- My classes
 #include "MeshPreprocessor.hpp"
@@ -133,98 +132,19 @@ int main(int argc, char* argv[])
     *********************************************************************************************/
     //-- Initial pre-processing of the mesh
     //------------------------------------------------------------------------------------
-    //-- Downsampling the mesh prior to RANSAC
-    pcl::PointCloud<pcl::PointXYZ>::Ptr downsampled_point_cloud(new pcl::PointCloud<pcl::PointXYZ>);
-    pcl::VoxelGrid<pcl::PointXYZ> voxel_grid_filter;
-    voxel_grid_filter.setInputCloud(source_cloud);
-    voxel_grid_filter.setLeafSize(0.01f, 0.01f, 0.01f); //-- 1cm^3
-    voxel_grid_filter.filter(*downsampled_point_cloud);
+    pcl::PointCloud<pcl::PointXYZ>::Ptr garment_points(new pcl::PointCloud<pcl::PointXYZ>);
+    MeshPreprocessor<pcl::PointXYZ> preprocessor;
+    preprocessor.setRANSACThresholdDistance(threshold);
+    preprocessor.setInputCloud(source_cloud);
+    preprocessor.process(*garment_points);
 
-    //-- Find table's plane
-    //------------------------------------------------------------------------------------
-    pcl::ModelCoefficients::Ptr table_plane_coefficients(new pcl::ModelCoefficients);
-    pcl::PointIndices::Ptr table_plane_points(new pcl::PointIndices);
-    pcl::SACSegmentation<pcl::PointXYZ> segmentation;
-    segmentation.setOptimizeCoefficients(true);
-    segmentation.setModelType(pcl::SACMODEL_PLANE);
-    segmentation.setMethodType(pcl::SAC_RANSAC);
-    segmentation.setDistanceThreshold(threshold);
-    segmentation.setInputCloud(downsampled_point_cloud);
-    segmentation.segment(*table_plane_points, *table_plane_coefficients);
-
-    if (table_plane_points->indices.size() == 0)
-    {
-        std::cerr << "Could not estimate a planar model for input point cloud." << std::endl;
-        return false;
-    }
-    else
-    {
-        std::cout << "Plane equation: (" << table_plane_coefficients->values[0] << ") x + ("
-                                         << table_plane_coefficients->values[1] << ") y + ("
-                                         << table_plane_coefficients->values[2] << ") z + ("
-                                         << table_plane_coefficients->values[3] << ") = 0" << std::endl;
-        std::cout << "Model inliers: " << table_plane_points->indices.size() << std::endl;
-    }
-
-    //-- Find points that do not belong to the plane
-    //----------------------------------------------------------------------------------
-    //-- Filter table points
-    pcl::PointCloud<pcl::PointXYZ>::Ptr not_table_points(new pcl::PointCloud<pcl::PointXYZ>);
-    pcl::ExtractIndices<pcl::PointXYZ> extract_indices;
-    extract_indices.setInputCloud(downsampled_point_cloud);
-    extract_indices.setIndices(table_plane_points);
-    extract_indices.setNegative(true);
-    extract_indices.filter(*not_table_points);
-
-
-    //-- Find bounding box:
-    //-----------------------------------------------------------------------------------
+    //-- Find bounding box (not really required)
     pcl::MomentOfInertiaEstimation<pcl::PointXYZ> feature_extractor;
     pcl::PointXYZ min_point_AABB, max_point_AABB;
     pcl::PointXYZ min_point_OBB,  max_point_OBB;
     pcl::PointXYZ position_OBB;
     Eigen::Matrix3f rotational_matrix_OBB;
 
-    feature_extractor.setInputCloud(not_table_points);
-    feature_extractor.compute();
-    feature_extractor.getAABB(min_point_AABB, max_point_AABB);
-    feature_extractor.getOBB(min_point_OBB, max_point_OBB, position_OBB, rotational_matrix_OBB);
-
-    //-- Project things onto table:
-    pcl::ProjectInliers<pcl::PointXYZ> project_inliners;
-    pcl::PointCloud<pcl::PointXYZ>::Ptr OBB_position_to_be_projected(new pcl::PointCloud<pcl::PointXYZ>);
-    OBB_position_to_be_projected->points.push_back(position_OBB);
-    pcl::PointCloud<pcl::PointXYZ>::Ptr OBB_position_projected(new pcl::PointCloud<pcl::PointXYZ>);
-    project_inliners.setModelType(pcl::SACMODEL_PLANE);
-    project_inliners.setInputCloud(OBB_position_to_be_projected);
-    project_inliners.setModelCoefficients(table_plane_coefficients);
-    project_inliners.filter(*OBB_position_projected);
-    position_OBB = OBB_position_projected->points[0];
-
-    //-- Transform point cloud
-    //-----------------------------------------------------------------------------------
-    //-- Translating to center
-    pcl::PointCloud<pcl::PointXYZ>::Ptr centered_cloud(new pcl::PointCloud<pcl::PointXYZ>);
-    Eigen::Affine3f translation_transform = Eigen::Affine3f::Identity();
-    translation_transform.translation() << -position_OBB.x, -position_OBB.y, -position_OBB.z;
-    pcl::transformPointCloud(*source_cloud, *centered_cloud, translation_transform);
-
-    //-- Orient using the plane normal
-    pcl::PointCloud<pcl::PointXYZ>::Ptr oriented_cloud(new pcl::PointCloud<pcl::PointXYZ>);
-    Eigen::Vector3f normal_vector(table_plane_coefficients->values[0], table_plane_coefficients->values[1], table_plane_coefficients->values[2]);
-    Eigen::Quaternionf rotation_quaternion = Eigen::Quaternionf().setFromTwoVectors(normal_vector, Eigen::Vector3f::UnitZ());
-    pcl::transformPointCloud(*centered_cloud, *oriented_cloud, Eigen::Vector3f(0,0,0), rotation_quaternion);
-
-    //-- Remove negative outliers (table noise)
-    pcl::PointCloud<pcl::PointXYZ>::Ptr garment_points(new pcl::PointCloud<pcl::PointXYZ>);
-    pcl::PassThrough<pcl::PointXYZ> passthrough_filter;
-    passthrough_filter.setInputCloud(oriented_cloud);
-    passthrough_filter.setFilterFieldName("z");
-    passthrough_filter.setFilterLimits(threshold/2.0f, FLT_MAX);
-    passthrough_filter.setFilterLimitsNegative(false);
-    passthrough_filter.filter(*garment_points);
-
-    //-- Find bounding box (not really required)
     feature_extractor.setInputCloud(garment_points);
     feature_extractor.compute();
     feature_extractor.getAABB(min_point_AABB, max_point_AABB);
