@@ -18,15 +18,29 @@ void show_usage(char * program_name)
     std::cout << std::endl;
     std::cout << "Usage: " << program_name << " cloud_filename.[pcd|ply]" << std::endl;
     std::cout << "-h:  Show this help." << std::endl;
+    std::cout << "-o: Output folder for cluster data" << std::endl;
 }
 
 int main (int argc, char** argv)
 {
+    //-- Command-line arguments
+    std::string output_folder = "";
+
     //-- Show usage
     if (pcl::console::find_switch(argc, argv, "-h") || pcl::console::find_switch(argc, argv, "--help"))
     {
         show_usage(argv[0]);
         return 0;
+    }
+
+    //-- Check for parameters in arguments
+    if (pcl::console::find_switch(argc, argv, "-o"))
+        pcl::console::parse_argument(argc, argv, "-o", output_folder);
+    else
+    {
+        std::cerr << "Ouput folder not specified" << std::endl;
+        show_usage(argv[0]);
+        return -2;
     }
 
     //-- Get point cloud file from arguments
@@ -145,7 +159,7 @@ int main (int argc, char** argv)
 
         std::cout << "PointCloud representing the Cluster: " << cloud_cluster->points.size() << " data points." << std::endl;
         std::stringstream ss;
-        ss << "cloud_cluster_" << j << ".pcd";
+        ss << output_folder << "/" << "cloud_cluster_" << j << ".pcd";
         writer.write<pcl::PointXYZ> (ss.str(), *cloud_cluster, false); //*
         j++;
     }
