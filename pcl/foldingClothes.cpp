@@ -27,8 +27,8 @@
 #include <pcl/features/rsd.h>
 
 //-- My classes
-#include "PointCloudPreprocessor.hpp"
-#include "ZBufferDepthImageCreator.hpp"
+#include "Preprocessor/PointCloudPreprocessor.hpp"
+#include "ImageCreator/ZBufferDepthImageCreator.hpp"
 
 #include <fstream>
 

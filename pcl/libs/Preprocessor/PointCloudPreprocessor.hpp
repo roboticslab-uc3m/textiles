@@ -16,6 +16,9 @@
 #include <pcl/segmentation/sac_segmentation.h>
 //-- Bounding box
 #include <pcl/features/moment_of_inertia_estimation.h>
+//-- Transform data
+#include <pcl/filters/extract_indices.h>
+#include <pcl/common/transforms.h>
 //-- Passthrough filter
 #include <pcl/filters/passthrough.h>
 

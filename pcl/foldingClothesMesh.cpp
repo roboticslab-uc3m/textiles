@@ -26,10 +26,9 @@
 #include <pcl/features/normal_3d_omp.h>
 #include <pcl/features/rsd.h>
 
-
 //-- My classes
-#include "MeshPreprocessor.hpp"
-#include "HistogramImageCreator.hpp"
+#include "Preprocessor/MeshPreprocessor.hpp"
+#include "ImageCreator/HistogramImageCreator.hpp"
 
 #include <fstream>
 
