@@ -29,6 +29,7 @@
 
 //-- My classes
 #include "MeshPreprocessor.hpp"
+#include "HistogramImageCreator.hpp"
 
 #include <fstream>
 
@@ -38,6 +39,7 @@ void show_usage(char * program_name)
   std::cout << "Usage: " << program_name << " cloud_filename.[pcd|ply]" << std::endl;
   std::cout << "-h:  Show this help." << std::endl;
   std::cout << "-t, --threshold:  Distance threshold for RANSAC (default: 0.03)" << std::endl;
+  std::cout << "--histogram: Output file for histogram image" << std::endl;
   std::cout << "-r, --rsd: Output file for RSD data" << std::endl;
   std::cout << "--rsd-params: Parameters for RSD (kdtree radius for normals, for curvature and plane threshold" << std::endl;
 }
@@ -46,6 +48,7 @@ int main(int argc, char* argv[])
 {
     //-- Main program parameters (default values)
     double threshold = 0.03;
+    std::string output_histogram_image = "histogram_image.m";
     std::string output_rsd_data = "rsd_data.m";
     double rsd_normal_radius = 0.05;
     double rsd_curvature_radius = 0.07;
@@ -63,6 +66,9 @@ int main(int argc, char* argv[])
         pcl::console::parse_argument(argc, argv, "-t", threshold);
     else if (pcl::console::find_switch(argc, argv, "--threshold"))
         pcl::console::parse_argument(argc, argv, "--threshold", threshold);
+
+    if (pcl::console::find_switch(argc, argv, "--histogram"))
+        pcl::console::parse_argument(argc, argv, "--histogram", output_histogram_image);
 
     if (pcl::console::find_switch(argc, argv, "-r"))
         pcl::console::parse_argument(argc, argv, "-r", output_rsd_data);
@@ -96,6 +102,7 @@ int main(int argc, char* argv[])
     //-- Print arguments to user
     std::cout << "Selected arguments: " << std::endl
               << "\tRANSAC threshold: " << threshold << std::endl
+              << "\tHistogram image: " << output_histogram_image << std::endl
               << "\tRSD:" << std::endl
               << "\t\tFile: " << output_rsd_data << std::endl
               << "\t\tNormal search radius: " << rsd_normal_radius << std::endl
@@ -171,31 +178,45 @@ int main(int argc, char* argv[])
     normalEstimation.compute(*normals);
 
     // RSD estimation object.
-    pcl::RSDEstimation<pcl::PointXYZ, pcl::Normal, pcl::PrincipalRadiiRSD> rsd;
-    rsd.setInputCloud(garment_points);
-    rsd.setInputNormals(normals);
-    rsd.setSearchMethod(kdtree);
-    // Search radius, to look for neighbors. Note: the value given here has to be
-    // larger than the radius used to estimate the normals.
-    rsd.setRadiusSearch(rsd_curvature_radius);
-    // Plane radius. Any radius larger than this is considered infinite (a plane).
-    rsd.setPlaneRadius(rsd_plane_threshold);
-    // Do we want to save the full distance-angle histograms?
-    rsd.setSaveHistograms(false);
+//    pcl::RSDEstimation<pcl::PointXYZ, pcl::Normal, pcl::PrincipalRadiiRSD> rsd;
+//    rsd.setInputCloud(garment_points);
+//    rsd.setInputNormals(normals);
+//    rsd.setSearchMethod(kdtree);
+//    // Search radius, to look for neighbors. Note: the value given here has to be
+//    // larger than the radius used to estimate the normals.
+//    rsd.setRadiusSearch(rsd_curvature_radius);
+//    // Plane radius. Any radius larger than this is considered infinite (a plane).
+//    rsd.setPlaneRadius(rsd_plane_threshold);
+//    // Do we want to save the full distance-angle histograms?
+//    rsd.setSaveHistograms(false);
 
-    rsd.compute(*descriptors);
+//    rsd.compute(*descriptors);
 
-    //-- Save to mat file
-    std::ofstream rsd_file(output_rsd_data.c_str());
-    for (int i = 0; i < garment_points->points.size(); i++)
-    {
-        rsd_file << garment_points->points[i].x << " "
-                 << garment_points->points[i].y << " "
-                 << garment_points->points[i].z << " "
-                 << descriptors->points[i].r_min << " "
-                 << descriptors->points[i].r_max << "\n";
-    }
-    rsd_file.close();
+//    //-- Save to mat file
+//    std::ofstream rsd_file(output_rsd_data.c_str());
+//    for (int i = 0; i < garment_points->points.size(); i++)
+//    {
+//        rsd_file << garment_points->points[i].x << " "
+//                 << garment_points->points[i].y << " "
+//                 << garment_points->points[i].z << " "
+//                 << descriptors->points[i].r_min << " "
+//                 << descriptors->points[i].r_max << "\n";
+//    }
+//    rsd_file.close();
+
+    //-- Obtain range image
+    //-----------------------------------------------------------------------------------
+    HistogramImageCreator<pcl::PointXYZ> histogram_image_creator;
+    histogram_image_creator.setInputPointCloud(garment_points);
+    histogram_image_creator.setResolution(1024);
+    histogram_image_creator.setUpsampling(true);
+    histogram_image_creator.compute();
+    Eigen::MatrixXi image = histogram_image_creator.getDepthImageAsMatrix();
+
+    //-- Temporal fix to get image (through file)
+    std::ofstream file(output_histogram_image.c_str());
+    file << image;
+    file.close();
 
     /********************************************************************************************************
      * Visualization
