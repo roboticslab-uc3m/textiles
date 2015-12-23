@@ -20,6 +20,8 @@ void show_usage(char * program_name)
     std::cout << "-h:  Show this help." << std::endl;
     std::cout << "-o: Output folder for cluster data" << std::endl;
     std::cout << "--ransac: Enable plane segmentation" << std::endl;
+    std::cout << "--ransac-threshold: Set ransac threshold value" << std::endl;
+    std::cout << "--cluster-params: Set clustering parameters" << std::endl;
 }
 
 int main (int argc, char** argv)
@@ -27,6 +29,10 @@ int main (int argc, char** argv)
     //-- Command-line arguments
     std::string output_folder = "";
     bool ransac_enabled = false;
+    float ransac_threshold = 0.02;
+    float cluster_tolerance = 0.02;
+    float cluster_min_size = 100;
+    float cluster_max_size = 25000;
 
     //-- Show usage
     if (pcl::console::find_switch(argc, argv, "-h") || pcl::console::find_switch(argc, argv, "--help"))
@@ -46,7 +52,15 @@ int main (int argc, char** argv)
     }
 
     if (pcl::console::find_switch(argc, argv, "--ransac"))
+    {
         ransac_enabled = true;
+        if (pcl::console::find_switch(argc, argv, "--ransac-threshold"))
+            pcl::console::parse_argument(argc, argv, "--ransac-threshold", ransac_threshold);
+    }
+
+    if (pcl::console::find_switch(argc, argv, "--cluster-params"))
+        pcl::console::parse_3x_arguments(argc, argv, "--cluster-params", cluster_tolerance,
+                                         cluster_min_size, cluster_max_size);
 
     //-- Get point cloud file from arguments
     std::vector<int> filenames;
@@ -89,6 +103,19 @@ int main (int argc, char** argv)
         }
     }
 
+    //-- Print arguments to user
+    std::cout << "Selected arguments: " << std::endl
+              << "\tOutput folder: " << output_folder << std::endl
+              << "\tCluster params: " << std::endl
+              << "\t\tTolerance: " << cluster_tolerance << std::endl
+              << "\t\tMin size: " << cluster_min_size << std::endl
+              << "\t\tMax size: " << cluster_max_size << std::endl
+              << "\tInput file: " << argv[filenames[0]] << std::endl;
+
+    if (ransac_enabled)
+        std::cout << "\tRANSAC enabled with threshold: " << ransac_threshold << std::endl;
+
+
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered(new pcl::PointCloud<pcl::PointXYZ>);
     if (ransac_enabled)
     {
@@ -107,8 +134,7 @@ int main (int argc, char** argv)
         seg.setOptimizeCoefficients(true);
         seg.setModelType(pcl::SACMODEL_PLANE);
         seg.setMethodType(pcl::SAC_RANSAC);
-        seg.setMaxIterations(100);
-        seg.setDistanceThreshold(0.02);
+        seg.setDistanceThreshold(ransac_threshold);
 
         int i=0, nr_points = (int) cloud_filtered->points.size();
         while (cloud_filtered->points.size() > 0.3 * nr_points)
@@ -150,9 +176,9 @@ int main (int argc, char** argv)
 
     std::vector<pcl::PointIndices> cluster_indices;
     pcl::EuclideanClusterExtraction<pcl::PointXYZ> ec;
-    ec.setClusterTolerance(0.02); // 2cm
-    ec.setMinClusterSize(100);
-    ec.setMaxClusterSize(25000);
+    ec.setClusterTolerance(cluster_tolerance);
+    ec.setMinClusterSize(cluster_min_size);
+    ec.setMaxClusterSize(cluster_max_size);
     ec.setSearchMethod(tree);
     ec.setInputCloud(cloud_filtered);
     ec.extract(cluster_indices);
