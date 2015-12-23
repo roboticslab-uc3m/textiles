@@ -1,3 +1,12 @@
+/*
+ * clusteringCleanup
+ * --------------------------------------
+ *
+ * Takes a pcd as input and divides it into several
+ * clusters
+ *
+ */
+
 #include <iostream>
 #include <pcl/console/parse.h>
 #include <pcl/io/pcd_io.h>
