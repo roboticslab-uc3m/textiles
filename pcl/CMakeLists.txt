@@ -35,3 +35,6 @@ target_link_libraries (create_test_cube ${PCL_LIBRARIES} ${TEXTILES_LIBRARIES})
 add_executable(clusteringCleanup clusteringCleanup.cpp)
 target_link_libraries (clusteringCleanup ${PCL_LIBRARIES} ${TEXTILES_LIBRARIES})
 
+add_executable(render2png render2png.cpp)
+target_link_libraries (render2png ${PCL_LIBRARIES} ${TEXTILES_LIBRARIES})
+
