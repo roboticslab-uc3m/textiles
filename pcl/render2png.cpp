@@ -1,5 +1,6 @@
 #include <vector>
 #include <iostream>
+#include <sstream>
 
 #include <pcl/io/pcd_io.h>
 #include <pcl/io/ply_io.h>
@@ -74,18 +75,23 @@ int main(int argc, char* argv[])
     }
 
     //-- Visualization Setup
-    pcl::visualization::PCLVisualizer viewer("Folding clothes");
+    pcl::visualization::PCLVisualizer viewer("render2png");
     pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> red_color_handler(clouds[0], 255, 0, 0);
     pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> green_color_handler(clouds[0], 0, 255, 0);
     pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> blue_color_handler(clouds[0], 0, 0, 255);
     viewer.addCoordinateSystem(1.0, "cloud", 0);
     viewer.setBackgroundColor(0.05, 0.05, 0.05, 0);
+    viewer.setShowFPS(false);
+    viewer.setCameraPosition(-0.277017, -1.53399, 1.72656,  0.176012, 0.717815, 0.673618);
+
 
     //-- Add point cloud
     for (int i = 0; i < filenames.size(); i++)
     {
-        viewer.addPointCloud(clouds[i], red_color_handler, "loaded_point_cloud");
-        viewer.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 2, "loaded_point_cloud");
+        std::stringstream ss;
+        ss << "cloud" << i;
+        viewer.addPointCloud(clouds[i], red_color_handler, ss.str().c_str());
+        viewer.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 2, ss.str().c_str());
     }
 
     //-- Generate render and save
