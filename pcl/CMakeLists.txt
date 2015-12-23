@@ -19,3 +19,7 @@ target_link_libraries (draftCode ${PCL_LIBRARIES})
 
 add_executable(create_test_cube testcube.cpp)
 target_link_libraries (create_test_cube ${PCL_LIBRARIES})
+
+add_executable(clusteringCleanup clusteringCleanup.cpp)
+target_link_libraries (clusteringCleanup ${PCL_LIBRARIES})
+
