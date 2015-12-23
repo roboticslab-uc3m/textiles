@@ -13,16 +13,23 @@ void show_usage(char * program_name)
   std::cout << std::endl;
   std::cout << "Usage: " << program_name << " cloud_filename.[pcd|ply]" << std::endl;
   std::cout << "-h:  Show this help." << std::endl;
+  std::cout << "-o:  Output file PNG" << std::endl;
 }
 
 int main(int argc, char* argv[])
 {
+    //-- Default arguments
+    std::string output_file = "render.png";
+
     //-- Show usage
     if (pcl::console::find_switch(argc, argv, "-h") || pcl::console::find_switch(argc, argv, "--help"))
     {
         show_usage(argv[0]);
         return 0;
     }
+
+    if (pcl::console::find_switch(argc, argv, "-o"))
+        pcl::console::parse_argument(argc, argv, "-o", output_file);
 
     //-- Get point cloud file from arguments
     std::vector<int> filenames;
@@ -95,7 +102,7 @@ int main(int argc, char* argv[])
     }
 
     //-- Generate render and save
-    viewer.saveScreenshot("screenshot.png");
+    viewer.saveScreenshot(output_file);
 
     return 0;
 }
