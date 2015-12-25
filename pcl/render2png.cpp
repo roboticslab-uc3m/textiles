@@ -22,6 +22,7 @@ void show_usage(char * program_name)
     std::cout << "Usage: " << program_name << " cloud_filename.[pcd|ply]" << std::endl;
     std::cout << "-h:  Show this help." << std::endl;
     std::cout << "-o:  Output file PNG" << std::endl;
+    std::cout << "-cam: Camera configuration / file" << std::endl;
 }
 
 int main(int argc, char* argv[])
@@ -51,11 +52,14 @@ int main(int argc, char* argv[])
     }
 
     //-- Visualization Setup
-    pcl::visualization::PCLVisualizer viewer("render2png");
+    pcl::visualization::PCLVisualizer viewer(argc, argv, "render2png");
     viewer.addCoordinateSystem(0.5, "cloud", 0);
     viewer.setBackgroundColor(0.05, 0.05, 0.05, 0);
     viewer.setShowFPS(false);
-    viewer.setCameraPosition(-0.277017, -1.53399, 1.72656,  0.176012, 0.717815, 0.673618);
+    if (!viewer.cameraParamsSet() && !viewer.cameraFileLoaded())
+    {
+        viewer.setCameraPosition(-0.277017, -1.53399, 1.72656,  0.176012, 0.717815, 0.673618);
+    }
 
     //-- Add point clouds
     pcl::PCDReader pcd;
@@ -93,7 +97,14 @@ int main(int argc, char* argv[])
         cloud_name << argv[filenames[i]] << "-" << i;
         viewer.addPointCloud(cloud, color_handler, origin, orientation, cloud_name.str().c_str());
         viewer.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 2, cloud_name.str().c_str());
+
+        if (i==0 && !viewer.cameraParamsSet() && !viewer.cameraFileLoaded())
+        {
+            viewer.resetCameraViewpoint(cloud_name.str());
+            viewer.resetCamera();
+        }
     }
+
 
     //-- Generate render and save
     viewer.saveScreenshot(output_file);
