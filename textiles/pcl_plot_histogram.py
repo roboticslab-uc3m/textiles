@@ -1,3 +1,4 @@
+import os, sys
 import numpy as np
 import matplotlib.pyplot as plt
 from skimage.filters.rank import median
@@ -6,11 +7,21 @@ from skimage.morphology import disk
 __author__ = 'def'
 
 if __name__ == '__main__':
-    image = np.loadtxt('../pcl/build/histogram_image.m')
-    normalized_image = image/image.max()
-    filtered_image = median(normalized_image, disk(3))
+    image_filenames = sys.argv[1:]
+    if not image_filenames:
+        print "usage: pcl_plot_histogram [histogram_file.m]"
+        image_filenames = ["../pcl/build/histogram_image.m"]
 
-    fig, axes = plt.subplots(1, 2)
-    axes[0].imshow(normalized_image, cmap=plt.cm.spectral)
-    axes[1].imshow(filtered_image, cmap=plt.cm.hot)
+    for image_filename in image_filenames:
+        try:
+            image = np.loadtxt(image_filename)
+        except IOError:
+            print "Skipping " + image_filename
+            continue
+        normalized_image = image/image.max()
+        filtered_image = median(normalized_image, disk(3))
+
+        fig, axes = plt.subplots(1, 2)
+        axes[0].imshow(normalized_image, cmap=plt.cm.spectral)
+        axes[1].imshow(filtered_image, cmap=plt.cm.hot)
     plt.show()
