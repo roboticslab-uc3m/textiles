@@ -138,6 +138,7 @@ int main(int argc, char* argv[])
     *********************************************************************************************/
     //-- Initial pre-processing of the mesh
     //------------------------------------------------------------------------------------
+    std::cout << "[+] Pre-processing the mesh..." << std::endl;
     pcl::PointCloud<pcl::PointXYZ>::Ptr garment_points(new pcl::PointCloud<pcl::PointXYZ>);
     MeshPreprocessor<pcl::PointXYZ> preprocessor;
     preprocessor.setRANSACThresholdDistance(threshold);
@@ -158,53 +159,55 @@ int main(int argc, char* argv[])
 
     //-- Curvature stuff
     //-----------------------------------------------------------------------------------
-    // Object for storing the normals.
-    pcl::PointCloud<pcl::Normal>::Ptr normals(new pcl::PointCloud<pcl::Normal>);
-    // Object for storing the RSD descriptors for each point.
-    pcl::PointCloud<pcl::PrincipalRadiiRSD>::Ptr descriptors(new pcl::PointCloud<pcl::PrincipalRadiiRSD>());
+//    std::cout << "[+] Calculating curvature descriptors..." << std::endl;
+//    // Object for storing the normals.
+//    pcl::PointCloud<pcl::Normal>::Ptr normals(new pcl::PointCloud<pcl::Normal>);
+//    // Object for storing the RSD descriptors for each point.
+//    pcl::PointCloud<pcl::PrincipalRadiiRSD>::Ptr descriptors(new pcl::PointCloud<pcl::PrincipalRadiiRSD>());
 
 
-    // Note: you would usually perform downsampling now. It has been omitted here
-    // for simplicity, but be aware that computation can take a long time.
+//    // Note: you would usually perform downsampling now. It has been omitted here
+//    // for simplicity, but be aware that computation can take a long time.
 
-    // Estimate the normals.
-    pcl::NormalEstimationOMP<pcl::PointXYZ, pcl::Normal> normalEstimation;
-    normalEstimation.setInputCloud(garment_points);
-    normalEstimation.setRadiusSearch(rsd_normal_radius);
-    pcl::search::KdTree<pcl::PointXYZ>::Ptr kdtree(new pcl::search::KdTree<pcl::PointXYZ>);
-    normalEstimation.setSearchMethod(kdtree);
-    normalEstimation.setViewPoint(0, 0 , 2);
-    normalEstimation.compute(*normals);
+//    // Estimate the normals.
+//    pcl::NormalEstimationOMP<pcl::PointXYZ, pcl::Normal> normalEstimation;
+//    normalEstimation.setInputCloud(garment_points);
+//    normalEstimation.setRadiusSearch(rsd_normal_radius);
+//    pcl::search::KdTree<pcl::PointXYZ>::Ptr kdtree(new pcl::search::KdTree<pcl::PointXYZ>);
+//    normalEstimation.setSearchMethod(kdtree);
+//    normalEstimation.setViewPoint(0, 0 , 2);
+//    normalEstimation.compute(*normals);
 
-    // RSD estimation object.
-    pcl::RSDEstimation<pcl::PointXYZ, pcl::Normal, pcl::PrincipalRadiiRSD> rsd;
-    rsd.setInputCloud(garment_points);
-    rsd.setInputNormals(normals);
-    rsd.setSearchMethod(kdtree);
-    // Search radius, to look for neighbors. Note: the value given here has to be
-    // larger than the radius used to estimate the normals.
-    rsd.setRadiusSearch(rsd_curvature_radius);
-    // Plane radius. Any radius larger than this is considered infinite (a plane).
-    rsd.setPlaneRadius(rsd_plane_threshold);
-    // Do we want to save the full distance-angle histograms?
-    rsd.setSaveHistograms(false);
+//    // RSD estimation object.
+//    pcl::RSDEstimation<pcl::PointXYZ, pcl::Normal, pcl::PrincipalRadiiRSD> rsd;
+//    rsd.setInputCloud(garment_points);
+//    rsd.setInputNormals(normals);
+//    rsd.setSearchMethod(kdtree);
+//    // Search radius, to look for neighbors. Note: the value given here has to be
+//    // larger than the radius used to estimate the normals.
+//    rsd.setRadiusSearch(rsd_curvature_radius);
+//    // Plane radius. Any radius larger than this is considered infinite (a plane).
+//    rsd.setPlaneRadius(rsd_plane_threshold);
+//    // Do we want to save the full distance-angle histograms?
+//    rsd.setSaveHistograms(false);
 
-    rsd.compute(*descriptors);
+//    rsd.compute(*descriptors);
 
-    //-- Save to mat file
-    std::ofstream rsd_file(output_rsd_data.c_str());
-    for (int i = 0; i < garment_points->points.size(); i++)
-    {
-        rsd_file << garment_points->points[i].x << " "
-                 << garment_points->points[i].y << " "
-                 << garment_points->points[i].z << " "
-                 << descriptors->points[i].r_min << " "
-                 << descriptors->points[i].r_max << "\n";
-    }
-    rsd_file.close();
+//    //-- Save to mat file
+//    std::ofstream rsd_file(output_rsd_data.c_str());
+//    for (int i = 0; i < garment_points->points.size(); i++)
+//    {
+//        rsd_file << garment_points->points[i].x << " "
+//                 << garment_points->points[i].y << " "
+//                 << garment_points->points[i].z << " "
+//                 << descriptors->points[i].r_min << " "
+//                 << descriptors->points[i].r_max << "\n";
+//    }
+//    rsd_file.close();
 
-    //-- Obtain range image
+    //-- Obtain histogram image
     //-----------------------------------------------------------------------------------
+    std::cout << "[+] Calculating histogram image..." << std::endl;
     HistogramImageCreator<pcl::PointXYZ> histogram_image_creator;
     histogram_image_creator.setInputPointCloud(garment_points);
     histogram_image_creator.setResolution(1024);
@@ -220,6 +223,7 @@ int main(int argc, char* argv[])
     /********************************************************************************************************
      * Visualization
      * *****************************************************************************************************/
+    std::cout << "[+] Setting up visualization..." << std::endl;
     //-- Visualization Setup
     pcl::visualization::PCLVisualizer viewer("Folding clothes");
     pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> red_color_handler(source_cloud, 255, 0, 0);
@@ -255,10 +259,10 @@ int main(int argc, char* argv[])
 
 
     //-- Visualization thread
-//    while(!viewer.wasStopped())
-//    {
-//        viewer.spinOnce();
-//    }
+    while(!viewer.wasStopped())
+    {
+        viewer.spinOnce();
+    }
 
     return 0;
 }
