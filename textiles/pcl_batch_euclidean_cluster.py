@@ -1,3 +1,8 @@
+"""
+pcl_batch_euclidean_cluster allows processing several files using the clustering
+program clusteringCleanup, developed with pcl
+"""
+
 __author__ = 'def'
 
 import os

@@ -1,3 +1,9 @@
+"""
+pcl_batch_process_data allows processing several files using the
+foldingClothes program, containing the main processing algorithm
+implemented in pcl
+"""
+
 __author__ = 'def'
 
 import os

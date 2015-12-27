@@ -1,4 +1,10 @@
-import os, sys
+# -*- coding: utf-8 -*-
+"""
+pcl_plot_histogram allows visualization of z-histogram images generated with
+HistogramImageCreator class
+"""
+
+import sys
 import numpy as np
 import matplotlib.pyplot as plt
 from skimage.filters.rank import median
