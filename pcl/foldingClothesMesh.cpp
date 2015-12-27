@@ -177,31 +177,31 @@ int main(int argc, char* argv[])
     normalEstimation.compute(*normals);
 
     // RSD estimation object.
-//    pcl::RSDEstimation<pcl::PointXYZ, pcl::Normal, pcl::PrincipalRadiiRSD> rsd;
-//    rsd.setInputCloud(garment_points);
-//    rsd.setInputNormals(normals);
-//    rsd.setSearchMethod(kdtree);
-//    // Search radius, to look for neighbors. Note: the value given here has to be
-//    // larger than the radius used to estimate the normals.
-//    rsd.setRadiusSearch(rsd_curvature_radius);
-//    // Plane radius. Any radius larger than this is considered infinite (a plane).
-//    rsd.setPlaneRadius(rsd_plane_threshold);
-//    // Do we want to save the full distance-angle histograms?
-//    rsd.setSaveHistograms(false);
+    pcl::RSDEstimation<pcl::PointXYZ, pcl::Normal, pcl::PrincipalRadiiRSD> rsd;
+    rsd.setInputCloud(garment_points);
+    rsd.setInputNormals(normals);
+    rsd.setSearchMethod(kdtree);
+    // Search radius, to look for neighbors. Note: the value given here has to be
+    // larger than the radius used to estimate the normals.
+    rsd.setRadiusSearch(rsd_curvature_radius);
+    // Plane radius. Any radius larger than this is considered infinite (a plane).
+    rsd.setPlaneRadius(rsd_plane_threshold);
+    // Do we want to save the full distance-angle histograms?
+    rsd.setSaveHistograms(false);
 
-//    rsd.compute(*descriptors);
+    rsd.compute(*descriptors);
 
-//    //-- Save to mat file
-//    std::ofstream rsd_file(output_rsd_data.c_str());
-//    for (int i = 0; i < garment_points->points.size(); i++)
-//    {
-//        rsd_file << garment_points->points[i].x << " "
-//                 << garment_points->points[i].y << " "
-//                 << garment_points->points[i].z << " "
-//                 << descriptors->points[i].r_min << " "
-//                 << descriptors->points[i].r_max << "\n";
-//    }
-//    rsd_file.close();
+    //-- Save to mat file
+    std::ofstream rsd_file(output_rsd_data.c_str());
+    for (int i = 0; i < garment_points->points.size(); i++)
+    {
+        rsd_file << garment_points->points[i].x << " "
+                 << garment_points->points[i].y << " "
+                 << garment_points->points[i].z << " "
+                 << descriptors->points[i].r_min << " "
+                 << descriptors->points[i].r_max << "\n";
+    }
+    rsd_file.close();
 
     //-- Obtain range image
     //-----------------------------------------------------------------------------------
@@ -255,10 +255,10 @@ int main(int argc, char* argv[])
 
 
     //-- Visualization thread
-    while(!viewer.wasStopped())
-    {
-        viewer.spinOnce();
-    }
+//    while(!viewer.wasStopped())
+//    {
+//        viewer.spinOnce();
+//    }
 
     return 0;
 }
