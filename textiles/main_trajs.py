@@ -53,22 +53,57 @@ def get_coloured_item(image):
     return filtered_mask_open
 
 def get_garment_contour(mask):
-    # Get clothes contour:
+    # Get clothes contour with largest area
     clothes_contours, dummy = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    clothes_contour = clothes_contours[0]
-   
-   # Size filtering:
-    maxArea = cv2.contourArea(clothes_contour)
-    for contour in clothes_contours[1:]:
-        currentArea = cv2.contourArea(contour)
-        if currentArea > maxArea:
-            maxArea = currentArea
-            clothes_contour = contour
+    largest_contour = max(clothes_contours, key=cv2.contourArea)
 
     # Simplify contour:
-    perimeter = cv2.arcLength(clothes_contour, True)
-    approx = cv2.approxPolyDP(clothes_contour, 0.010 * perimeter, True)
+    perimeter = cv2.arcLength(largest_contour, True)
+    approx = cv2.approxPolyDP(largest_contour, 0.010 * perimeter, True)
     return approx
+
+def show_debug_contours(mask, image, filename=None):
+    # Get clothes contour with largest area
+    clothes_contours, dummy = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+    largest_contour = max(clothes_contours, key=cv2.contourArea)
+
+    # Print clothes contour
+    contour_show = image.copy()
+    cv2.drawContours(contour_show, [largest_contour] , -1, (0, 0,255), 1)
+    for point in np.array([point.tolist() for i, point in enumerate(largest_contour) if i%10==0]):
+        cv2.circle(contour_show, tuple(point[0]), 2, (0, 0, 255), 2)
+    if filename:
+        cv2.imwrite(filename+"-contour.png", contour_show)
+    else:
+        cv2.imshow("contour", contour_show)
+
+    # Get clothes outline with largest area
+    clothes_outlines, dummy = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    largest_outline = max(clothes_outlines, key=cv2.contourArea)
+    # Print clothes outline
+    contour_show = image.copy()
+    cv2.drawContours(contour_show, [largest_outline], -1, (0, 255, 0), 1)
+    for point in largest_outline:
+        cv2.circle(contour_show, tuple(point[0]), 2, (0, 255, 0), 2)
+    if filename:
+        cv2.imwrite(filename+"-outline.png", contour_show)
+    else:
+        cv2.imshow("outline", contour_show)
+
+    perimeter = cv2.arcLength(largest_outline, True)
+    approx = cv2.approxPolyDP(largest_outline, 0.010 * perimeter, True)
+    # Print clothes approx
+    contour_show = image.copy()
+    cv2.drawContours(contour_show, [approx], -1, (255, 0, 0), 2)
+    for point in approx:
+        cv2.circle(contour_show, tuple(point[0]), 4, (255, 0, 0), 2)
+    if filename:
+        cv2.imwrite(filename+"-approx.png", contour_show)
+    else:
+        cv2.imshow("approx", contour_show)
+
+    return approx
+
 
 def get_garment_main_lines(image):
     # Apply canny to find 'not cross' lines
@@ -91,7 +126,7 @@ def get_image_with_contours(image, mask):
     cv2.drawContours(contour_show, [approx], -1, (0, 0,255))
     for point in approx:
         cv2.circle(contour_show, tuple(point[0]), 3, (0, 0, 255), 2)
-#    cv2.imshow("contour", contour_show)
+    cv2.imshow("contour", contour_show)
    
     return approx   
     
@@ -173,18 +208,21 @@ def segment_extender_twosides(x_start, y_start, x_end, y_end):
 #####################################################################
 #####################################################################
 
-image_paths, depth_maps = load_data('./data/20150625_single')
+image_paths, depth_maps = load_data('../data/20150902')
 
 for path_rgb, path_depth in zip(image_paths, depth_maps):
     # Load image
-    image = cv2.imread(path_rgb)
+    image_src = cv2.imread(path_rgb)
 #    print "Loaded rgb image, dimensions: " + str(image.shape)
 
     # Get mask
-    mask = get_coloured_item(image)
+    mask = get_coloured_item(image_src)
+    # cv2.imwrite(path_rgb+"-out-mask.png", mask)
 
     # Print clothes contour
-    approx =  get_image_with_contours(image, mask)
+    approx =  get_image_with_contours(image_src, mask)
+    # approx = show_debug_contours(mask, image_src, path_rgb)
+    # cv2.waitKey(-1)
     
     # Load depth map
     depth_image = np.loadtxt(path_depth)
@@ -196,10 +234,10 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
 
 
 ####### WATERSHED 
-    image = img_as_ubyte(scaled_depth_map)
+    scaled_depth_map = img_as_ubyte(scaled_depth_map)
           
     # denoise image
-    denoised = denoise_tv_chambolle(image, weight=0.05)
+    denoised = denoise_tv_chambolle(scaled_depth_map, weight=0.05)
     denoised_equalize= exposure.equalize_hist(denoised)  
 
     # find continuous region (low gradient) --> markers
@@ -215,7 +253,7 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
   
     # display results
 #    fig, axes = plt.subplots(2,3)       
-#    axes[0, 0].imshow(image, cmap=plt.cm.gray, interpolation='nearest')
+#    axes[0, 0].imshow(scaled_depth_map, cmap=plt.cm.gray, interpolation='nearest')
 #    axes[0, 1].imshow(denoised, cmap=plt.cm.gray, interpolation='nearest')
 #    axes[0, 2].imshow(markers, cmap=plt.cm.spectral, interpolation='nearest')
 #    axes[1, 0].imshow(gradient, cmap=plt.cm.spectral, interpolation='nearest')
@@ -224,7 +262,7 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
 
 
 #    fig, axes = plt.subplots(1,2)       
-#    axes[0].imshow(image, cmap=plt.cm.gray, interpolation='nearest')
+#    axes[0].imshow(scaled_depth_map, cmap=plt.cm.gray, interpolation='nearest')
 #    axes[1].imshow(labels, cmap=plt.cm.spectral, interpolation='nearest', alpha=.7)               
 #    axes[0].set_xticks([]) 
 #    axes[0].set_yticks([])                         
@@ -249,16 +287,42 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
     # Get paths to traverse:
     valid_paths = cloth_contour.get_valid_paths(highest_points)
 
+    # Figures for thesis (kind of debug):
+    img_show = image_src.copy()
+
+    cv2.drawContours(img_show, [approx], -1, (0, 0,255), 2)
+    for point in approx:
+        cv2.circle(img_show, tuple(point[0]), 3, (0, 0, 255), 2)
+    cv2.imshow("contour", img_show)
+
+    for (start, end) in [path for id, path in valid_paths if path]:
+        cv2.line(img_show, (int(start[0]), int(start[1])), (int(end[0]), int(end[1])), (0, 255, 0), 1)
+        cv2.circle(img_show, (int(start[0]), int(start[1])), 5, (255, 0, 255), 2)
+    # cv2.imshow("valid paths", img_show)
+    # cv2.waitKey(-1)
+    cv2.imwrite(path_rgb+"-valid_paths.png", img_show)
+
+    # Figures for thesis (all paths)
+    img_show = image_src.copy()
+
+    cv2.drawContours(img_show, [approx], -1, (0, 0,255), 2)
+    for point in approx:
+        cv2.circle(img_show, tuple(point[0]), 3, (0, 0, 255), 2)
+    cv2.imshow("contour", img_show)
+
+    for (start, end) in [path for id, path in cloth_contour.get_candidate_paths(highest_points) if path]:
+        cv2.line(img_show, (int(start[0]), int(start[1])), (int(end[0]), int(end[1])), (0, 255, 0), 1)
+        cv2.circle(img_show, (int(start[0]), int(start[1])), 5, (255, 0, 255), 2)
+    # cv2.imshow("valid paths", img_show)
+    # cv2.waitKey(-1)
+    cv2.imwrite(path_rgb+"-candidate_paths.png", img_show)
+
 ###### PROFILES
 
     profiles = []
     all_line_data=[]
 
-    index_valid_path=0
-    for id, path in valid_paths:
-        if path:
-            index_valid_path+=1
-
+    # index_valid_path = len([id for id, path in valid_paths if path])
 
 #    fig, ax = plt.subplots(idx_vp, 2)
 ##    fig.set_size_inches(8, 3, forward=True)
@@ -454,3 +518,4 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
     
     axis.plot(intersect_fold_axis[0],intersect_fold_axis[1], 'r*')
     axis.plot([x[0][0] for x in approx], [x[0][1] for x in approx], 'r-*')
+    # plt.show()
