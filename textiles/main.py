@@ -6,7 +6,7 @@ import numpy as np
 from GarmentSegmentation import GarmentSegmentation
 from GarmentDepthMapClustering import GarmentDepthMapClustering
 from GarmentPickAndPlacePoints import GarmentPickAndPlacePoints
-from GarmentPlot import GarmentPlot
+import GarmentPlot
 from utils import load_data
 
 if __name__ == "__main__":
@@ -22,7 +22,7 @@ if __name__ == "__main__":
         mask = GarmentSegmentation.background_substraction(image_src)
         approximated_polygon = GarmentSegmentation.compute_approximated_polygon(mask)
         GarmentPlot.plot_mask(mask)
-        # GarmentPlot.plot_polygon(image_src, approximated_polygon)
+        GarmentPlot.plot_contour(image_src, approximated_polygon)
 
         # Garment Depth Map Clustering
         preprocessed_depth_image = GarmentDepthMapClustering.preprocess(depth_image, mask)

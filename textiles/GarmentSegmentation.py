@@ -32,4 +32,16 @@ class GarmentSegmentation:
 
     @staticmethod
     def compute_approximated_polygon(mask):
-        pass
+        """
+        Calculate the approximated polygon that describes the garment
+        :param mask: Segmentation mask where white is garment and black is background
+        :return: Garment Approximated Polygon (as a vector of 2D points)
+        """
+        # Get clothes outline with largest area
+        garment_outlines, dummy = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        largest_outline = max(garment_outlines, key=cv2.contourArea)
+
+        # Simplify outline to approximated polygon:
+        perimeter = cv2.arcLength(largest_outline, True)
+        approximated_polygon = cv2.approxPolyDP(largest_outline, 0.010 * perimeter, True)
+        return approximated_polygon
