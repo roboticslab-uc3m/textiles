@@ -21,6 +21,8 @@ if __name__ == "__main__":
         # Garment Segmentation Step
         mask = GarmentSegmentation.background_substraction(image_src)
         approximated_polygon = GarmentSegmentation.compute_approximated_polygon(mask)
+        GarmentPlot.plot_mask(mask)
+        # GarmentPlot.plot_polygon(image_src, approximated_polygon)
 
         # Garment Depth Map Clustering
         preprocessed_depth_image = GarmentDepthMapClustering.preprocess(depth_image, mask)
