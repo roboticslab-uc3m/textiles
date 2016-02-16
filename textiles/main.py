@@ -27,6 +27,7 @@ if __name__ == "__main__":
         # Garment Depth Map Clustering
         preprocessed_depth_image = GarmentDepthMapClustering.preprocess(depth_image, mask)
         labeled_image = GarmentDepthMapClustering.cluster_similar_regions(preprocessed_depth_image)
+        GarmentPlot.plot_depth(preprocessed_depth_image)
 
         # Garment Pick and Place Points
         unfold_paths = GarmentPickAndPlacePoints.calculate_unfold_paths(labeled_image, approximated_polygon)
