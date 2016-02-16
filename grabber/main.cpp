@@ -34,6 +34,11 @@ int main(int argc, char** argv) {
     inDepth.open("/depth:i");
     inRgb.open("/rgb:i");
 
+    Time::delay(0.5);
+
+    Network::connect("/OpenNI2/depthFrame:o","/depth:i");
+    Network::connect("/OpenNI2/imageFrame:o","/rgb:i");
+
     ImageOf<PixelMono16> *inYarpDepth = NULL;
     ImageOf<PixelRgb> *inYarpRgb = NULL;
 
