@@ -4,8 +4,9 @@ import cv2
 import numpy as np
 
 from GarmentSegmentation import GarmentSegmentation
-from GarmentDepthMapAnalysis import GarmentDepthMapAnalysis
+from GarmentDepthMapClustering import GarmentDepthMapClustering
 from GarmentPickAndPlacePoints import GarmentPickAndPlacePoints
+from GarmentPlot import GarmentPlot
 from utils import load_data
 
 if __name__ == "__main__":
@@ -18,5 +19,16 @@ if __name__ == "__main__":
         depth_image = np.loadtxt(path_depth_image)
 
         # Garment Segmentation Step
-        mask = GarmentSegmentation.background_substraction()
-        approx = GarmentSegmentation.calculate_approx_polygon()
+        mask = GarmentSegmentation.background_substraction(image_src)
+        approximated_polygon = GarmentSegmentation.compute_approximated_polygon(mask)
+
+        # Garment Depth Map Clustering
+        preprocessed_depth_image = GarmentDepthMapClustering.preprocess(depth_image, mask)
+        labeled_image = GarmentDepthMapClustering.cluster_similar_regions(preprocessed_depth_image)
+
+        # Garment Pick and Place Points
+        unfold_paths = GarmentPickAndPlacePoints.calculate_unfold_paths(labeled_image, approximated_polygon)
+        bumpiness = GarmentPickAndPlacePoints.calculate_bumpiness(labeled_image, unfold_paths)
+        pick_point, place_point = GarmentPickAndPlacePoints.calculate_pick_and_place_points(unfold_paths, bumpiness)
+        
+
