@@ -208,7 +208,7 @@ def segment_extender_twosides(x_start, y_start, x_end, y_end):
 #####################################################################
 #####################################################################
 
-image_paths, depth_maps = load_data('../data/20150902')
+image_paths, depth_maps = load_data('../data/20150625/')
 
 for path_rgb, path_depth in zip(image_paths, depth_maps):
     # Load image
@@ -259,6 +259,8 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
 #    axes[1, 0].imshow(gradient, cmap=plt.cm.spectral, interpolation='nearest')
 #    axes[1, 1].imshow(labels, cmap=plt.cm.spectral, interpolation='nearest', alpha=.7)               
 #    plt.show()
+    plt.imsave(path_depth+'-labels.png', labels, cmap=plt.cm.Accent)
+
 
 
 #    fig, axes = plt.subplots(1,2)       
@@ -296,7 +298,7 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
     cv2.imshow("contour", img_show)
 
     for (start, end) in [path for id, path in valid_paths if path]:
-        cv2.line(img_show, (int(start[0]), int(start[1])), (int(end[0]), int(end[1])), (0, 255, 0), 1)
+        cv2.line(img_show, (int(start[0]), int(start[1])), (int(end[0]), int(end[1])), (0, 255, 0), 2)
         cv2.circle(img_show, (int(start[0]), int(start[1])), 5, (255, 0, 255), 2)
     # cv2.imshow("valid paths", img_show)
     # cv2.waitKey(-1)
@@ -311,7 +313,7 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
     cv2.imshow("contour", img_show)
 
     for (start, end) in [path for id, path in cloth_contour.get_candidate_paths(highest_points) if path]:
-        cv2.line(img_show, (int(start[0]), int(start[1])), (int(end[0]), int(end[1])), (0, 255, 0), 1)
+        cv2.line(img_show, (int(start[0]), int(start[1])), (int(end[0]), int(end[1])), (0, 255, 0), 2)
         cv2.circle(img_show, (int(start[0]), int(start[1])), 5, (255, 0, 255), 2)
     # cv2.imshow("valid paths", img_show)
     # cv2.waitKey(-1)
@@ -488,34 +490,36 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
                             extended_final_extremes[1][0], extended_final_extremes[1][1])
     
     ###### PLOTTING
-    # in case you need to sample a segment
-#    final_line = Superpixels.line_sampling_points(final_extremes[0], final_extremes[1], 1)
-    fig, axis = plt.subplots(1, 1)
-    axis.imshow(avg, cmap=plt.cm.gray)
-    axis.set_xticks([]) 
-    axis.set_yticks([]) 
+    plotting = False
+    if plotting:
+        # in case you need to sample a segment
+    #    final_line = Superpixels.line_sampling_points(final_extremes[0], final_extremes[1], 1)
+        fig, axis = plt.subplots(1, 1)
+        axis.imshow(avg, cmap=plt.cm.gray)
+        axis.set_xticks([])
+        axis.set_yticks([])
 
-    # in case of direction composed by two vectors
-#    for i in range(len(selected_directions)):
-#        axis.arrow(selected_directions[i][0][0], selected_directions[i][0][1], 
-#                   selected_directions[i][1][0]-selected_directions[i][0][0], 
-#                   selected_directions[i][1][1]-selected_directions[i][0][1], head_width=15, head_length=15, fc='blue', ec='blue')    
-    
-    # final direction
-    axis.arrow(final_extremes[0][0], final_extremes[0][1], final_extremes[1][0]-final_extremes[0][0], 
-               final_extremes[1][1]-final_extremes[0][1], head_width=15, head_length=15, 
-                fc='pink', ec='pink', lw=5)
-               
-    # final trajectory
-    axis.arrow(int(traj[0][0]), int(traj[0][1]), int(traj[1][0])-int(traj[0][0]), int(traj[1][1])-int(traj[0][1]), 
-               head_width=15, head_length=15, fc='blue', ec='blue', lw=5)               
+        # in case of direction composed by two vectors
+    #    for i in range(len(selected_directions)):
+    #        axis.arrow(selected_directions[i][0][0], selected_directions[i][0][1],
+    #                   selected_directions[i][1][0]-selected_directions[i][0][0],
+    #                   selected_directions[i][1][1]-selected_directions[i][0][1], head_width=15, head_length=15, fc='blue', ec='blue')
 
-    axis.arrow(int(traj[0][0]), int(traj[0][1]), int(perp_vector[0]), int(perp_vector[1]), 
-               head_width=15, head_length=15, fc='green', ec='green', lw=5)  
-               
-    axis.arrow(int(contour_segments[id_segment][0][0]), int(contour_segments[id_segment][0][1]), int(contour_segments[id_segment][1][0])-int(contour_segments[id_segment][0][0]), int(contour_segments[id_segment][1][1])-int(contour_segments[id_segment][0][1]), 
-               head_width=15, head_length=15, fc='yellow', ec='yellow', lw=5) 
-    
-    axis.plot(intersect_fold_axis[0],intersect_fold_axis[1], 'r*')
-    axis.plot([x[0][0] for x in approx], [x[0][1] for x in approx], 'r-*')
-    # plt.show()
+        # final direction
+        axis.arrow(final_extremes[0][0], final_extremes[0][1], final_extremes[1][0]-final_extremes[0][0],
+                   final_extremes[1][1]-final_extremes[0][1], head_width=15, head_length=15,
+                    fc='pink', ec='pink', lw=5)
+
+        # final trajectory
+        axis.arrow(int(traj[0][0]), int(traj[0][1]), int(traj[1][0])-int(traj[0][0]), int(traj[1][1])-int(traj[0][1]),
+                   head_width=15, head_length=15, fc='blue', ec='blue', lw=5)
+
+        axis.arrow(int(traj[0][0]), int(traj[0][1]), int(perp_vector[0]), int(perp_vector[1]),
+                   head_width=15, head_length=15, fc='green', ec='green', lw=5)
+
+        axis.arrow(int(contour_segments[id_segment][0][0]), int(contour_segments[id_segment][0][1]), int(contour_segments[id_segment][1][0])-int(contour_segments[id_segment][0][0]), int(contour_segments[id_segment][1][1])-int(contour_segments[id_segment][0][1]),
+                   head_width=15, head_length=15, fc='yellow', ec='yellow', lw=5)
+
+        axis.plot(intersect_fold_axis[0],intersect_fold_axis[1], 'r*')
+        axis.plot([x[0][0] for x in approx], [x[0][1] for x in approx], 'r-*')
+        # plt.show()
