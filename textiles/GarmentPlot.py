@@ -3,12 +3,11 @@ __author__="def"
 import matplotlib.pyplot as plt
 
 
-def plot_rgb(image, show=True):
+def plot_rgb(image, show=True, **kwargs):
     plt.figure()
-    plt.imshow(image)
+    plt.imshow(image, **kwargs)
     if show:
         plt.show()
-
 
 def plot_depth(image, show=True):
     plt.figure()

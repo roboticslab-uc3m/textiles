@@ -1,8 +1,20 @@
 import numpy as np
+from scipy import ndimage
+from skimage import morphology
+from skimage import filters
+from skimage import util
+from skimage import restoration
+from skimage import exposure
 
 class GarmentDepthMapClustering:
     @staticmethod
     def preprocess(depth_image, mask):
+        """
+        Removes the background information and normalizes the depth image range to 8-bit unsigned.
+        :param depth_image:
+        :param mask: Segmentation mask where white is garment and black is background
+        :return: Depth image normalized and converted to 8-bit unsigned
+        """
         background = np.inf  # Define a depth value for background pixels
         masked_depth_image = np.where(mask==255, depth_image.transpose(), background)
 
@@ -22,4 +34,25 @@ class GarmentDepthMapClustering:
 
     @staticmethod
     def cluster_similar_regions(preprocessed_depth_image):
-        pass
+        """
+        Apply clustering algorithm to group similar regions. This uses watershed currently.
+        :param preprocessed_depth_image: Depth image normalized and converted to 8-bit unsigned
+        :return: Labeled image after the clustering process
+        """
+        scaled_depth_map = util.img_as_ubyte(preprocessed_depth_image)
+
+        # denoise image
+        denoised = restoration.denoise_tv_chambolle(scaled_depth_map, weight=0.05)
+        denoised_equalize= exposure.equalize_hist(denoised)
+
+        # find continuous region (low gradient) --> markers
+        markers = filters.rank.gradient(denoised_equalize, morphology.disk(25)) < 15 # 25,15  10,10
+
+        markers = ndimage.label(markers)[0]
+
+        # local gradient
+        gradient = filters.rank.gradient(denoised, morphology.disk(5))
+
+        # labels
+        labels = morphology.watershed(gradient, markers)
+        return labels
