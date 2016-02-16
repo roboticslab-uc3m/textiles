@@ -19,21 +19,23 @@ if __name__ == "__main__":
         image_src = cv2.imread(path_rgb_image)
         depth_image = np.loadtxt(path_depth_image)
 
-        # Garment Segmentation Step
+        # Garment Segmentation Stage
         mask = GarmentSegmentation.background_substraction(image_src)
         approximated_polygon = GarmentSegmentation.compute_approximated_polygon(mask)
         GarmentPlot.plot_mask(mask)
         GarmentPlot.plot_contour(image_src, approximated_polygon)
 
-        # Garment Depth Map Clustering
+        # Garment Depth Map Clustering Stage
         preprocessed_depth_image = GarmentDepthMapClustering.preprocess(depth_image, mask)
         labeled_image = GarmentDepthMapClustering.cluster_similar_regions(preprocessed_depth_image)
         GarmentPlot.plot_depth(preprocessed_depth_image)
         GarmentPlot.plot_rgb(labeled_image, cmap=plt.cm.Accent)
 
-        # Garment Pick and Place Points
-        unfold_paths = GarmentPickAndPlacePoints.calculate_unfold_paths(labeled_image, approximated_polygon)
+        # Garment Pick and Place Points Stage
+        unfold_paths = GarmentPickAndPlacePoints.calculate_unfold_paths(preprocessed_depth_image, labeled_image,
+                                                                        approximated_polygon)
         bumpiness = GarmentPickAndPlacePoints.calculate_bumpiness(labeled_image, unfold_paths)
         pick_point, place_point = GarmentPickAndPlacePoints.calculate_pick_and_place_points(unfold_paths, bumpiness)
+        GarmentPlot.plot_paths(image_src, approximated_polygon, unfold_paths)
 
-
+        break
