@@ -1,0 +1,2 @@
+class GarmentSegmentation:
+    pass

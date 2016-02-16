@@ -1,0 +1,2 @@
+class GarmentDepthMapAnalysis:
+    pass

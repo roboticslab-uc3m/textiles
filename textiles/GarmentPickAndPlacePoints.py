@@ -1,0 +1,2 @@
+class GarmentPickAndPlacePoints:
+    pass
