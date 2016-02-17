@@ -74,7 +74,7 @@ def line_sampling_points(p1, p2, step):
     slope = np.true_divide(end[1] - start[1], end[0] - start[0])
     length = np.sqrt(np.power(end[1] - start[1], 2) + np.power(end[0] - start[0], 2))
     num_samples = int(length / step)
-    print 'Slope: %f Length: %f Num samples: %f' % (slope, length, num_samples)
+    # print 'Slope: %f Length: %f Num samples: %f' % (slope, length, num_samples)
     # Obtain points to sample
     x = np.linspace(start[0], end[0], num_samples)
     y = (x-start[0]) * slope + start[1]
@@ -89,9 +89,9 @@ def line_sampling(image, p1, p2, step):
     x, y = line_sampling_points(p1, p2, step)
     # print image.shape
     if len(image.shape) == 3:
-        return [ image[int(j), int(i), :] for i, j in zip(x, y)]
+        return [ int(image[int(j), int(i), :]) for i, j in zip(x, y)]
     else:
-        return [ image[int(j), int(i)] for i, j in zip(x, y)]
+        return [ int(image[int(j), int(i)]) for i, j in zip(x, y)]
 
 
 

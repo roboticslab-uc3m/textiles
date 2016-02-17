@@ -11,7 +11,6 @@ class GarmentPickAndPlacePoints:
 
         # Get contour midpoints
         cloth_contour = ClothContour(approximated_polygon)
-        contour_segments, contour_midpoints = cloth_contour.segments, cloth_contour.midpoints
 
         # Get paths to traverse:
         valid_paths = cloth_contour.get_valid_paths(highest_points)
@@ -19,8 +18,14 @@ class GarmentPickAndPlacePoints:
         return valid_paths
 
     @staticmethod
-    def calculate_bumpiness(labeled_image, unfold_paths):
-        pass
+    def calculate_bumpiness(depth_map, labeled_image, unfold_paths):
+        average_regions = Superpixels.get_average_regions(depth_map, labeled_image)
+        profiles = [[p for p in Superpixels.line_sampling(average_regions, path[0], path[1], 1) if p != 255]
+                    for id, path in unfold_paths ]
+
+        bumpiness = [sum([abs(j-i) for i, j in zip(profile, profile[1:])])
+                     for profile in profiles]
+        return bumpiness
 
     @staticmethod
     def calculate_pick_and_place_points(unfold_paths, bumpiness):
