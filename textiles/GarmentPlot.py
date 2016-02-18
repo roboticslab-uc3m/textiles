@@ -40,10 +40,9 @@ def plot_contour(image, contour, color='r', show=True):
 
 def plot_paths(image_src, approximated_polygon, unfold_paths, show=True):
     plot_contour(image_src, approximated_polygon, show=False)
-    for i, path in unfold_paths:
-        if i:
-            (start_x, start_y), (end_x, end_y) = path
-            plt.plot( (start_x, end_x), (start_y, end_y), 'go-', linewidth=2.0 )
+    for path in unfold_paths:
+        (start_x, start_y), (end_x, end_y) = path
+        plt.plot( (start_x, end_x), (start_y, end_y), 'go-', linewidth=2.0 )
     plt.axis('off')
     if show:
         plt.show()
