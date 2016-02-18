@@ -34,10 +34,13 @@ class GarmentPickAndPlacePoints:
         _, unfold_direction = min(zip(bumpiness, unfold_paths), key=itemgetter(0))
         print _, unfold_direction
 
-        # Find contour of highest region
-        pass
+        # Find contour of highest region (lowest depth value from the camera)
+        highest_region = Superpixels.get_highest_superpixel(labeled_image)
+        highest_region_contours, dummy = cv2.findContours(highest_region.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        highest_region_contour = max(highest_region_contours, key=cv2.contourArea)
 
-        # Find instersection with contour
+        # Find intersection with contour
+
 
         return None, None
 

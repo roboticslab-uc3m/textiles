@@ -1,6 +1,6 @@
 __author__ = 'def'
 
-from intersect import seg_intersect, polygon_intersect
+from LineTools import seg_intersect, polygon_intersect
 
 class ClothContour:
 
