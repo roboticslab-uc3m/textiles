@@ -3,6 +3,7 @@ import cv2
 
 import Superpixels
 from ClothContour import ClothContour
+from LineTools import  line_intersection_polygon
 
 class GarmentPickAndPlacePoints:
 
@@ -40,8 +41,11 @@ class GarmentPickAndPlacePoints:
         highest_region_contour = max(highest_region_contours, key=cv2.contourArea)
 
         # Find intersection with contour
-
-
-        return None, None
+        intersection = line_intersection_polygon(unfold_direction, ClothContour.get_contour_segments(highest_region_contour))
+        if intersection:
+            pick, place = intersection
+            return pick, place
+        else:
+            raise BaseException('Bad implementation')
 
 

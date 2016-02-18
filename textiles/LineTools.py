@@ -262,7 +262,7 @@ if __name__ == "__main__":
     p3 = np.array( [4.0, -5.0] )
     p4 = np.array( [4.0, 2.0] )
 
-    print seg_intersects(p1, p2, p3, p4)
+    assert not seg_intersects(p1, p2, p3, p4)
 
     p1 = np.array( [2.0, 2.0] )
     p2 = np.array( [4.0, 3.0] )
@@ -270,7 +270,7 @@ if __name__ == "__main__":
     p3 = np.array( [6.0, 0.0] )
     p4 = np.array( [6.0, 3.0] )
 
-    print seg_intersects(p1, p2, p3, p4)
+    assert not seg_intersects(p1, p2, p3, p4)
 
     p1 = np.array( [1.0, 1.0] )
     p2 = np.array( [10.0, 1.0] )
@@ -278,14 +278,13 @@ if __name__ == "__main__":
     p3 = np.array( [1.0, 2.0] )
     p4 = np.array( [10.0, 2.0] )
 
-    print seg_intersects(p1, p2, p3, p4)
+    assert not seg_intersects(p1, p2, p3, p4)
 
     contour = [[[0, 0], [50, 50]],[[50,50], [50,0]],[[50, 0], [0,0]]]
     line = [[-10, 25], [24, 25]]
     line2 = [[-10, 25], [75, 25]]
     line3 = [[-10, 25], [0, 25]]
 
-    print seg_intersects_polygon(line, contour)
-    print seg_intersects_polygon(line2, contour)
-    print seg_intersects_polygon(line3, contour)
+    assert not seg_intersects_polygon(line, contour)
+    assert seg_intersects_polygon(line2, contour)
     assert not seg_intersects_polygon(line3, contour)
