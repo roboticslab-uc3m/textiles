@@ -119,6 +119,77 @@ def seg_intersects(a1, a2, b1, b2):
     """
     return any(np.isfinite(seg_intersection(a1, a2, b1, b2)))
 
+def seg_intersection_line(s1, s2, l1, l2):
+    """
+    Calculates the intersection between a segment and a line
+    :param s1: first point of the segment
+    :param s2: second point of the segment
+    :param l1: first point of the line
+    :param l2: segment point of the line
+    :return: intersection point between segments a and b. If no intersection exists returns [nan, nan] as point.
+    """
+    intersection = None
+
+    # Find line equation
+    slope_s, slope_l = None, None
+
+    if s1[0]-l2[0] != 0:
+        slope_s = np.true_divide(s1[1] - s2[1], s1[0] - s2[0])
+        intercept_s = s1[1] - slope_s * s1[0]
+    else:
+        x_s = s1[0]
+
+    if l1[0]-l2[0] != 0:
+        slope_l = np.true_divide(l1[1] - l2[1], l1[0] - l2[0])
+        intercept_l = l1[1] - slope_l * l1[0]
+    else:
+        x_l = l1[0]
+
+    # Special cases: vertical lines
+    if slope_s is None:
+        if slope_l is None:
+            if x_s == x_l:
+                return [x_s, np.NaN]
+            else:
+                return [np.NaN, np.NaN]
+        else:
+            intersection = np.array([0,0])
+            intersection[0] = x_s
+            intersection[1] = slope_l * x_s + intercept_l
+    else:
+        if slope_l is None:
+            intersection = np.array([0,0])
+            intersection[0] = x_l
+            intersection[1] = slope_s * x_l + intercept_s
+
+        else:
+            # Typical case: solve system
+            with warnings.catch_warnings():
+                warnings.filterwarnings('error')
+                try:
+                    intersection = np.linalg.solve(np.concatenate(slope_s, slope_l), np.concatenate(intercept_s, intercept_l))
+                except Warning, w:
+                    return [np.NaN, np.NaN]
+
+        # Check if intersection found is within limits to ensure that belongs to segment
+        if np.minimum(s1[0], s2[0]) <= intersection[0] <= np.maximum(s1[0], s2[0]) and \
+                                np.minimum(s1[1], s2[1]) <= intersection[1] <= np.maximum(s1[1], s2[1]):
+            return intersection
+        else:
+            return [np.NaN, np.NaN]
+
+def seg_intersects_line(s1, s2, l1, l):
+    """
+    Check whether a line intersects a segment or not.
+    This implementation takes into account vertical lines and stuff
+    :param s1: first point of the segment
+    :param s2: second point of the segment
+    :param l1: first point of the line
+    :param l: second point of the line
+    :return: True if the two segments intersect, False otherwise
+    """
+    return any(np.isfinite(seg_intersection(s1, s2, l1, l)))
+
 def seg_intersects_polygon(segment, polygon):
     """
     Checks if a segment intersects with a polygon
@@ -129,11 +200,37 @@ def seg_intersects_polygon(segment, polygon):
     return bool(len(seg_intersection_polygon(segment, polygon)))
 
 def seg_intersection_polygon(segment, polygon):
+    """
+    Calculates the intersection(s) point(s) of a segment and a polygon
+    :param segment: Segment defined with starting and ending points ((x1, y1), (x2, y2))
+    :param polygon:  Polygon defined as a collection of segments [segment1, segment2]
+    :return: list of intersection points (empty if they do not intersect)
+    """
     intersections = [seg_intersection(np.array(segment[0], dtype=np.float), np.array(segment[1], dtype=np.float),
                               np.array(edge[0], dtype=np.float), np.array(edge[1], dtype=np.float))
                               for edge in polygon]
     return [intersection for intersection in intersections if any(np.isfinite(intersection))]
 
+def line_intersects_polygon(line, polygon):
+    """
+    Checks if a line intersects with a polygon
+    :param line: Line defined with starting and ending points ((x1, y1), (x2, y2))
+    :param polygon:  Polygon defined as a collection of segments [segment1, segment2]
+    :return: True if they intersect, False otherwise
+    """
+    return bool(len(line_intersection_polygon(line, polygon)))
+
+def line_intersection_polygon(line, polygon):
+    """
+    Calculates the intersection(s) point(s) of a segment and a polygon
+    :param line: Line defined with starting and ending points ((x1, y1), (x2, y2))
+    :param polygon:  Polygon defined as a collection of segments [segment1, segment2]
+    :return: list of intersection points (empty if they do not intersect)
+    """
+    intersections = [seg_intersection_line(np.array(edge[0], dtype=np.float), np.array(edge[1], dtype=np.float),
+                                           np.array(line[0], dtype=np.float), np.array(line[1], dtype=np.float))
+                              for edge in polygon]
+    return [intersection for intersection in intersections if any(np.isfinite(intersection))]
 
 if __name__ == "__main__":
     # Testing line intersection
