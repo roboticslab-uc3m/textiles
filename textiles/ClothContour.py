@@ -1,6 +1,6 @@
 __author__ = 'def'
 
-from LineTools import seg_intersect, polygon_intersect
+from LineTools import seg_intersects, seg_intersects_polygon
 
 class ClothContour:
 
@@ -43,7 +43,7 @@ class ClothContour:
 
     def get_valid_paths(self, source_points):
         candidate_paths = self.get_candidate_paths(source_points)
-        valid_paths = [ path if not polygon_intersect(path[1], [segment for i, segment in enumerate(self.segments) if i != path[0]])
+        valid_paths = [ path if not seg_intersects_polygon(path[1], [segment for i, segment in enumerate(self.segments) if i != path[0]])
                         else (path[0], None) for path in candidate_paths ]
 
         # for original, filtered in zip(candidate_paths, valid_paths):

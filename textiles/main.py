@@ -35,7 +35,7 @@ if __name__ == "__main__":
         unfold_paths = GarmentPickAndPlacePoints.calculate_unfold_paths(labeled_image, approximated_polygon)
         bumpiness = GarmentPickAndPlacePoints.calculate_bumpiness(labeled_image, unfold_paths)
         pick_point, place_point = GarmentPickAndPlacePoints.calculate_pick_and_place_points(labeled_image, unfold_paths,
-                                                                                            bumpiness)
+                                                                                           bumpiness)
         GarmentPlot.plot_paths(image_src, approximated_polygon, unfold_paths)
         print "Bumpiness: ", bumpiness
         GarmentPlot.plot_pick_and_place_points(image_src, pick_point, place_point)
