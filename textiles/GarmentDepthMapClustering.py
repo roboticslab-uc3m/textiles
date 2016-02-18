@@ -37,7 +37,7 @@ class GarmentDepthMapClustering:
         """
         Apply clustering algorithm to group similar regions. This uses watershed currently.
         :param preprocessed_depth_image: Depth image normalized and converted to 8-bit unsigned
-        :return: Labeled image after the clustering process
+        :return: Labeled image after the clustering process. Each label is the median value of each cluster
         """
         scaled_depth_map = util.img_as_ubyte(preprocessed_depth_image)
 
@@ -55,4 +55,13 @@ class GarmentDepthMapClustering:
 
         # labels
         labels = morphology.watershed(gradient, markers)
-        return labels
+
+        # Change labels by median value of each region
+        unique_labels = np.unique(labels)
+        avg = np.zeros(labels.shape, np.uint8)
+
+        for unique_value in unique_labels:
+            avg_value = np.median(np.extract(labels == unique_value, preprocessed_depth_image))
+            avg = np.where(labels == unique_value, int(avg_value), avg)
+
+        return avg
