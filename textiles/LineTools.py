@@ -248,12 +248,12 @@ def contour_to_segments(contour):
 
 def midpoint(a, b):
     """
-    Computes the midpoint of a segment defined by wo end points. It works on a integer grid only.
+    Computes the midpoint of a segment defined by wo end points.
     :param a: End oint of the segment
     :param b: End point of the segment
     :return: Midpoint
     """
-    return [a[0]+(b[0]-a[0])/2, a[1]+(b[1]-a[1])/2]
+    return [a[0]+(b[0]-a[0])/2.0, a[1]+(b[1]-a[1])/2.0]
 
 if __name__ == "__main__":
     # Testing line intersection
