@@ -52,6 +52,11 @@ int main(int argc, char** argv) {
         printf("No rgb yet...\n");
     };
 
+    if(inYarpRgb->width()<400)
+    {
+        printf("PLEASE INCREASE SENSOR RESOLUTION!!!!\n");
+        return 1;
+    }
     /*IplImage *inIplImage = cvCreateImage(cvSize(inYarpImg->width(), inYarpImg->height()),
                                          IPL_DEPTH_16U, 1 );
     inIplImage = (IplImage *)inYarpImg->getIplImage();
