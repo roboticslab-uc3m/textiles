@@ -19,13 +19,14 @@ class GarmentPickAndPlacePoints:
 
         # Get paths to traverse:
         candidate_paths = list(itertools.product(highest_points, polygon_midpoints))
-        valid_paths = filter(lambda x: len(LineTools.seg_intersection_polygon(x, polygon_segments)) <= 1,
-                             candidate_paths)
+        valid_paths = list(filter(lambda x: len(LineTools.seg_intersection_polygon(x, polygon_segments)) <= 1,
+                             candidate_paths))
 
         # DEBUG STUUUUUUUFFF #########################################################
         import GarmentPlot
         import matplotlib.pyplot as plt
         GarmentPlot.plot_depth(labeled_image, show=False)
+        GarmentPlot.plot_contour(labeled_image, approximated_polygon, color='b', show=False)
         plt.title('Debug: midpoints')
         for start, end in valid_paths:
             start_x, start_y = start
@@ -34,9 +35,10 @@ class GarmentPickAndPlacePoints:
         plt.plot(highest_points[0][0], highest_points[0][1], 'bo')
         x, y = zip(*polygon_midpoints)
         plt.plot(x, y, 'go')
-        for z in candidate_paths:
-            intersections = LineTools.seg_intersection_polygon(z, polygon_segments)
-            print intersections
+        for path in candidate_paths:
+            intersections = LineTools.seg_intersection_polygon(path, polygon_segments)
+            booleans = LineTools.seg_intersects_polygon(path, polygon_segments)
+            print "Line", path, "intersects polygon:", intersections
             for point in intersections:
                 plt.plot(point[0], point[1], 'm*')
         plt.show()

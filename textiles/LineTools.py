@@ -31,8 +31,8 @@ def line_intersection(a1, a2, b1, b2):
     db = b2-b1
     dp = a1-b1
     dap = perp(da)
-    denom = np.dot( dap, db)
-    num = np.dot( dap, dp )
+    denom = np.dot(dap, db)
+    num = np.dot(dap, dp )
     return (num / denom.astype(float))*db + b1
 
 def line_intersects(a1, a2, b1, b2):
@@ -57,6 +57,12 @@ def seg_intersection(a1, a2, b1, b2):
     :param b2: second point of the segment b
     :return: intersection point between segments a and b. If no intersection exists returns [nan, nan] as point.
     """
+    # Convert to numpy types
+    a1 = np.array(a1, dtype=np.float)
+    a2 = np.array(a2, dtype=np.float)
+    b1 = np.array(b1, dtype=np.float)
+    b2 = np.array(b2, dtype=np.float)
+
     intersection = [np.NaN, np.NaN]
 
     # Find line equation
@@ -127,6 +133,12 @@ def seg_intersection_line(s1, s2, l1, l2):
     :param l2: segment point of the line
     :return: intersection point between segments a and b. If no intersection exists returns [nan, nan] as point.
     """
+    # Convert to numpy types
+    s1 = np.array(s1, dtype=np.float)
+    s2 = np.array(s2, dtype=np.float)
+    l1 = np.array(l1, dtype=np.float)
+    l2 = np.array(l2, dtype=np.float)
+
     intersection = [np.NaN, np.NaN]
 
     # Find line equation
@@ -204,10 +216,8 @@ def seg_intersection_polygon(segment, polygon):
     :param polygon:  Polygon defined as a collection of segments [segment1, segment2]
     :return: list of intersection points (empty if they do not intersect)
     """
-    intersections = [seg_intersection(np.array(segment[0], dtype=np.float), np.array(segment[1], dtype=np.float),
-                              np.array(edge[0], dtype=np.float), np.array(edge[1], dtype=np.float))
-                              for edge in polygon]
-    return [intersection for intersection in intersections if any(np.isfinite(intersection))]
+    return list(filter(lambda x: any(np.isfinite(x)),
+                       [seg_intersection(segment[0], segment[1], edge[0], edge[1]) for edge in polygon]))
 
 def line_intersects_polygon(line, polygon):
     """
@@ -225,11 +235,8 @@ def line_intersection_polygon(line, polygon):
     :param polygon:  Polygon defined as a collection of segments [segment1, segment2]
     :return: list of intersection points (empty if they do not intersect)
     """
-    intersections = [seg_intersection_line(np.array(edge[0], dtype=np.float), np.array(edge[1], dtype=np.float),
-                                           np.array(line[0], dtype=np.float), np.array(line[1], dtype=np.float))
-                              for edge in polygon]
-    print intersections
-    return [intersection for intersection in intersections if any(np.isfinite(intersection))]
+    return list(filter(lambda x: any(np.isfinite(x)),
+                       [seg_intersection(edge[0], edge[1], line[0], line[1]) for edge in polygon]))
 
 def contour_to_segments(contour):
     """
