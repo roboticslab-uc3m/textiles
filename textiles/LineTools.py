@@ -244,6 +244,15 @@ def contour_to_segments(contour):
     """
     return [(start.ravel().tolist(), end.ravel().tolist()) for start, end in zip(contour, contour[1:])]
 
+def midpoint(a, b):
+    """
+    Computes the midpoint of a segment defined by wo end points. It works on a integer grid only.
+    :param a: End oint of the segment
+    :param b: End point of the segment
+    :return: Midpoint
+    """
+    return [a[0]+(b[0]-a[0])/2, a[1]+(b[1]-a[1])/2]
+
 if __name__ == "__main__":
     # Testing line intersection
     p1 = np.array( [0.0, 0.0] )

@@ -1,6 +1,7 @@
 __author__ = 'def'
 
 from LineTools import seg_intersects, seg_intersects_polygon, contour_to_segments
+import LineTools
 
 class ClothContour:
 
@@ -14,12 +15,8 @@ class ClothContour:
         # print self.segments
 
         # Generate midpoints:
-        self.midpoints = self.get_contour_midpoints(self.segments)
+        self.midpoints = [LineTools.midpoint(start, end) for start, end in self.segments]
 
-    @staticmethod
-    def get_contour_midpoints(segments):
-        contour_midpoints = [[start[0]+(end[0]-start[0])/2, start[1]+(end[1]-start[1])/2] for start, end in segments]
-        return contour_midpoints
 
     def get_candidate_paths(self, source_points):
         candidate_paths = []
