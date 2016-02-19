@@ -57,7 +57,7 @@ def seg_intersection(a1, a2, b1, b2):
     :param b2: second point of the segment b
     :return: intersection point between segments a and b. If no intersection exists returns [nan, nan] as point.
     """
-    intersection = None
+    intersection = [np.NaN, np.NaN]
 
     # Find line equation
     slope_a, slope_b = None, None
@@ -85,12 +85,13 @@ def seg_intersection(a1, a2, b1, b2):
             intersection = np.array([0,0])
             intersection[0] = x_a
             intersection[1] = slope_b * x_a + intercept_b
+            return intersection
     else:
         if slope_b is None:
             intersection = np.array([0,0])
             intersection[0] = x_b
             intersection[1] = slope_a * x_b + intercept_a
-
+            return intersection
         else:
             # Typical case: solve system
             with warnings.catch_warnings():
@@ -101,8 +102,8 @@ def seg_intersection(a1, a2, b1, b2):
                     return [np.NaN, np.NaN]
 
         # Check if intersection found is within limits to ensure that belongs to segment
-        if np.minimum(a1[0], a2[0]) <= intersection[0] <= np.maximum(a1[0], a2[0]) and np.minimum(b1[0], b2[0])  <= intersection[0] <= np.maximum(b1[0], b2[0]) and \
-            np.minimum(a1[1], a2[1]) <= intersection[1] <= np.maximum(a1[1], a2[1]) and np.minimum(b1[1], b2[1])  <= intersection[1] <= np.maximum(b1[1], b2[1]):
+        if min(a1[0], a2[0]) <= intersection[0] <= max(a1[0], a2[0]) and min(b1[0], b2[0])  <= intersection[0] <= max(b1[0], b2[0]) and \
+            min(a1[1], a2[1]) <= intersection[1] <= max(a1[1], a2[1]) and min(b1[1], b2[1])  <= intersection[1] <= max(b1[1], b2[1]):
             return intersection
         else:
             return [np.NaN, np.NaN]
@@ -128,12 +129,12 @@ def seg_intersection_line(s1, s2, l1, l2):
     :param l2: segment point of the line
     :return: intersection point between segments a and b. If no intersection exists returns [nan, nan] as point.
     """
-    intersection = None
+    intersection = [np.NaN, np.NaN]
 
     # Find line equation
     slope_s, slope_l = None, None
 
-    if s1[0]-l2[0] != 0:
+    if s1[0]-s2[0] != 0:
         slope_s = np.true_divide(s1[1] - s2[1], s1[0] - s2[0])
         intercept_s = s1[1] - slope_s * s1[0]
     else:
@@ -156,11 +157,13 @@ def seg_intersection_line(s1, s2, l1, l2):
             intersection = np.array([0,0])
             intersection[0] = x_s
             intersection[1] = slope_l * x_s + intercept_l
+            return intersection
     else:
         if slope_l is None:
             intersection = np.array([0,0])
             intersection[0] = x_l
             intersection[1] = slope_s * x_l + intercept_s
+            return intersection
 
         else:
             # Typical case: solve system
@@ -172,8 +175,8 @@ def seg_intersection_line(s1, s2, l1, l2):
                     return [np.NaN, np.NaN]
 
         # Check if intersection found is within limits to ensure that belongs to segment
-        if np.minimum(s1[0], s2[0]) <= intersection[0] <= np.maximum(s1[0], s2[0]) and \
-                                np.minimum(s1[1], s2[1]) <= intersection[1] <= np.maximum(s1[1], s2[1]):
+        if min(s1[0], s2[0]) <= intersection[0] <= max(s1[0], s2[0]) and \
+                                min(s1[1], s2[1]) <= intersection[1] <= max(s1[1], s2[1]):
             return intersection
         else:
             return [np.NaN, np.NaN]
@@ -230,6 +233,7 @@ def line_intersection_polygon(line, polygon):
     intersections = [seg_intersection_line(np.array(edge[0], dtype=np.float), np.array(edge[1], dtype=np.float),
                                            np.array(line[0], dtype=np.float), np.array(line[1], dtype=np.float))
                               for edge in polygon]
+    print intersections
     return [intersection for intersection in intersections if any(np.isfinite(intersection))]
 
 if __name__ == "__main__":
