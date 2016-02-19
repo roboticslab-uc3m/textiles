@@ -236,6 +236,14 @@ def line_intersection_polygon(line, polygon):
     print intersections
     return [intersection for intersection in intersections if any(np.isfinite(intersection))]
 
+def contour_to_segments(contour):
+    """
+    Converts a contour (opencv list of points) to a list of segments
+    :param contour: Opencv's contour (list of points)
+    :return: List of segments
+    """
+    return [(start.ravel().tolist(), end.ravel().tolist()) for start, end in zip(contour, contour[1:])]
+
 if __name__ == "__main__":
     # Testing line intersection
     p1 = np.array( [0.0, 0.0] )

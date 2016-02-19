@@ -3,7 +3,7 @@ import cv2
 
 import Superpixels
 from ClothContour import ClothContour
-from LineTools import  line_intersection_polygon
+import LineTools
 
 class GarmentPickAndPlacePoints:
 
@@ -16,8 +16,7 @@ class GarmentPickAndPlacePoints:
         cloth_contour = ClothContour(approximated_polygon)
 
         # Get paths to traverse:
-        valid_paths = [path[1] for path in cloth_contour.get_valid_paths(highest_points) if path[0]]
-
+        valid_paths = [path for id, path in cloth_contour.get_valid_paths(highest_points) if path]
         return valid_paths
 
     @staticmethod
@@ -41,7 +40,8 @@ class GarmentPickAndPlacePoints:
         highest_region_contour = max(highest_region_contours, key=cv2.contourArea)
 
         # Find intersection with contour
-        intersection = line_intersection_polygon(unfold_direction, ClothContour.get_contour_segments(highest_region_contour))
+        intersection = LineTools.line_intersection_polygon(unfold_direction,
+                                                           LineTools.contour_to_segments(highest_region_contour))
         if intersection:
             pick, place = intersection
             return pick, place

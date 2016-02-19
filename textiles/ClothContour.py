@@ -1,6 +1,6 @@
 __author__ = 'def'
 
-from LineTools import seg_intersects, seg_intersects_polygon
+from LineTools import seg_intersects, seg_intersects_polygon, contour_to_segments
 
 class ClothContour:
 
@@ -10,17 +10,11 @@ class ClothContour:
         self.n_points = len(points)
 
         # Generate segments:
-        self.segments = self.get_contour_segments(points)
+        self.segments = contour_to_segments(points)
         # print self.segments
 
         # Generate midpoints:
         self.midpoints = self.get_contour_midpoints(self.segments)
-
-
-    @staticmethod
-    def get_contour_segments(contour):
-        return [(list(contour[i][0]), list(contour[j][0]))
-                for i, j in zip(range(-1, len(contour)-1), range(len(contour)))]
 
     @staticmethod
     def get_contour_midpoints(segments):
@@ -36,8 +30,12 @@ class ClothContour:
 
     def get_valid_paths(self, source_points):
         candidate_paths = self.get_candidate_paths(source_points)
-        valid_paths = [ path if not seg_intersects_polygon(path[1], [segment for i, segment in enumerate(self.segments) if i != path[0]])
-                        else (path[0], None) for path in candidate_paths ]
-
+        valid_paths = []
+        for id, path in candidate_paths:
+            polygon = [segment for i, segment in enumerate(self.segments) if i != id]
+            if not seg_intersects_polygon(path, polygon):
+                valid_paths.append((id, path))
+            else:
+                valid_paths.append((id, None))
 
         return valid_paths
