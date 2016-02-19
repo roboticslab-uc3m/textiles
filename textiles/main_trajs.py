@@ -409,15 +409,15 @@ for path_rgb, path_depth in zip(image_paths, depth_maps):
 
     # PROTOLINE
 
-    from intersect import perp, line_intersect
+    from LineTools import perp, line_intersection
     
     id_segment = edges_to_profiles[np.argmin(bumpiness)]
 
     perp_vector = perp(np.array(contour_segments[id_segment][1])-np.array(contour_segments[id_segment][0]))
-    intersect_fold_axis = line_intersect(np.array(contour_segments[id_segment][0]),
-                                         np.array(contour_segments[id_segment][1]),
-                                         np.array(final_extremes[0]),
-                                         np.array(final_extremes[0])+perp_vector)
+    intersect_fold_axis = line_intersection(np.array(contour_segments[id_segment][0]),
+                                            np.array(contour_segments[id_segment][1]),
+                                            np.array(final_extremes[0]),
+                                            np.array(final_extremes[0]) + perp_vector)
 
 
    # LONG LINE MASK 
