@@ -311,3 +311,19 @@ if __name__ == "__main__":
     assert not seg_intersects_polygon(line, contour)
     assert seg_intersects_polygon(line2, contour)
     assert not seg_intersects_polygon(line3, contour)
+
+    # new testing things
+    test_seg_01 = ((-2, 0), (0, 2))
+    test_seg_02 = ((0, 2), (4, 2))
+    test_seg_03 = ((0, 3), (6, 3))
+    test_seg_04 = ((5, 1,), (6, 2))
+    polypoints = [(0,0), (5, 5), (5,0)]
+    polygon = [ [start, end] for start, end in zip(polypoints, polypoints[1:]+[polypoints[0]])]
+
+    assert not seg_intersects_polygon(test_seg_01, polygon)
+    assert  seg_intersects_polygon(test_seg_02, polygon)
+    assert len(seg_intersection_polygon(test_seg_02, polygon)) == 1
+    assert  seg_intersects_polygon(test_seg_03, polygon)
+    assert len(seg_intersection_polygon(test_seg_03, polygon)) == 2
+    assert  seg_intersects_polygon(test_seg_04, polygon)
+    assert len(seg_intersection_polygon(test_seg_04, polygon)) == 1
