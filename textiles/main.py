@@ -38,5 +38,5 @@ if __name__ == "__main__":
         #                                                                                   bumpiness)
         GarmentPlot.plot_paths(image_src, approximated_polygon, unfold_paths)
         print "Bumpiness: ", bumpiness
-        GarmentPlot.plot_pick_and_place_points(image_src, pick_point, place_point)
+        # GarmentPlot.plot_pick_and_place_points(image_src, pick_point, place_point)
         break

@@ -1,8 +1,8 @@
 from operator import itemgetter
+import itertools
 import cv2
 
 import Superpixels
-from ClothContour import ClothContour
 import LineTools
 
 class GarmentPickAndPlacePoints:
@@ -13,10 +13,33 @@ class GarmentPickAndPlacePoints:
         highest_points = [Superpixels.get_highest_point_with_superpixels(labeled_image)[::-1]]
 
         # Get contour midpoints
-        cloth_contour = ClothContour(approximated_polygon)
+        polygon_segments = LineTools.contour_to_segments(approximated_polygon)
+        polygon_midpoints = [LineTools.midpoint(start, end) for start, end in polygon_segments]
+
 
         # Get paths to traverse:
-        valid_paths = [path for id, path in cloth_contour.get_valid_paths(highest_points) if path]
+        candidate_paths = list(itertools.product(highest_points, polygon_midpoints))
+        valid_paths = filter(lambda x: len(LineTools.seg_intersection_polygon(x, polygon_segments)) <= 1,
+                             candidate_paths)
+
+        import GarmentPlot
+        import matplotlib.pyplot as plt
+        GarmentPlot.plot_depth(labeled_image, show=False)
+        plt.title('Debug: midpoints')
+        for start, end in valid_paths:
+            start_x, start_y = start
+            end_x, end_y = end
+            plt.plot( [start_x, end_x], [start_y, end_y], 'r-')
+        plt.plot(highest_points[0][0], highest_points[0][1], 'bo')
+        x, y = zip(*polygon_midpoints)
+        plt.plot(x, y, 'go')
+        for z in candidate_paths:
+            intersections = LineTools.seg_intersection_polygon(z, polygon_segments)
+            print intersections
+            for point in intersections:
+                plt.plot(point[0], point[1], 'm*')
+        plt.show()
+
         return valid_paths
 
     @staticmethod
