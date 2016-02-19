@@ -85,13 +85,11 @@ def seg_intersection(a1, a2, b1, b2):
             intersection = np.array([0,0])
             intersection[0] = x_a
             intersection[1] = slope_b * x_a + intercept_b
-            return intersection
     else:
         if slope_b is None:
             intersection = np.array([0,0])
             intersection[0] = x_b
             intersection[1] = slope_a * x_b + intercept_a
-            return intersection
         else:
             # Typical case: solve system
             with warnings.catch_warnings():
@@ -101,12 +99,12 @@ def seg_intersection(a1, a2, b1, b2):
                 except Warning, w:
                     return [np.NaN, np.NaN]
 
-        # Check if intersection found is within limits to ensure that belongs to segment
-        if min(a1[0], a2[0]) <= intersection[0] <= max(a1[0], a2[0]) and min(b1[0], b2[0])  <= intersection[0] <= max(b1[0], b2[0]) and \
-            min(a1[1], a2[1]) <= intersection[1] <= max(a1[1], a2[1]) and min(b1[1], b2[1])  <= intersection[1] <= max(b1[1], b2[1]):
-            return intersection
-        else:
-            return [np.NaN, np.NaN]
+    # Check if intersection found is within limits to ensure that belongs to segment
+    if min(a1[0], a2[0]) <= intersection[0] <= max(a1[0], a2[0]) and min(b1[0], b2[0])  <= intersection[0] <= max(b1[0], b2[0]) and \
+        min(a1[1], a2[1]) <= intersection[1] <= max(a1[1], a2[1]) and min(b1[1], b2[1])  <= intersection[1] <= max(b1[1], b2[1]):
+        return intersection
+    else:
+        return [np.NaN, np.NaN]
 
 def seg_intersects(a1, a2, b1, b2):
     """
@@ -157,14 +155,11 @@ def seg_intersection_line(s1, s2, l1, l2):
             intersection = np.array([0,0])
             intersection[0] = x_s
             intersection[1] = slope_l * x_s + intercept_l
-            return intersection
     else:
         if slope_l is None:
             intersection = np.array([0,0])
             intersection[0] = x_l
             intersection[1] = slope_s * x_l + intercept_s
-            return intersection
-
         else:
             # Typical case: solve system
             with warnings.catch_warnings():
@@ -174,12 +169,12 @@ def seg_intersection_line(s1, s2, l1, l2):
                 except Warning, w:
                     return [np.NaN, np.NaN]
 
-        # Check if intersection found is within limits to ensure that belongs to segment
-        if min(s1[0], s2[0]) <= intersection[0] <= max(s1[0], s2[0]) and \
-                                min(s1[1], s2[1]) <= intersection[1] <= max(s1[1], s2[1]):
-            return intersection
-        else:
-            return [np.NaN, np.NaN]
+    # Check if intersection found is within limits to ensure that belongs to segment
+    if min(s1[0], s2[0]) <= intersection[0] <= max(s1[0], s2[0]) and \
+                            min(s1[1], s2[1]) <= intersection[1] <= max(s1[1], s2[1]):
+        return intersection
+    else:
+        return [np.NaN, np.NaN]
 
 def seg_intersects_line(s1, s2, l1, l):
     """

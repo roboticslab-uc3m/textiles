@@ -22,6 +22,7 @@ class GarmentPickAndPlacePoints:
         valid_paths = filter(lambda x: len(LineTools.seg_intersection_polygon(x, polygon_segments)) <= 1,
                              candidate_paths)
 
+        # DEBUG STUUUUUUUFFF #########################################################
         import GarmentPlot
         import matplotlib.pyplot as plt
         GarmentPlot.plot_depth(labeled_image, show=False)
