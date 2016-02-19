@@ -46,9 +46,7 @@ def get_highest_superpixel(image):
     return np.where(image<=lowest_value, 255, 0).astype(np.uint8)
 
 def get_highest_point_with_superpixels(image):
-    labels = np.unique(image)
-    lowest_value = labels[np.unravel_index(labels.argmin(), labels.shape)]
-    blobs = np.where(image<=lowest_value, 255, 0).astype(np.uint8)
+    blobs = get_highest_superpixel(image)
     label_img = measure.label(blobs)
     regions = measure.regionprops(label_img)
     max_index, max_value = max(enumerate([props.area for props in regions]), key=operator.itemgetter(1))

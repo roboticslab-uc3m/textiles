@@ -22,27 +22,6 @@ class GarmentPickAndPlacePoints:
         valid_paths = list(filter(lambda x: len(LineTools.seg_intersection_polygon(x, polygon_segments)) <= 1,
                              candidate_paths))
 
-        # DEBUG STUUUUUUUFFF #########################################################
-        import GarmentPlot
-        import matplotlib.pyplot as plt
-        GarmentPlot.plot_depth(labeled_image, show=False)
-        GarmentPlot.plot_contour(labeled_image, approximated_polygon, color='b', show=False)
-        plt.title('Debug: midpoints')
-        for start, end in valid_paths:
-            start_x, start_y = start
-            end_x, end_y = end
-            plt.plot( [start_x, end_x], [start_y, end_y], 'r-')
-        plt.plot(highest_points[0][0], highest_points[0][1], 'bo')
-        x, y = zip(*polygon_midpoints)
-        plt.plot(x, y, 'go')
-        for path in candidate_paths:
-            intersections = LineTools.seg_intersection_polygon(path, polygon_segments)
-            booleans = LineTools.seg_intersects_polygon(path, polygon_segments)
-            print "Line", path, "intersects polygon:", intersections
-            for point in intersections:
-                plt.plot(point[0], point[1], 'm*')
-        plt.show()
-
         return valid_paths
 
     @staticmethod
@@ -68,6 +47,17 @@ class GarmentPickAndPlacePoints:
         # Find intersection with contour
         intersection = LineTools.line_intersection_polygon(unfold_direction,
                                                            LineTools.contour_to_segments(highest_region_contour))
+        print intersection
+
+        ## Nice debug
+        import GarmentPlot
+        import matplotlib.pyplot as plt
+        GarmentPlot.plot_depth(highest_region, show=False)
+        GarmentPlot.plot_contour(highest_region, highest_region_contour, color='b', show=False)
+        plt.title('Debug: pick and place')
+        for point in intersection:
+            plt.plot(point[0], point[1], 'm*')
+        plt.show()
         if intersection:
             pick, place = intersection
             return pick, place
