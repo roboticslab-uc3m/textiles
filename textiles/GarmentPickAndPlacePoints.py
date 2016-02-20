@@ -1,5 +1,6 @@
 from operator import itemgetter
 import itertools
+import math
 import cv2
 
 import Superpixels
@@ -37,7 +38,7 @@ class GarmentPickAndPlacePoints:
     def calculate_pick_and_place_points(labeled_image, unfold_paths, bumpiness):
         # Select direction with lower bumpiness
         _, unfold_direction = min(zip(bumpiness, unfold_paths), key=itemgetter(0))
-        print _, unfold_direction
+        highest_point, contour_point = unfold_direction
 
         # Find contour of highest region (lowest depth value from the camera)
         highest_region = Superpixels.get_highest_superpixel(labeled_image)
@@ -47,22 +48,13 @@ class GarmentPickAndPlacePoints:
         # Find intersection with contour
         intersection = LineTools.line_intersection_polygon(unfold_direction,
                                                            LineTools.contour_to_segments(highest_region_contour))
-        print intersection
 
-        ## Nice debug
-        import GarmentPlot
-        import matplotlib.pyplot as plt
-        GarmentPlot.plot_depth(labeled_image, show=False)
-        plt.title('Debug: pick and place')
-        for point in intersection:
-            plt.plot(point[0], point[1], 'mo')
-        for point in unfold_direction:
-            plt.plot(point[0], point[1], 'wo-')
-        plt.show()
-        if intersection:
-            pick, place = intersection
-            return pick, place
-        else:
-            raise BaseException('Bad implementation')
+        # Pick point is furthest from contour point
+        pick_point = max(intersection, key=lambda x: math.hypot(contour_point[0]-x[0], contour_point[1]-x[1]))
+
+        # Place point is reflection using contour point:
+        place_point = (2*contour_point[0] - pick_point[0], 2*contour_point[1] - pick_point[1])
+
+        return pick_point, place_point
 
 

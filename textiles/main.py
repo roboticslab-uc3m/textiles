@@ -12,7 +12,7 @@ from utils import load_data
 
 if __name__ == "__main__":
 
-    image_paths, depth_image_paths = load_data('../data/20150625')
+    image_paths, depth_image_paths = load_data('../data/20150625_2')
 
     for path_rgb_image, path_depth_image in zip(image_paths, depth_image_paths):
         # Load input data
@@ -39,4 +39,3 @@ if __name__ == "__main__":
         GarmentPlot.plot_paths(image_src, approximated_polygon, unfold_paths)
         print "Bumpiness: ", bumpiness
         GarmentPlot.plot_pick_and_place_points(image_src, pick_point, place_point)
-        break
