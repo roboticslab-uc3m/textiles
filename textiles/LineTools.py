@@ -236,7 +236,7 @@ def line_intersection_polygon(line, polygon):
     :return: list of intersection points (empty if they do not intersect)
     """
     return list(filter(lambda x: any(np.isfinite(x)),
-                       [seg_intersection(edge[0], edge[1], line[0], line[1]) for edge in polygon]))
+                       [seg_intersection_line(edge[0], edge[1], line[0], line[1]) for edge in polygon]))
 
 def contour_to_segments(contour):
     """
@@ -321,12 +321,27 @@ if __name__ == "__main__":
     polygon = [ [start, end] for start, end in zip(polypoints, polypoints[1:]+[polypoints[0]])]
     print seg_intersection(test_seg_02[0], test_seg_02[1], polypoints[0], polypoints[1])
 
+    #segments
     assert not seg_intersects_polygon(test_seg_01, polygon)
     assert  seg_intersects_polygon(test_seg_02, polygon)
     assert len(seg_intersection_polygon(test_seg_02, polygon)) == 1
+    print "Num intersects:", len(seg_intersection_polygon(test_seg_02, polygon)), seg_intersection_polygon(test_seg_02, polygon)
     assert  seg_intersects_polygon(test_seg_03, polygon)
     print "Num intersects:", len(seg_intersection_polygon(test_seg_03, polygon)), seg_intersection_polygon(test_seg_03, polygon)
     assert len(seg_intersection_polygon(test_seg_03, polygon)) == 2
     assert  seg_intersects_polygon(test_seg_04, polygon)
     assert len(seg_intersection_polygon(test_seg_04, polygon)) == 1
     print "Num intersects:", len(seg_intersection_polygon(test_seg_04, polygon)), seg_intersection_polygon(test_seg_04, polygon)
+
+    #lines
+    #assert not line_intersects_polygon(test_seg_01, polygon)
+    print "[Line] Num intersects:", len(line_intersection_polygon(test_seg_01, polygon)), line_intersection_polygon(test_seg_01, polygon)
+    assert  line_intersects_polygon(test_seg_02, polygon)
+    assert len(line_intersection_polygon(test_seg_02, polygon)) == 2
+    print "[Line] Num intersects:", len(line_intersection_polygon(test_seg_02, polygon)), line_intersection_polygon(test_seg_02, polygon)
+    assert  line_intersects_polygon(test_seg_03, polygon)
+    print "[Line] intersects:", len(line_intersection_polygon(test_seg_03, polygon)), line_intersection_polygon(test_seg_03, polygon)
+    assert len(line_intersection_polygon(test_seg_03, polygon)) == 2
+    assert  line_intersects_polygon(test_seg_04, polygon)
+    assert len(line_intersection_polygon(test_seg_04, polygon)) == 2
+    print "[Line] intersects:", len(line_intersection_polygon(test_seg_04, polygon)), line_intersection_polygon(test_seg_04, polygon)

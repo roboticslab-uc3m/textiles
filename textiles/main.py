@@ -12,7 +12,7 @@ from utils import load_data
 
 if __name__ == "__main__":
 
-    image_paths, depth_image_paths = load_data('../data/20150625_2')
+    image_paths, depth_image_paths = load_data('../data/20150625')
 
     for path_rgb_image, path_depth_image in zip(image_paths, depth_image_paths):
         # Load input data

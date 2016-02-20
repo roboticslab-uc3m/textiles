@@ -52,11 +52,12 @@ class GarmentPickAndPlacePoints:
         ## Nice debug
         import GarmentPlot
         import matplotlib.pyplot as plt
-        GarmentPlot.plot_depth(highest_region, show=False)
-        GarmentPlot.plot_contour(highest_region, highest_region_contour, color='b', show=False)
+        GarmentPlot.plot_depth(labeled_image, show=False)
         plt.title('Debug: pick and place')
         for point in intersection:
-            plt.plot(point[0], point[1], 'm*')
+            plt.plot(point[0], point[1], 'mo')
+        for point in unfold_direction:
+            plt.plot(point[0], point[1], 'wo-')
         plt.show()
         if intersection:
             pick, place = intersection
