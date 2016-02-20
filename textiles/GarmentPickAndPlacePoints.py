@@ -1,9 +1,10 @@
 from operator import itemgetter
+import itertools
+import math
 import cv2
 
 import Superpixels
-from ClothContour import ClothContour
-from LineTools import  line_intersection_polygon
+import LineTools
 
 class GarmentPickAndPlacePoints:
 
@@ -13,10 +14,14 @@ class GarmentPickAndPlacePoints:
         highest_points = [Superpixels.get_highest_point_with_superpixels(labeled_image)[::-1]]
 
         # Get contour midpoints
-        cloth_contour = ClothContour(approximated_polygon)
+        polygon_segments = LineTools.contour_to_segments(approximated_polygon)
+        polygon_midpoints = [LineTools.midpoint(start, end) for start, end in polygon_segments]
+
 
         # Get paths to traverse:
-        valid_paths = [path[1] for path in cloth_contour.get_valid_paths(highest_points) if path[0]]
+        candidate_paths = list(itertools.product(highest_points, polygon_midpoints))
+        valid_paths = list(filter(lambda x: len(LineTools.seg_intersection_polygon(x, polygon_segments)) <= 1,
+                             candidate_paths))
 
         return valid_paths
 
@@ -33,7 +38,7 @@ class GarmentPickAndPlacePoints:
     def calculate_pick_and_place_points(labeled_image, unfold_paths, bumpiness):
         # Select direction with lower bumpiness
         _, unfold_direction = min(zip(bumpiness, unfold_paths), key=itemgetter(0))
-        print _, unfold_direction
+        highest_point, contour_point = unfold_direction
 
         # Find contour of highest region (lowest depth value from the camera)
         highest_region = Superpixels.get_highest_superpixel(labeled_image)
@@ -41,11 +46,15 @@ class GarmentPickAndPlacePoints:
         highest_region_contour = max(highest_region_contours, key=cv2.contourArea)
 
         # Find intersection with contour
-        intersection = line_intersection_polygon(unfold_direction, ClothContour.get_contour_segments(highest_region_contour))
-        if intersection:
-            pick, place = intersection
-            return pick, place
-        else:
-            raise BaseException('Bad implementation')
+        intersection = LineTools.line_intersection_polygon(unfold_direction,
+                                                           LineTools.contour_to_segments(highest_region_contour))
+
+        # Pick point is furthest from contour point
+        pick_point = max(intersection, key=lambda x: math.hypot(contour_point[0]-x[0], contour_point[1]-x[1]))
+
+        # Place point is reflection using contour point:
+        place_point = (2*contour_point[0] - pick_point[0], 2*contour_point[1] - pick_point[1])
+
+        return pick_point, place_point
 
 
