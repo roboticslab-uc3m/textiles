@@ -1,8 +1,10 @@
-from PySide import QtCore, QtGui
-from PySide import QtUiTools
 import os
 import sys
 from collections import namedtuple
+from operator import itemgetter
+
+from PySide import QtCore, QtGui
+from PySide import QtUiTools
 
 from utils import load_results_data
 
@@ -51,7 +53,7 @@ class TextilesEvaluationWidget(QtGui.QWidget):
         # Output data related
         self.output_data = []
         self.current_output = None
-        self.output_data_path = os.path.expanduser('~/Research/garments-birdsEye-flat-results/output.txt')
+        self.output_data_path = os.path.abspath('.')
 
         self.setupUI()
 
@@ -70,14 +72,10 @@ class TextilesEvaluationWidget(QtGui.QWidget):
         self.infoLabel = self.findChild(QtGui.QLabel, 'infoLabel')
         self.graphicsView = self.findChild(QtGui.QGraphicsView, 'graphicsView')
 
-
         # Connect slots / callbacks
         self.greatResultButton.clicked.connect(self.onGreatButtonClicked)
         self.goodResultButton.clicked.connect(self.onGoodButtonClicked)
         self.badResultButton.clicked.connect(self.onBadButtonClicked)
-
-        self.updateImage(os.path.expanduser('~/Research/garments-birdsEye-flat-results/hoodie1-clustering.png'))
-
 
     def updateImage(self, filename):
         """
@@ -149,7 +147,7 @@ class TextilesEvaluationWidget(QtGui.QWidget):
 
     def saveDataToFile(self, filename):
         with open(filename, 'w') as f:
-            for entry in self.output_data:
+            for entry in sorted(self.output_data, key=itemgetter(0)):
                 try:
                     # Pad right with -1 for each non-present item
                     padded_entry = list(entry)
@@ -171,13 +169,12 @@ class TextilesEvaluationWidget(QtGui.QWidget):
 
 
 if __name__ == '__main__':
-    # print [i.bumpiness for i in load_results_data(os.path.expanduser('~/Research/garments-birdsEye-flat-results'))]
-
     # Create Qt App
     app = QtGui.QApplication(sys.argv)
 
     # Create the widget and show it
     gui = TextilesEvaluationWidget()
+    gui.output_data_path = os.path.expanduser('~/Research/garments-birdsEye-flat-results/output.txt')
     gui.start(os.path.expanduser('~/Research/garments-birdsEye-flat-results'))
     gui.show()
 
