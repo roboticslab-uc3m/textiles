@@ -2,6 +2,7 @@ from PySide import QtCore, QtGui
 from PySide import QtUiTools
 import os
 import sys
+from collections import namedtuple
 
 from utils import load_results_data
 
@@ -27,16 +28,26 @@ def load_ui(file_name, where=None):
 
     return ui
 
+# Named tuple to store evaluation results
+Evaluation = namedtuple('Evaluation', 'name stage1 stage2 stage3')
+
 class TextilesEvaluationWidget(QtGui.QWidget):
     def __init__(self, parent=None):
         QtGui.QWidget.__init__(self, parent)
 
+        # Widgets and UI
         self.greatResultButton = None
         self.goodResultButton = None
         self.badResultButton = None
         self.infoLabel = None
         self.graphicsView = None
         self.pixmap = QtGui.QPixmap()
+
+        # Iteration over input data
+        self.input_results = None
+        self.input_iterator = None
+        self.current_result = None
+        self.output_data = []
 
         self.setupUI()
 
@@ -85,23 +96,80 @@ class TextilesEvaluationWidget(QtGui.QWidget):
 
     def onGreatButtonClicked(self):
         print "Great!"
+        self.onButtonClicked()
 
     def onGoodButtonClicked(self):
         print "Good!"
+        self.onButtonClicked()
 
     def onBadButtonClicked(self):
         print "Bad!"
+        self.onButtonClicked()
+
+    def onButtonClicked(self):
+        """
+        Try to load next image, if there is no image left, load the next item
+        """
+        try:
+            image_file = self.current_result.next()
+        except StopIteration, e:
+            image_file = self.load_next_result()
+
+        self.updateImage(image_file)
+
+    def load_next_result(self):
+        """
+        Load the next item in input results
+        """
+        try:
+            self.current_result = iter(self.input_iterator.next())
+        except StopIteration, e:
+            print "nothing left!"
+            QtCore.QCoreApplication.instance().quit()
+        else:
+            garment_name = self.current_result.next()
+            bumpiness_data = self.current_result.next()
+            self.infoLabel.setText("Garment: {}\t\t Bumpiness:{}".format(garment_name, bumpiness_data))
+            image_file = self.current_result.next()
+            return image_file
+
+    def saveDataToFile(self, filename):
+        with open(filename, 'a') as f:
+            for datum in self.data:
+                f.write(datum)
+                f.write('\n')
+
+    def start(self, folder):
+        """
+        Load files in folder and starts the evaluation process
+        """
+        self.input_results = load_results_data(folder)
+        self.input_iterator = iter(self.input_results)
+        try:
+            self.current_result = iter(self.input_iterator.next())
+        except StopIteration, e:
+            print "Exit..."
+        else:
+            garment_name = self.current_result.next()
+            bumpiness_data = self.current_result.next()
+            self.infoLabel.setText("Garment: {}\t\t Bumpiness:{}".format(garment_name, bumpiness_data))
+            image_file = self.current_result.next()
+
+        self.updateImage(image_file)
+
+
 
 
 
 if __name__ == '__main__':
-    print [i.bumpiness for i in load_results_data(os.path.expanduser('~/Research/garments-birdsEye-flat-results'))]
+    # print [i.bumpiness for i in load_results_data(os.path.expanduser('~/Research/garments-birdsEye-flat-results'))]
 
     # Create Qt App
     app = QtGui.QApplication(sys.argv)
 
     # Create the widget and show it
     gui = TextilesEvaluationWidget()
+    gui.start(os.path.expanduser('~/Research/garments-birdsEye-flat-results'))
     gui.show()
 
     # Run the app
