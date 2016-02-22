@@ -47,7 +47,11 @@ class TextilesEvaluationWidget(QtGui.QWidget):
         self.input_results = None
         self.input_iterator = None
         self.current_result = None
+
+        # Output data related
         self.output_data = []
+        self.current_output = None
+        self.output_data_path = os.path.expanduser('~/Research/garments-birdsEye-flat-results/output.txt')
 
         self.setupUI()
 
@@ -95,16 +99,17 @@ class TextilesEvaluationWidget(QtGui.QWidget):
         self.graphicsView.show()
 
     def onGreatButtonClicked(self):
-        print "Great!"
+        self.current_output.append(1)
         self.onButtonClicked()
 
     def onGoodButtonClicked(self):
-        print "Good!"
+        self.current_output.append(0.5)
         self.onButtonClicked()
 
     def onBadButtonClicked(self):
-        print "Bad!"
-        self.onButtonClicked()
+        self.current_output.append(0)
+        image_file = self.load_next_result()
+        self.updateImage(image_file)
 
     def onButtonClicked(self):
         """
@@ -127,17 +132,34 @@ class TextilesEvaluationWidget(QtGui.QWidget):
             print "nothing left!"
             QtCore.QCoreApplication.instance().quit()
         else:
+            # Info label setup
             garment_name = self.current_result.next()
             bumpiness_data = self.current_result.next()
             self.infoLabel.setText("Garment: {}\t\t Bumpiness:{}".format(garment_name, bumpiness_data))
+
+            # Create new output entry (and do backup)
+            self.current_output = list()
+            self.current_output.append(garment_name)
+            self.output_data.append(self.current_output)
+            self.saveDataToFile(self.output_data_path)
+
+            # Get first image
             image_file = self.current_result.next()
             return image_file
 
     def saveDataToFile(self, filename):
-        with open(filename, 'a') as f:
-            for datum in self.data:
-                f.write(datum)
-                f.write('\n')
+        with open(filename, 'w') as f:
+            for entry in self.output_data:
+                try:
+                    # Pad right with -1 for each non-present item
+                    padded_entry = list(entry)
+                    padded_entry.extend([-1]*(4-len(entry)))
+                    for item in padded_entry:
+                        f.write('{} '.format(item))
+                    f.write('\n')
+                except TypeError, e:
+                    # nothing to write
+                    print e
 
     def start(self, folder):
         """
@@ -145,20 +167,7 @@ class TextilesEvaluationWidget(QtGui.QWidget):
         """
         self.input_results = load_results_data(folder)
         self.input_iterator = iter(self.input_results)
-        try:
-            self.current_result = iter(self.input_iterator.next())
-        except StopIteration, e:
-            print "Exit..."
-        else:
-            garment_name = self.current_result.next()
-            bumpiness_data = self.current_result.next()
-            self.infoLabel.setText("Garment: {}\t\t Bumpiness:{}".format(garment_name, bumpiness_data))
-            image_file = self.current_result.next()
-
-        self.updateImage(image_file)
-
-
-
+        self.updateImage(self.load_next_result())
 
 
 if __name__ == '__main__':
