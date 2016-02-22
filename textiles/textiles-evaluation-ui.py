@@ -3,6 +3,8 @@ from PySide import QtUiTools
 import os
 import sys
 
+from utils import load_results_data
+
 def load_ui(file_name, where=None):
     """
     Loads a .UI file into the corresponding Qt Python object
@@ -59,23 +61,23 @@ class TextilesEvaluationWidget(QtGui.QWidget):
         self.goodResultButton.clicked.connect(self.onGoodButtonClicked)
         self.badResultButton.clicked.connect(self.onBadButtonClicked)
 
-        self.loadImage(os.path.expanduser('~/Research/garments-birdsEye-flat-results/hoodie1-clustering.png'))
-        self.updateImage()
+        self.updateImage(os.path.expanduser('~/Research/garments-birdsEye-flat-results/hoodie1-clustering.png'))
 
-    def loadImage(self, filename):
+
+    def updateImage(self, filename):
+        """
+        Set pixmap in widget's graphics view
+        """
+        # Load image
         if filename:
             with open(filename, 'r') as f:
                 image = f.read()
 
             self.pixmap.loadFromData(image, os.path.splitext(filename)[1])
-            self.original_rect = self.pixmap.rect()
-            self.pixmap = self.pixmap.scaled(480, 339)
-            return True
         else:
             return False
 
-    def updateImage(self):
-        # Load image and create scene
+        # create scene
         scene = QtGui.QGraphicsScene()
         scene.addItem(QtGui.QGraphicsPixmapItem(self.pixmap))
         self.graphicsView.setScene(scene)
@@ -93,6 +95,8 @@ class TextilesEvaluationWidget(QtGui.QWidget):
 
 
 if __name__ == '__main__':
+    print [i.bumpiness for i in load_results_data(os.path.expanduser('~/Research/garments-birdsEye-flat-results'))]
+
     # Create Qt App
     app = QtGui.QApplication(sys.argv)
 

@@ -47,7 +47,7 @@ def compute_stages(args):
 
     f = open(out_prefix + '-bumpiness.txt', 'w')
     for value in bumpiness:
-        f.write(str(value))
+        f.write(str(value)+'\n')
     f.close()
     GarmentPlot.plot_pick_and_place_stage(image_src, labeled_image, approximated_polygon, unfold_paths,
                                           pick_point, place_point, to_file=out_prefix + '-pnp.png')
