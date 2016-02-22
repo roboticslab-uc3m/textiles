@@ -128,6 +128,7 @@ class TextilesEvaluationWidget(QtGui.QWidget):
             self.current_result = iter(self.input_iterator.next())
         except StopIteration, e:
             print "nothing left!"
+            self.saveDataToFile(self.output_data_path)
             QtCore.QCoreApplication.instance().quit()
         else:
             # Info label setup
