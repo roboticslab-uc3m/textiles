@@ -12,6 +12,6 @@ yarp_begin_plugin_library(TextilesPlugins)
 add_subdirectory(TextilesHand)
 yarp_end_plugin_library(TextilesPlugins)
 
-yarp_add_plugin_library_executable(launchTextilesPlugins TextilesPlugins)
+yarp_add_plugin_yarpdev_executable(launchTextilesPlugins TextilesPlugins)
 INSTALL(TARGETS launchTextilesPlugins DESTINATION bin)
 
