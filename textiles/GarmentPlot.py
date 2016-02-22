@@ -69,7 +69,8 @@ def plot_segmentation_stage(image_rgb, mask, polygon, to_file=None):
     plt.axis('off')
 
     if to_file:
-        pass
+        plt.savefig(to_file, bbox_inches='tight')
+        plt.close()
     else:
         plt.show()
 
@@ -80,7 +81,8 @@ def plot_clustering_stage(image_rgb, labeled_image, to_file=None):
     plt.axis('off')
 
     if to_file:
-        pass
+        plt.savefig(to_file, bbox_inches='tight')
+        plt.close()
     else:
         plt.show()
 
@@ -105,6 +107,7 @@ def plot_pick_and_place_stage(image_rgb, labeled_image, approximated_polygon, un
     plt.axis('off')
 
     if to_file:
-        pass
+        plt.savefig(to_file, bbox_inches='tight')
+        plt.close()
     else:
         plt.show()

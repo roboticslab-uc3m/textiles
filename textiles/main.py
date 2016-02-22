@@ -2,7 +2,6 @@ __author__ = "def"
 
 import cv2
 import numpy as np
-import matplotlib.pyplot as plt
 
 from GarmentSegmentation import GarmentSegmentation
 from GarmentDepthMapClustering import GarmentDepthMapClustering
