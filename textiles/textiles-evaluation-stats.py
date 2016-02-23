@@ -8,21 +8,23 @@ from tabulate import tabulate
 categories = {'hoodie':0, 'jacket':1, 'pants':2, 'polo':3, 'robe':4, 'skirt':5}
 
 
-def generate_table(garment_data, percentage=False):
+def generate_table(garment_data, garment_label = None, percentage=False, **kwargs):
     """
     Generates a nice table displaying results
     :param garment_data:
     :param percentage: False to show count, True to show count/sum(count)
     """
-    txt = "Garment: {}\n".format([item[0] for item in categories.items() if item[1] == garment_data[0, 0]][0])
+    if not garment_label:
+        garment_label = [item[0] for item in categories.items() if item[1] == garment_data[0, 0]][0]
+    txt = "Garment: {}\n".format(garment_label)
     table = []
     for row_index in range(1, 4):
         values, counts = np.unique(garment_data[:, row_index], return_counts=True)
         if percentage:
-            counts = np.true_divide(counts, np.sum(counts))
+            counts = np.true_divide(counts*100, np.sum(counts))
         pairs = defaultdict(lambda: 0, dict(zip(values, counts)))
         table.append([row_index, pairs[0.0], pairs[0.5], pairs[1.0], pairs[-1.0]])
-    txt += tabulate(table, headers=["stage", "0", "0.5", "1", "-1"])
+    txt += tabulate(table, headers=["stage", "0", "0.5", "1", "-1"], **kwargs)
     txt += '\n\n'
     return txt
 
@@ -49,8 +51,12 @@ if __name__ == '__main__':
 
     # Find stats for each block
     for block in blocks:
-        print generate_table(block, percentage=True)
+        print generate_table(block, percentage=True, floatfmt=".2f")
+
+    print generate_table(data, garment_label="All", percentage=False, floatfmt=".2f")
 
     with open('aux.txt', 'w') as f:
         for block in blocks:
-            f.write(generate_table(block, percentage=True))
+            f.write(generate_table(block, percentage=True, tablefmt='latex'))
+
+        f.write(generate_table(data, garment_label="All", percentage=True, tablefmt='latex'))
