@@ -6,8 +6,11 @@
 #include <yarp/os/all.h>
 #include <yarp/dev/all.h>
 #include <stdlib.h>
+#include <string>
 
 #include "InCommandPort.hpp"
+
+#define DEFAULT_ARM "/teoSim/rightArm"
 
 using namespace yarp::os;
 

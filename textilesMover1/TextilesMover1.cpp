@@ -9,10 +9,13 @@ namespace teo
 
 bool TextilesMover1::configure(ResourceFinder &rf) {
 
+    std::string arm = rf.check("arm",Value(DEFAULT_ARM),"full name of arm to be used").asString();
+
     printf("--------------------------------------------------------------\n");
     if (rf.check("help")) {
         printf("TextilesMover1 options:\n");
         printf("\t--help (this help)\t--from [file.ini]\t--context [path]\n");
+        printf("\t--arm: %s [%s]\n",arm.c_str(),DEFAULT_ARM);
     }
 
     printf("--------------------------------------------------------------\n");
@@ -23,7 +26,7 @@ bool TextilesMover1::configure(ResourceFinder &rf) {
     //
     Property armOptions;
     armOptions.put("device","remote_controlboard");
-    armOptions.put("remote","/teo/rightArm");
+    armOptions.put("remote",arm);
     armOptions.put("local","/local");
     armDevice.open(armOptions);
     if(!armDevice.isValid()) {
@@ -37,7 +40,10 @@ bool TextilesMover1::configure(ResourceFinder &rf) {
 
     //
     cartesianPort.open("/textilesMover1/cartesian/rpc:o");
-    yarp::os::Network::connect("/textilesMover1/rpc:o","/teoCartesianServer/teo/rightArm/rpc:o");
+    std::string teoCartesianServerName("/teoCartesianServer");
+    teoCartesianServerName += arm;
+    teoCartesianServerName += "/rpc:o";
+    yarp::os::Network::connect("/textilesMover1/rpc:o",teoCartesianServerName);
 
     //-----------------OPEN LOCAL PORTS------------//
     inCommandPort.setInCvPortPtr(&inCvPort);
