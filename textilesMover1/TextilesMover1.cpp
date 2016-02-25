@@ -43,7 +43,13 @@ bool TextilesMover1::configure(ResourceFinder &rf) {
     std::string teoCartesianServerName("/teoCartesianServer");
     teoCartesianServerName += arm;
     teoCartesianServerName += "/rpc:i";
-    yarp::os::Network::connect("/textilesMover1/rpc:o",teoCartesianServerName);
+    //bool connected = false;
+    printf("Wait to connect to cartesian solver...\n");
+    while(cartesianPort.getOutputCount() < 1)
+    {
+        Time::delay(0.2);
+        cartesianPort.addOutput(teoCartesianServerName);
+    }
 
     //-----------------OPEN LOCAL PORTS------------//
     inCommandPort.setInCvPortPtr(&inCvPort);
