@@ -1,7 +1,7 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-#ifndef __EXECUTION_CORE1_HPP__
-#define __EXECUTION_CORE1_HPP__
+#ifndef __TEXTILES_MOVER_HPP__
+#define __TEXTILES_MOVER_HPP__
 
 #include <yarp/os/all.h>
 #include <yarp/dev/all.h>
@@ -39,4 +39,4 @@ class TextilesMover1 : public RFModule {
 
 }  // namespace teo
 
-#endif  // __EXECUTION_CORE1_HPP__
+#endif  // __TEXTILES_MOVER_HPP__
