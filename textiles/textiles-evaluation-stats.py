@@ -28,6 +28,28 @@ def generate_table(garment_data, garment_label = None, percentage=False, **kwarg
     txt += '\n\n'
     return txt
 
+def generate_table2(garment_data, garment_label = None, percentage=False, **kwargs):
+    """
+    Generates a nice table displaying results
+    :param garment_data:
+    :param percentage: False to show count, True to show count/sum(count)
+    """
+    if not garment_label:
+        garment_label = [item[0] for item in categories.items() if item[1] == garment_data[0, 0]][0]
+    txt = "Garment: {}\n".format(garment_label)
+    table = []
+    for row_index in range(1, 4):
+        values, counts = np.unique(garment_data[:, row_index], return_counts=True)
+        if percentage:
+            percentage = 100
+        else:
+            percentage = 1
+        pairs = defaultdict(lambda: 0, dict(zip(values, counts)))
+        table.append([row_index, np.true_divide((pairs[0.5]+pairs[1])*percentage,pairs[0.5]+pairs[1]+pairs[0])])
+    txt += tabulate(table, headers=["stage", "percent"], **kwargs)
+    txt += '\n\n'
+    return txt
+
 if __name__ == '__main__':
     # Load file and modify categories to be loaded in numpy
     input_file = os.path.expanduser('~/Research/garments-birdsEye-flat-results/output.txt')
@@ -51,7 +73,7 @@ if __name__ == '__main__':
 
     # Find stats for each block
     for block in blocks:
-        print generate_table(block, percentage=True, floatfmt=".2f")
+        print generate_table(block, percentage=False, floatfmt=".2f")
 
     print generate_table(data, garment_label="All", percentage=False, floatfmt=".2f")
 
