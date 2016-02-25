@@ -56,14 +56,41 @@ void InCommandPort::onRead(Bottle& b) {
 
         printf("Press enter to move home...\n");
         scanf("%c",&c);
-
         {
-            double jointTargets[7] = {0, 0, 0, 0, 0, 0, GRIPPER_CLOSE};
+            double jointTargets[7] = {0,0,0,0,0,0,GRIPPER_CLOSE};
             jointsWithWait(jointTargets);
         }
-
         printf("Press enter to continue movement...\n");
         scanf("%c",&c);
+        {
+            double jointTargets[7] = {4.305,-0.949,2.636,0.087,-0.509,10.456,GRIPPER_CLOSE};
+            jointsWithWait(jointTargets);
+        }
+        printf("Press enter to continue movement...\n");
+        scanf("%c",&c);
+        {
+            double jointTargets[7] = {-32.495,-34.165,9.314,42.530,-1.476,12.917,GRIPPER_CLOSE};
+            jointsWithWait(jointTargets);
+        }
+        printf("Press enter to continue movement...\n");
+        scanf("%c",&c);
+        {
+
+            double jointTargets[7] = {-22.038,-53.848,15.992,50.527,-0.685,12.917,GRIPPER_CLOSE};
+            jointsWithWait(jointTargets);
+        }
+        printf("Press enter to continue movement...\n");
+        scanf("%c",&c);
+        {
+            double jointTargets[7] = {1.493,-50.685,0.966,71.704,0.000,12.390,GRIPPER_CLOSE};
+            jointsWithWait(jointTargets);
+        }
+        printf("Press enter to continue movement...\n");
+        scanf("%c",&c);
+        {
+            double jointTargets[7] = {34.358,-32.934,-29.595,71.792,-0.597,10.808435,GRIPPER_CLOSE};
+            jointsWithWait(jointTargets);
+        }
 
         /*movjWithWait(H_root_point0_safe);
         yarp::os::Time::delay(5);
@@ -106,7 +133,7 @@ void InCommandPort::movjWithWait(KDL::Frame& frame)
 
 void InCommandPort::jointsWithWait(double* targets)
 {
-
+    iPositionControl->positionMove(targets);
 }
 
 /************************************************************************/
