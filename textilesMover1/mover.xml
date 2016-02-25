@@ -1,0 +1,10 @@
+<application>
+<name>mover App</name>
+    <module>
+        <name>textilesMover1</name>
+        <parameters></parameters>
+        <node>localhost</node>
+    </module>
+
+</application>
+
