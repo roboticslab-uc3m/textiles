@@ -50,7 +50,7 @@ void InCommandPort::onRead(Bottle& b) {
         KDL::Frame H_root_point0_safe( H_root_point0 );
         H_root_point0_safe.p.data[2] += 50;  // [mm]
 
-        //stat();
+        stat();
 
         printf("Press enter to begin movement...\n");
         char c;
@@ -92,6 +92,16 @@ void InCommandPort::movjWithWait(KDL::Frame& frame)
     cmd.addInt(1);
     cartesianPortPtr->write(cmd,res);
     printf("[movj] got response: %s\n", res.toString().c_str());
+}
+
+/************************************************************************/
+
+void InCommandPort::stat()
+{
+    Bottle cmd,res;
+    cmd.addVocab(VOCAB_STAT);
+    cartesianPortPtr->write(cmd,res);
+    printf("[stat] got response: %s\n", res.toString().c_str());
 }
 
 /************************************************************************/

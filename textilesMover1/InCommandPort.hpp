@@ -11,6 +11,7 @@
 
 #define VOCAB_GO VOCAB2('g','o')
 #define VOCAB_MOVJ VOCAB4('m','o','v','j')
+#define VOCAB_STAT VOCAB4('s','t','a','t')
 
 #define GRIPPER_OPEN 0
 #define GRIPPER_CLOSE 1
@@ -59,6 +60,7 @@ class InCommandPort : public BufferedPort<Bottle> {
         yarp::dev::IPositionControl *iPositionControl;
 
         void movjWithWait(KDL::Frame& frame);
+        void stat();
         void gripper(const int& value);
 };
 
