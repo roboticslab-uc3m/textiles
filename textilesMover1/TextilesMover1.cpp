@@ -9,16 +9,11 @@ namespace teo
 
 bool TextilesMover1::configure(ResourceFinder &rf) {
 
-    //ConstString fileName(DEFAULT_FILE_NAME);
-    
     printf("--------------------------------------------------------------\n");
     if (rf.check("help")) {
         printf("TextilesMover1 options:\n");
         printf("\t--help (this help)\t--from [file.ini]\t--context [path]\n");
-        //printf("\t--file (default: \"%s\")\n",fileName.c_str());
     }
-    //if (rf.check("file")) fileName = rf.find("file").asString();
-    //printf("TextilesMover1 using file: %s\n",fileName.c_str());
 
     printf("--------------------------------------------------------------\n");
     if(rf.check("help")) {
