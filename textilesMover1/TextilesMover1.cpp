@@ -26,19 +26,21 @@ bool TextilesMover1::configure(ResourceFinder &rf) {
     }
 
     //
-    Property options;
-    options.put("device","remote_controlboard");
-    options.put("remote","/controlboard");
-    options.put("local","/local");
-    handDevice.open(options);
-    if(!handDevice.isValid()) {
+    Property armOptions;
+    armOptions.put("device","remote_controlboard");
+    armOptions.put("remote","/rightArm");
+    armOptions.put("local","/local");
+    armDevice.open(armOptions);
+    if(!armDevice.isValid()) {
       printf("armDevice device not available.\n");
       return 1;
     }
-    if (! handDevice.view(iPositionControl) ) {
-        printf("[error] Problems acquiring robot interface\n");
+    if (! armDevice.view(iPositionControl) ) {
+        printf("[error] Problems acquiring armDevice position interface\n");
         return 1;
     }
+
+    //
     cartesianPort.open("/textilesMover1/cartesian/rpc:o");
     yarp::os::Network::connect("/textilesMover1/rpc:o","/teoCartesianServer/teo/leftArm/rpc:o");
 
@@ -72,7 +74,7 @@ bool TextilesMover1::interruptModule() {
     inCvPort.interrupt();
     inCommandPort.interrupt();
     cartesianPort.interrupt();
-    handDevice.close();
+    armDevice.close();
     inCvPort.close();
     inCommandPort.close();
     cartesianPort.close();
