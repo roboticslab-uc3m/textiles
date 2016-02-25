@@ -50,6 +50,12 @@ void InCommandPort::onRead(Bottle& b) {
         KDL::Frame H_root_point0_safe( H_root_point0 );
         H_root_point0_safe.p.data[2] += 50;  // [mm]
 
+        //stat();
+
+        printf("Press enter to begin movement...\n");
+        char c;
+        scanf("%c",&c);
+
         gripper(GRIPPER_OPEN);
 
         movjWithWait(H_root_point0_safe);
@@ -73,18 +79,19 @@ void InCommandPort::movjWithWait(KDL::Frame& frame)
 {
     KDL::Vector rotVector = frame.M.GetRot();
     double angle = frame.M.GetRotAngle(rotVector);  // Normalizes as colateral effect
-    Bottle out;
-    out.addVocab(VOCAB_MOVJ);
-    out.addDouble(frame.p.x());
-    out.addDouble(frame.p.y());
-    out.addDouble(frame.p.z());
-    out.addDouble(rotVector[0]);
-    out.addDouble(rotVector[1]);
-    out.addDouble(rotVector[2]);
-    out.addDouble(angle);
-    out.addString("wait");
-    out.addInt(1);
-    cartesianPortPtr->write(out);
+    Bottle cmd,res;
+    cmd.addVocab(VOCAB_MOVJ);
+    cmd.addDouble(frame.p.x());
+    cmd.addDouble(frame.p.y());
+    cmd.addDouble(frame.p.z());
+    cmd.addDouble(rotVector[0]);
+    cmd.addDouble(rotVector[1]);
+    cmd.addDouble(rotVector[2]);
+    cmd.addDouble(angle);
+    cmd.addString("wait");
+    cmd.addInt(1);
+    cartesianPortPtr->write(cmd,res);
+    printf("[movj] got response: %s\n", res.toString().c_str());
 }
 
 /************************************************************************/
