@@ -9,9 +9,6 @@
 
 #include "InCommandPort.hpp"
 
-#define VOCAB_FOLLOW_ME VOCAB4('f','o','l','l')
-#define VOCAB_STOP_FOLLOWING VOCAB4('s','f','o','l')
-
 using namespace yarp::os;
 
 namespace teo
