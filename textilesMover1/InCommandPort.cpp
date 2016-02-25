@@ -50,15 +50,22 @@ void InCommandPort::onRead(Bottle& b) {
         KDL::Frame H_root_point0_safe( H_root_point0 );
         H_root_point0_safe.p.data[2] += 50;  // [mm]
 
+        char c;
+
         stat();
 
-        printf("Press enter to begin movement...\n");
-        char c;
+        printf("Press enter to move home...\n");
         scanf("%c",&c);
 
-        gripper(GRIPPER_OPEN);
+        {
+            double jointTargets[7] = {0, 0, 0, 0, 0, 0, GRIPPER_CLOSE};
+            jointsWithWait(jointTargets);
+        }
 
-        movjWithWait(H_root_point0_safe);
+        printf("Press enter to continue movement...\n");
+        scanf("%c",&c);
+
+        /*movjWithWait(H_root_point0_safe);
         yarp::os::Time::delay(5);
 
         movjWithWait(H_root_point0);
@@ -67,8 +74,9 @@ void InCommandPort::onRead(Bottle& b) {
         gripper(GRIPPER_CLOSE);
 
         movjWithWait(H_root_point0_safe);
-        yarp::os::Time::delay(1);
+        yarp::os::Time::delay(1);*/
 
+        printf("Reached current end of program.\n");
 
     }
 }
@@ -96,6 +104,13 @@ void InCommandPort::movjWithWait(KDL::Frame& frame)
 
 /************************************************************************/
 
+void InCommandPort::jointsWithWait(double* targets)
+{
+
+}
+
+/************************************************************************/
+
 void InCommandPort::stat()
 {
     Bottle cmd,res;
@@ -108,6 +123,7 @@ void InCommandPort::stat()
 
 void InCommandPort::gripper(const int& value)
 {
+    printf("[gripper] %d.\n",value);
     iPositionControl->positionMove(6,value);
 }
 

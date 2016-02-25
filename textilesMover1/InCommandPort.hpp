@@ -60,6 +60,7 @@ class InCommandPort : public BufferedPort<Bottle> {
         yarp::dev::IPositionControl *iPositionControl;
 
         void movjWithWait(KDL::Frame& frame);
+        void jointsWithWait(double* targets);
         void stat();
         void gripper(const int& value);
 };
