@@ -58,7 +58,7 @@ class InCommandPort : public BufferedPort<Bottle> {
         yarp::os::RpcClient *cartesianPortPtr;
         yarp::dev::IPositionControl *iPositionControl;
 
-        void movj(KDL::Frame& frame);
+        void movjWithWait(KDL::Frame& frame);
         void gripper(const int& value);
 };
 

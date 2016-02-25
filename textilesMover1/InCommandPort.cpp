@@ -52,15 +52,15 @@ void InCommandPort::onRead(Bottle& b) {
 
         gripper(GRIPPER_OPEN);
 
-        movj(H_root_point0_safe);
+        movjWithWait(H_root_point0_safe);
         yarp::os::Time::delay(5);
 
-        movj(H_root_point0);
+        movjWithWait(H_root_point0);
         yarp::os::Time::delay(1);
 
         gripper(GRIPPER_CLOSE);
 
-        movj(H_root_point0_safe);
+        movjWithWait(H_root_point0_safe);
         yarp::os::Time::delay(1);
 
 
@@ -69,7 +69,7 @@ void InCommandPort::onRead(Bottle& b) {
 
 /************************************************************************/
 
-void InCommandPort::movj(KDL::Frame& frame)
+void InCommandPort::movjWithWait(KDL::Frame& frame)
 {
     KDL::Vector rotVector = frame.M.GetRot();
     double angle = frame.M.GetRotAngle(rotVector);  // Normalizes as colateral effect
