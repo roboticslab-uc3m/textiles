@@ -23,7 +23,7 @@ bool TextilesMover1::configure(ResourceFinder &rf) {
     //
     Property armOptions;
     armOptions.put("device","remote_controlboard");
-    armOptions.put("remote","/rightArm");
+    armOptions.put("remote","/teo/rightArm");
     armOptions.put("local","/local");
     armDevice.open(armOptions);
     if(!armDevice.isValid()) {
@@ -37,7 +37,7 @@ bool TextilesMover1::configure(ResourceFinder &rf) {
 
     //
     cartesianPort.open("/textilesMover1/cartesian/rpc:o");
-    yarp::os::Network::connect("/textilesMover1/rpc:o","/teoCartesianServer/teo/leftArm/rpc:o");
+    yarp::os::Network::connect("/textilesMover1/rpc:o","/teoCartesianServer/teo/rightArm/rpc:o");
 
     //-----------------OPEN LOCAL PORTS------------//
     inCommandPort.setInCvPortPtr(&inCvPort);
