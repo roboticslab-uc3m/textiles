@@ -23,7 +23,7 @@ bool TextilesMover1::configure(ResourceFinder &rf) {
         ::exit(1);
     }
 
-    //
+    //-- Connect to robot arm (w/hand) device to send joint space commands.
     Property armOptions;
     armOptions.put("device","remote_controlboard");
     armOptions.put("remote",arm);
@@ -38,12 +38,11 @@ bool TextilesMover1::configure(ResourceFinder &rf) {
         return 1;
     }
 
-    //
+    //-- Connect to right arm cartesian program to send Cartesian space commands.
     cartesianPort.open("/textilesMover1/cartesian/rpc:o");
     std::string teoCartesianServerName("/teoCartesianServer");
     teoCartesianServerName += arm;
     teoCartesianServerName += "/rpc:i";
-    //bool connected = false;
     printf("Wait to connect to cartesian solver...\n");
     while(cartesianPort.getOutputCount() < 1)
     {
