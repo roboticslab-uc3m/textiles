@@ -83,7 +83,8 @@ def plot_clustering_stage(image_rgb, labeled_image, to_file=None, show=True):
     plt.imshow(image_rgb)
     plt.imshow(labeled_image, cmap=plt.cm.RdGy, alpha=0.6)
     cbar = plt.colorbar(cax, ticks=[labeled_image.min(),labeled_image.max()],
-                 orientation ='horizontal', shrink=0.6, pad=0.05)
+                              orientation ='horizontal', shrink=0.6, pad=0.05)
+
     cbar.ax.set_xticklabels(['Foreground', 'Background'])
     for tick in cbar.ax.xaxis.get_major_ticks():
                 tick.label.set_fontsize(20)

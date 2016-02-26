@@ -26,7 +26,7 @@ if __name__ == "__main__":
 
         # Garment Depth Map Clustering Stage
         preprocessed_depth_image = GarmentDepthMapClustering.preprocess(depth_image, mask)
-        labeled_image = GarmentDepthMapClustering.cluster_similar_regions(preprocessed_depth_image)
+        labeled_image = GarmentDepthMapClustering.cluster_similar_regions(preprocessed_depth_image, mask)
         GarmentPlot.plot_clustering_stage(image_src, labeled_image)
 
         # Garment Pick and Place Points Stage

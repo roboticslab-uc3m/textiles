@@ -33,8 +33,9 @@ def compute_stages(args):
 
     # Garment Depth Map Clustering Stage
     preprocessed_depth_image = GarmentDepthMapClustering.preprocess(depth_image, mask)
-    labeled_image = GarmentDepthMapClustering.cluster_similar_regions(preprocessed_depth_image)
-    GarmentPlot.plot_clustering_stage(image_src, labeled_image, to_file=out_prefix + '-clustering.pdf')
+    labeled_image = GarmentDepthMapClustering.cluster_similar_regions(preprocessed_depth_image, mask)
+    GarmentPlot.plot_clustering_stage(image_src, labeled_image, to_file=out_prefix + '-clustering.png')
+
     # Garment Pick and Place Points Stage
     try:
         unfold_paths = GarmentPickAndPlacePoints.calculate_unfold_paths(labeled_image, approximated_polygon)
@@ -60,7 +61,7 @@ if __name__ == "__main__":
     # Input and output folders:
     input_dir = os.path.expanduser('~/Research/garments-birdsEye-flat')
     print "[+] Loading data from:", input_dir
-    output_dir = input_dir+'-results'
+    output_dir = input_dir+'-results2'
     if not os.path.exists(output_dir):
             os.makedirs(output_dir)
 

@@ -5,7 +5,7 @@ from skimage import filters
 from skimage import util
 from skimage import restoration
 from skimage import exposure
-
+import matplotlib.pyplot as plt
 class GarmentDepthMapClustering:
     @staticmethod
     def preprocess(depth_image, mask):
@@ -18,13 +18,12 @@ class GarmentDepthMapClustering:
         background = np.inf  # Define a depth value for background pixels
         masked_depth_image = np.where(mask==255, depth_image.transpose(), background)
 
-        # Normalize depth map
-        # scaled_depth_map = normalize_1Channel_image(masked_depth_image)
-
         scaled_depth_map = masked_depth_image.copy()
         # Get range of values (min, max, range)
-        min_value = masked_depth_image[np.unravel_index(np.where(masked_depth_image == 0, background, masked_depth_image).argmin(), masked_depth_image.shape)]
-        max_value = masked_depth_image[np.unravel_index(np.where(masked_depth_image == background, 0,masked_depth_image).argmax(), masked_depth_image.shape)]
+        min_value = masked_depth_image[np.unravel_index(np.where(masked_depth_image == 0, background, masked_depth_image).argmin(),
+                                                        masked_depth_image.shape)]
+        max_value = masked_depth_image[np.unravel_index(np.where(masked_depth_image == background, 0,masked_depth_image).argmax(),
+                                                        masked_depth_image.shape)]
         range_value = max_value-min_value
 
         # Normalize using depth range
@@ -33,13 +32,15 @@ class GarmentDepthMapClustering:
         return scaled_depth_map
 
     @staticmethod
-    def cluster_similar_regions(preprocessed_depth_image):
+    def cluster_similar_regions(preprocessed_depth_image, mask):
         """
         Apply clustering algorithm to group similar regions. This uses watershed currently.
         :param preprocessed_depth_image: Depth image normalized and converted to 8-bit unsigned
+        :param: mask: Garment Segmentation mask. Tells clustering to ignore some points
         :return: Labeled image after the clustering process. Each label is the median value of each cluster
         """
-        scaled_depth_map = util.img_as_ubyte(preprocessed_depth_image)
+        #scaled_depth_map = util.img_as_ubyte(preprocessed_depth_image)
+        scaled_depth_map = preprocessed_depth_image
 
         # denoise image
         denoised = restoration.denoise_tv_chambolle(scaled_depth_map, weight=0.05)
@@ -54,7 +55,7 @@ class GarmentDepthMapClustering:
         gradient = filters.rank.gradient(denoised, morphology.disk(5))
 
         # labels
-        labels = morphology.watershed(gradient, markers)
+        labels = morphology.watershed(gradient, markers, mask=mask)
 
         # Change labels by median value of each region
         unique_labels = np.unique(labels)
