@@ -1,9 +1,5 @@
 <application>
 <name>mover App</name>
-    <module>
-        <name>launchManipulation</name>
-        <node>/manipulation</node>
-    </module>
 
     <module>
         <name>teoCartesianServer</name>
