@@ -29,10 +29,19 @@ int main(int argc, char** argv) {
         return 1;
     }
 
+    string name("out");
+    if(argc > 1)
+        name = argv[1];
+
     BufferedPort<ImageOf<PixelMono16> > inDepth;
     BufferedPort<ImageOf<PixelRgb> > inRgb;
     inDepth.open("/depth:i");
     inRgb.open("/rgb:i");
+
+    Time::delay(0.5);
+
+    Network::connect("/OpenNI2/depthFrame:o","/depth:i");
+    Network::connect("/OpenNI2/imageFrame:o","/rgb:i");
 
     ImageOf<PixelMono16> *inYarpDepth = NULL;
     ImageOf<PixelRgb> *inYarpRgb = NULL;
@@ -47,15 +56,20 @@ int main(int argc, char** argv) {
         printf("No rgb yet...\n");
     };
 
+    if(inYarpRgb->width()<400)
+    {
+        printf("PLEASE INCREASE SENSOR RESOLUTION!!!!\n");
+        return 1;
+    }
     /*IplImage *inIplImage = cvCreateImage(cvSize(inYarpImg->width(), inYarpImg->height()),
                                          IPL_DEPTH_16U, 1 );
     inIplImage = (IplImage *)inYarpImg->getIplImage();
     Mat inCvMat(inIplImage);*/
 
-    yarp::sig::file::write(*inYarpRgb,"rgb.ppm");
+    yarp::sig::file::write(*inYarpRgb,name+".ppm");
     //yarp::sig::file::write(*inYarpDepth,"depth.ppm");
 
-    FILE * pFile = fopen ("depth.mat","w");
+    FILE * pFile = fopen ((name+".mat").c_str(),"w");
     for (int i = 0;i<inYarpDepth->width();i++)
     {
         for (int j = 0;j<inYarpDepth->height();j++)

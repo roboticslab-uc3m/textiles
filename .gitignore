@@ -1,0 +1,4 @@
+.idea
+*.pyc
+pcl/build
+*.txt.user
