@@ -68,7 +68,7 @@ void InCommandPort::onRead(Bottle& b) {
         printf("Press enter to continue movement...\n");
         scanf("%c",&c);
         {
-            iPositionControl->positionMove(3,60);
+            iPositionControl->positionMove(3,20);
         }
         printf("Press enter to continue movement...\n");
         scanf("%c",&c);
@@ -84,6 +84,11 @@ void InCommandPort::onRead(Bottle& b) {
         scanf("%c",&c);
         {
             iPositionControl->positionMove(2,-45);
+        }
+        printf("Press enter to continue movement...\n");
+        scanf("%c",&c);
+        {
+            iPositionControl->positionMove(3,60);
         }
         printf("Press enter to continue movement...\n");
         scanf("%c",&c);
