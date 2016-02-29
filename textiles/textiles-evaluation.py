@@ -29,12 +29,12 @@ def compute_stages(args):
     mask = GarmentSegmentation.background_substraction(image_src)
     approximated_polygon = GarmentSegmentation.compute_approximated_polygon(mask)
     GarmentPlot.plot_segmentation_stage(image_src, mask, approximated_polygon,
-                                        to_file=out_prefix + '-segmentation.png')
+                                        to_file=out_prefix + '-segmentation.pdf')
 
     # Garment Depth Map Clustering Stage
     preprocessed_depth_image = GarmentDepthMapClustering.preprocess(depth_image, mask)
     labeled_image = GarmentDepthMapClustering.cluster_similar_regions(preprocessed_depth_image)
-    GarmentPlot.plot_clustering_stage(image_src, labeled_image, to_file=out_prefix + '-clustering.png')
+    GarmentPlot.plot_clustering_stage(image_src, labeled_image, to_file=out_prefix + '-clustering.pdf')
     # Garment Pick and Place Points Stage
     try:
         unfold_paths = GarmentPickAndPlacePoints.calculate_unfold_paths(labeled_image, approximated_polygon)
@@ -50,7 +50,7 @@ def compute_stages(args):
         f.write(str(value)+'\n')
     f.close()
     GarmentPlot.plot_pick_and_place_stage(image_src, labeled_image, approximated_polygon, unfold_paths,
-                                          pick_point, place_point, to_file=out_prefix + '-pnp.png')
+                                          pick_point, place_point, to_file=out_prefix + '-pnp.pdf')
 
     return True
 
