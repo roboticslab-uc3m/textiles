@@ -57,59 +57,58 @@ void InCommandPort::onRead(Bottle& b) {
         printf("Press enter to move home...\n");
         scanf("%c",&c);
         {
-            double jointTargets[7] = {0,0,0,0,0,0,GRIPPER_CLOSE};
+            double jointTargets[7] = {0,0,0,0,0,0,GRIPPER_OPEN};
             jointsWithWait(jointTargets);
         }
         printf("Press enter to continue movement...\n");
         scanf("%c",&c);
         {
-            iPositionControl->positionMove(0,-30);
+            iPositionControl->positionMove(0,-30);  // {-30,0,0,0,0,0,GRIPPER_OPEN};
         }
         printf("Press enter to continue movement...\n");
         scanf("%c",&c);
         {
-            iPositionControl->positionMove(3,20);
+            iPositionControl->positionMove(3,20);  // {-30,0,0,20,0,0,GRIPPER_OPEN};
         }
         printf("Press enter to continue movement...\n");
         scanf("%c",&c);
         {
-            iPositionControl->positionMove(1,-70);
+            iPositionControl->positionMove(1,-70);  // {-30,-70,0,20,0,0,GRIPPER_OPEN};
         }
         printf("Press enter to continue movement...\n");
         scanf("%c",&c);
         {
-            iPositionControl->positionMove(0,60);
+            iPositionControl->positionMove(0,60);  // {60,-70,0,20,0,0,GRIPPER_OPEN};
         }
         printf("Press enter to continue movement...\n");
         scanf("%c",&c);
         {
-            iPositionControl->positionMove(2,-45);
+            iPositionControl->positionMove(2,-45);  // {60,-70,-45,20,0,0,GRIPPER_OPEN};
         }
         printf("Press enter to continue movement...\n");
         scanf("%c",&c);
         {
-            iPositionControl->positionMove(3,60);
+            iPositionControl->positionMove(1,-20);  // {60,-20,-45,20,0,0,GRIPPER_OPEN};
         }
         printf("Press enter to continue movement...\n");
         scanf("%c",&c);
         {
-            iPositionControl->positionMove(1,-20);
+            iPositionControl->positionMove(4,-90);  // {60,-20,-45,20,-90,0,GRIPPER_OPEN};
         }
         printf("Press enter to continue movement...\n");
         scanf("%c",&c);
         {
-            iPositionControl->positionMove(4,-105);
+            iPositionControl->positionMove(3,60);  // {60,-20,-45,60,-90,0,GRIPPER_OPEN};
         }
         printf("Press enter to continue movement...\n");
         scanf("%c",&c);
         {
-            gripper(GRIPPER_OPEN);
+            iPositionControl->positionMove(5,70);  // {60,-20,-45,60,-90,70,GRIPPER_OPEN};
         }
         printf("Press enter to continue movement...\n");
         scanf("%c",&c);
         {
-            double jointTargets[7] = {47.803162,-20.017578,-45.325134,59.929699,-87.855896,GRIPPER_OPEN};
-            jointsWithWait(jointTargets);
+            iPositionControl->positionMove(2,-90);  // {60,-90,-45,60,-90,70,GRIPPER_OPEN};
         }
         printf("Press enter to continue movement...\n");
         scanf("%c",&c);
