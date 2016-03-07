@@ -55,7 +55,7 @@ def plot_pick_and_place_points(image_src, pick_point, place_point, show=True):
     if show:
         plt.show()
 
-def plot_segmentation_stage(image_rgb, mask, polygon, to_file=None):
+def plot_segmentation_stage(image_rgb, mask, polygon, to_file=None, show=True):
     plt.figure()
     plt.imshow(image_rgb)
     plt.imshow(mask, cmap=plt.cm.gray, alpha=0.7)
@@ -71,10 +71,10 @@ def plot_segmentation_stage(image_rgb, mask, polygon, to_file=None):
     if to_file:
         plt.savefig(to_file, bbox_inches='tight')
         plt.close()
-    else:
+    elif show:
         plt.show()
 
-def plot_clustering_stage(image_rgb, labeled_image, to_file=None):
+def plot_clustering_stage(image_rgb, labeled_image, to_file=None, show=True):
     plt.figure()
     cax = plt.imshow(labeled_image, cmap=plt.cm.RdGy)
     plt.imshow(image_rgb)
@@ -91,11 +91,11 @@ def plot_clustering_stage(image_rgb, labeled_image, to_file=None):
     if to_file:
         plt.savefig(to_file, bbox_inches='tight')
         plt.close()
-    else:
+    elif show:
         plt.show()
 
 def plot_pick_and_place_stage(image_rgb, labeled_image, approximated_polygon, unfold_paths,
-                              pick_point, place_point, to_file=None):
+                              pick_point, place_point, to_file=None, show=True):
     plot_rgb(image_rgb, show=False)
     plt.imshow(labeled_image, cmap=plt.cm.RdGy, alpha=0.6)
     points = [tuple(point[0]) for point in approximated_polygon]
@@ -117,5 +117,5 @@ def plot_pick_and_place_stage(image_rgb, labeled_image, approximated_polygon, un
     if to_file:
         plt.savefig(to_file, bbox_inches='tight')
         plt.close()
-    else:
+    elif show:
         plt.show()
