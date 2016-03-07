@@ -52,8 +52,6 @@ void InCommandPort::onRead(Bottle& b) {
 
         char c;
 
-        stat();
-
         printf("Reducing velocities...\n");
         int gotAxes;
         iPositionControl->getAxes( &gotAxes );
@@ -94,18 +92,22 @@ void InCommandPort::onRead(Bottle& b) {
         printf("Press enter to continue movement...\n");
         scanf("%c",&c);
         {
-            iPositionControl->positionMove(4,-90);  // {60,-20,-45,20,-90,0,GRIPPER_OPEN};
+            iPositionControl->positionMove(4,-95);  // {60,-20,-45,20,-95,0,GRIPPER_OPEN};
         }
         printf("Press enter to continue movement...\n");
         scanf("%c",&c);
         {
-            iPositionControl->positionMove(3,60);  // {60,-20,-45,60,-90,0,GRIPPER_OPEN};
+            iPositionControl->positionMove(3,60);  // {60,-20,-45,60,-95,0,GRIPPER_OPEN};
         }
         printf("Press enter to continue movement...\n");
         scanf("%c",&c);
         {
-            iPositionControl->positionMove(5,70);  // {60,-20,-45,60,-90,70,GRIPPER_OPEN};
+            iPositionControl->positionMove(5,70);  // {60,-20,-45,60,-95,70,GRIPPER_OPEN};
         }
+
+        //-- Cartesian movement start here.
+        stat();
+
         printf("Press enter to continue movement or ctrl-c to exit...\n");
         scanf("%c",&c);
         {
