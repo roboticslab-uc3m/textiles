@@ -13,5 +13,10 @@
         <node>localhost</node>
     </module>
 
+    <connection>
+        <from>/Unfolding/pnpPoints:o</from>
+        <to>/textilesMover1/cv/state:i</to>
+    </connection>
+
 </application>
 
