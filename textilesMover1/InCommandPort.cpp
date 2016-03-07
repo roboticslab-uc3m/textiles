@@ -13,12 +13,13 @@ void InCommandPort::onRead(Bottle& b) {
     {
         Bottle* cvb = inCvPortPtr->read();
         printf("inCvPortPtr: %s\n",cvb->toString().c_str());
-        int pxX0 = cvb->get(0).asInt();
-        int pxY0 = cvb->get(1).asInt();
-        double mmZ0 = cvb->get(2).asDouble();  // Points forward.
-        int pxX1 = cvb->get(3).asInt();
-        int pxY1 = cvb->get(4).asInt();
-        double mmZ1 = cvb->get(5).asDouble();  // Points forward.
+        double pxX0 = cvb->get(0).asDouble();
+        double pxY0 = cvb->get(1).asDouble();
+        int mmZ0 = cvb->get(2).asInt();  // Points forward.
+        double pxX1 = cvb->get(3).asDouble();
+        double pxY1 = cvb->get(4).asDouble();
+        //double mmZ1 = cvb->get(5).asDouble();  // Points forward.
+        int mmZ1 = mmZ0;  // may be outside depth view, use Z0.
 
         double mmX0 = -(1000.0 * ( (pxX0 - DEFAULT_CX_D) * mmZ0/1000.0 ) / DEFAULT_FX_D);  // Points right thanks to change sign so (x ^ y = z). Expects --noMirror.
         double mmX1 = -(1000.0 * ( (pxX1 - DEFAULT_CX_D) * mmZ1/1000.0 ) / DEFAULT_FX_D);  // Points right thanks to change sign so (x ^ y = z). Expects --noMirror.
