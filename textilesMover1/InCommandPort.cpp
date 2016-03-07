@@ -54,26 +54,27 @@ void InCommandPort::onRead(Bottle& b) {
 
         stat();
 
-        printf("Press enter to move home...\n");
+        printf("Reducing velocities...\n");
+        int gotAxes;
+        iPositionControl->getAxes( &gotAxes );
+        for(unsigned int motor=0;motor<gotAxes;motor++)
+            iPositionControl->setRefSpeed(motor,DEFAULT_JOINT_VELS);
+        printf("Reduced velocities.\n");
+
+        printf("Press enter when at home...\n");
         scanf("%c",&c);
         {
-            double jointTargets[7] = {0,0,0,0,0,0,GRIPPER_OPEN};
-            jointsWithWait(jointTargets);
+            iPositionControl->positionMove(0,-50);  // {-50,0,0,0,0,0,GRIPPER_OPEN};
         }
         printf("Press enter to continue movement...\n");
         scanf("%c",&c);
         {
-            iPositionControl->positionMove(0,-30);  // {-30,0,0,0,0,0,GRIPPER_OPEN};
+            iPositionControl->positionMove(3,20);  // {-50,0,0,20,0,0,GRIPPER_OPEN};
         }
         printf("Press enter to continue movement...\n");
         scanf("%c",&c);
         {
-            iPositionControl->positionMove(3,20);  // {-30,0,0,20,0,0,GRIPPER_OPEN};
-        }
-        printf("Press enter to continue movement...\n");
-        scanf("%c",&c);
-        {
-            iPositionControl->positionMove(1,-70);  // {-30,-70,0,20,0,0,GRIPPER_OPEN};
+            iPositionControl->positionMove(1,-70);  // {-50,-70,0,20,0,0,GRIPPER_OPEN};
         }
         printf("Press enter to continue movement...\n");
         scanf("%c",&c);
@@ -105,21 +106,20 @@ void InCommandPort::onRead(Bottle& b) {
         {
             iPositionControl->positionMove(5,70);  // {60,-20,-45,60,-90,70,GRIPPER_OPEN};
         }
-        printf("Press enter to continue movement...\n");
+        printf("Press enter to continue movement or ctrl-c to exit...\n");
         scanf("%c",&c);
         {
-            iPositionControl->positionMove(2,-90);  // {60,-90,-45,60,-90,70,GRIPPER_OPEN};
+            iPositionControl->positionMove(2,-90);  // {60,-20,-90,60,-90,70,GRIPPER_OPEN};
         }
         printf("Press enter to continue movement...\n");
         scanf("%c",&c);
         {
-            gripper(GRIPPER_CLOSE);
+            gripper(GRIPPER_CLOSE);  // {60,-20,-90,60,-90,70,GRIPPER_CLOSE};
         }
         printf("Press enter to continue movement...\n");
         scanf("%c",&c);
         {
-            double jointTargets[7] = {-60,-20,-45,60,-105,0,GRIPPER_OPEN};
-            jointsWithWait(jointTargets);
+            iPositionControl->positionMove(2,-45);  // {60,-20,-45,60,-90,70,GRIPPER_CLOSE};
         }
         /*movjWithWait(H_root_point0_safe);
         yarp::os::Time::delay(5);

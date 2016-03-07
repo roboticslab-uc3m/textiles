@@ -13,6 +13,8 @@
 #define VOCAB_MOVJ VOCAB4('m','o','v','j')
 #define VOCAB_STAT VOCAB4('s','t','a','t')
 
+#define DEFAULT_JOINT_VELS 2.0
+
 #define GRIPPER_OPEN 0
 #define GRIPPER_CLOSE 1
 
