@@ -51,6 +51,7 @@ def compute_stages(args):
     f.close()
     GarmentPlot.plot_pick_and_place_stage(image_src, labeled_image, approximated_polygon, unfold_paths,
                                           pick_point, place_point, to_file=out_prefix + '-pnp.pdf')
+    GarmentPlot.plot_pick_and_place_points(image_src, pick_point, place_point, to_file=out_prefix + '-direction.pdf')
 
     return True
 

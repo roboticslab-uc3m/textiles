@@ -47,12 +47,15 @@ def plot_paths(image_src, approximated_polygon, unfold_paths, show=True):
     if show:
         plt.show()
 
-def plot_pick_and_place_points(image_src, pick_point, place_point, show=True):
+def plot_pick_and_place_points(image_src, pick_point, place_point, to_file=None):
     plt.imshow(image_src, cmap=plt.cm.gray)
     plt.axis('off')
     plt.arrow(pick_point[0], pick_point[1], place_point[0]-pick_point[0], place_point[1]-pick_point[1],
                head_width=15, head_length=15, fc='blue', ec='blue', lw=5)
-    if show:
+    if to_file:
+        plt.savefig(to_file, bbox_inches='tight')
+        plt.close()
+    else:
         plt.show()
 
 def plot_segmentation_stage(image_rgb, mask, polygon, to_file=None, show=True):
