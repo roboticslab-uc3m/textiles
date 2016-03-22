@@ -46,14 +46,14 @@
      <item>
       <widget class="QPushButton" name="greatResultButton">
        <property name="text">
-        <string>Great</string>
+        <string>Good</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QPushButton" name="goodResultButton">
        <property name="text">
-        <string>Good</string>
+        <string>Fair</string>
        </property>
       </widget>
      </item>
