@@ -39,7 +39,7 @@ bool Mover::configure(ResourceFinder &rf) {
     }
 
     //-- Connect to right arm cartesian program to send Cartesian space commands.
-    cartesianPort.open("/textilesMover1/cartesian/rpc:o");
+    cartesianPort.open("/mover/cartesian/rpc:o");
     std::string teoCartesianServerName("/teoCartesianServer");
     teoCartesianServerName += arm;
     teoCartesianServerName += "/rpc:i";
@@ -55,8 +55,8 @@ bool Mover::configure(ResourceFinder &rf) {
     inCommandPort.setIPositionControl(iPositionControl);
     inCommandPort.setCartesianPortPtr(&cartesianPort);
     inCommandPort.useCallback();
-    inCommandPort.open("/textilesMover1/command:i");
-    inCvPort.open("/textilesMover1/cv/state:i");
+    inCommandPort.open("/mover/command:i");
+    inCvPort.open("/mover/cv/state:i");
 
     return true;
 }

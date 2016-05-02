@@ -34,7 +34,7 @@ namespace teo
 {
 
 /**
- * @ingroup textilesMover1
+ * @ingroup mover
  *
  * @brief Input port of speech recognition data.
  *

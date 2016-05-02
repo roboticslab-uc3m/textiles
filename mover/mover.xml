@@ -8,14 +8,14 @@
     </module>
 
     <module>
-        <name>textilesMover1</name>
+        <name>mover</name>
         <parameters>--arm /teo/rightArm</parameters>
         <node>localhost</node>
     </module>
 
     <connection>
         <from>/Unfolding/pnpPoints:o</from>
-        <to>/textilesMover1/cv/state:i</to>
+        <to>/mover/cv/state:i</to>
     </connection>
 
 </application>

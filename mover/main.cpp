@@ -3,11 +3,11 @@
 /**
  *
  * @ingroup teo_body_programs
- * \defgroup textilesMover1 textilesMover1
+ * \defgroup mover mover
  *
  * @brief Creates an instance of teo::Mover.
  *
- * @section textilesMover1_legal Legal
+ * @section mover_legal Legal
  *
  * Copyright: 2015 (C) Universidad Carlos III de Madrid
  *
@@ -18,7 +18,7 @@
  *
  * <hr>
  *
- * This file can be edited at textilesMover1
+ * This file can be edited at mover
  *
  */
 
@@ -32,8 +32,8 @@ int main(int argc, char **argv) {
 
     ResourceFinder rf;
     rf.setVerbose(true);
-    rf.setDefaultContext("textilesMover1");
-    rf.setDefaultConfigFile("textilesMover1.ini");
+    rf.setDefaultContext("mover");
+    rf.setDefaultConfigFile("mover.ini");
     rf.configure(argc, argv);
 
     teo::Mover mod;

@@ -13,7 +13,7 @@
     </module>
 
     <module>
-        <name>textilesMover1</name>
+        <name>mover</name>
         <parameters>--arm /teoSim/rightArm</parameters>
         <node>localhost</node>
     </module>

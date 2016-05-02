@@ -18,7 +18,7 @@ namespace teo
 {
 
 /**
- * @ingroup textilesMover1
+ * @ingroup mover
  *
  * @brief Execution Core 1.
  *

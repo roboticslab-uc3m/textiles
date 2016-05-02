@@ -15,13 +15,13 @@
 
     <module>
         <name>gnome-terminal</name>
-        <parameters>-e "yarp write ... /textilesMover1/cv/state:i"</parameters>
+        <parameters>-e "yarp write ... /mover/cv/state:i"</parameters>
         <node>localhost</node>
     </module>
 
     <module>
         <name>gnome-terminal</name>
-        <parameters>-e "yarp write ... /textilesMover1/command:i"</parameters>
+        <parameters>-e "yarp write ... /mover/command:i"</parameters>
         <node>localhost</node>
     </module>
 
