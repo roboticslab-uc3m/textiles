@@ -23,7 +23,7 @@ namespace teo
  * @brief Execution Core 1.
  *
  */
-class TextilesMover1 : public RFModule {
+class Mover : public RFModule {
     public:
         bool configure(ResourceFinder &rf);
 

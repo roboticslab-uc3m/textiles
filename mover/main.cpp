@@ -5,7 +5,7 @@
  * @ingroup teo_body_programs
  * \defgroup textilesMover1 textilesMover1
  *
- * @brief Creates an instance of teo::TextilesMover1.
+ * @brief Creates an instance of teo::Mover.
  *
  * @section textilesMover1_legal Legal
  *
@@ -24,7 +24,7 @@
 
 #include <yarp/os/all.h>
 
-#include "TextilesMover1.hpp"
+#include "Mover.hpp"
 
 using namespace yarp::os;
 
@@ -36,7 +36,7 @@ int main(int argc, char **argv) {
     rf.setDefaultConfigFile("textilesMover1.ini");
     rf.configure(argc, argv);
 
-    teo::TextilesMover1 mod;
+    teo::Mover mod;
     if(rf.check("help")) {
         return mod.runModule(rf);
     }

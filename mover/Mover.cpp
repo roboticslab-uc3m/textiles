@@ -1,19 +1,19 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-#include "TextilesMover1.hpp"
+#include "Mover.hpp"
 
 namespace teo
 {
 
 /************************************************************************/
 
-bool TextilesMover1::configure(ResourceFinder &rf) {
+bool Mover::configure(ResourceFinder &rf) {
 
     std::string arm = rf.check("arm",Value(DEFAULT_ARM),"full name of arm to be used").asString();
 
     printf("--------------------------------------------------------------\n");
     if (rf.check("help")) {
-        printf("TextilesMover1 options:\n");
+        printf("Mover options:\n");
         printf("\t--help (this help)\t--from [file.ini]\t--context [path]\n");
         printf("\t--arm: %s [%s]\n",arm.c_str(),DEFAULT_ARM);
     }
@@ -62,20 +62,20 @@ bool TextilesMover1::configure(ResourceFinder &rf) {
 }
 
 /************************************************************************/
-double TextilesMover1::getPeriod() {
+double Mover::getPeriod() {
     return 2.0;  // Fixed, in seconds, the slow thread that calls updateModule below
 }
 
 /************************************************************************/
-bool TextilesMover1::updateModule() {
-    //printf("StateMachine in state [%d]. TextilesMover1 alive...\n", stateMachine.getMachineState());
+bool Mover::updateModule() {
+    //printf("StateMachine in state [%d]. Mover alive...\n", stateMachine.getMachineState());
     return true;
 }
 
 /************************************************************************/
 
-bool TextilesMover1::interruptModule() {
-    printf("TextilesMover1 closing...\n");
+bool Mover::interruptModule() {
+    printf("Mover closing...\n");
     inCommandPort.disableCallback();
     inCvPort.interrupt();
     inCommandPort.interrupt();
