@@ -1,9 +1,5 @@
 <application>
 <name>mover App</name>
-    <module>
-        <name>launchManipulation</name>
-        <node>/manipulation</node>
-    </module>
 
     <module>
         <name>teoCartesianServer</name>
@@ -16,6 +12,11 @@
         <parameters>--arm /teo/rightArm</parameters>
         <node>localhost</node>
     </module>
+
+    <connection>
+        <from>/Unfolding/pnpPoints:o</from>
+        <to>/textilesMover1/cv/state:i</to>
+    </connection>
 
 </application>
 
