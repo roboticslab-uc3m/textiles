@@ -11,10 +11,11 @@ Main repository for the research related to textile perception and manipulation 
 Structure of the repository:
 * **/data** Some datasets with 2D and 3D garment data used in first tests of our algorithms.
 * **/grabber** Code for extracting 2D and 3D garment data using [yarp](http://www.yarp.it/) and an ASUS XTION Live Pro RGB-D sensor.
+* **/mover** Textile manipulation algorithms.
 * **/notebooks** Jupyter notebooks to document the different algorithms and publications.
 * **/pcl** Textile perception algorithms using 3D data and the Point Cloud Library.
 * **/textiles** Textile perception algorithms using 2.5D data and 2D computer vision in Python.
-* **/textilesMover1** Textile manipulation algorithms.
+
 
 # Publications
 Here you can find listed all publications related to the code hosted in this repository.
