@@ -16,9 +16,9 @@ void show_usage(char * program_name)
   std::cout << std::endl;
   std::cout << "Usage: " << program_name << std::endl;
   std::cout << "-h:  Show this help." << std::endl;
-  std::cout << "--side: Side of the cube (mm)" << std::endl;
-  std::cout << "--samples: Number of points / side" << std::endl;
-  std::cout << "-o: Output file" << std::endl;
+  std::cout << "--side: Side of the cube (mm) (Default: 1mm)" << std::endl;
+  std::cout << "--samples: Number of points / side (Default: 50 samples)" << std::endl;
+  std::cout << "-o: Output file (Default: cube.m)" << std::endl;
 }
 
 int main (int argc, char** argv)
@@ -57,8 +57,9 @@ int main (int argc, char** argv)
     std::cout << "Resolution: " << point_distance << std::endl;
     std::cout << "Creating point cloud..." << std::endl;
 
-    for (int j = 0; j < samples; j++)
-        for (int i = 0; i < samples; i++)
+    //-- This loop is for the top and bottom covers
+    for (int j = 0; j <= samples; j++)
+        for (int i = 0; i <= samples; i++)
         {
             pcl::PointXYZ p;
             p.x = i * point_distance;
@@ -73,11 +74,12 @@ int main (int argc, char** argv)
             cloud->points.push_back(p2);
         }
 
-    for (int k = 1; k < samples-1; k++)
-        for (int j = 0; j < samples; j++)
-            if (j == 0 || j == samples-1)
+    //-- This loop is for the sides of the cube
+    for (int k = 1; k <= samples-1; k++)
+        for (int j = 0; j <= samples; j++)
+            if (j == 0 || j == samples)
             {
-                for (int i = 0; i < samples; i++)
+                for (int i = 0; i <= samples; i++)
                 {
                     pcl::PointXYZ p;
                     p.x = i * point_distance;
