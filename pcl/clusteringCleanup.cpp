@@ -27,10 +27,10 @@ void show_usage(char * program_name)
     std::cout << std::endl;
     std::cout << "Usage: " << program_name << " cloud_filename.[pcd|ply]" << std::endl;
     std::cout << "-h:  Show this help." << std::endl;
-    std::cout << "-o: Output folder for cluster data" << std::endl;
-    std::cout << "--ransac: Enable plane segmentation" << std::endl;
-    std::cout << "--ransac-threshold: Set ransac threshold value" << std::endl;
-    std::cout << "--cluster-params: Set clustering parameters" << std::endl;
+    std::cout << "-o: Output folder for cluster data (default: "")" << std::endl;
+    std::cout << "--ransac: Enable plane segmentation (default: false)" << std::endl;
+    std::cout << "--ransac-threshold: Set ransac threshold value (default: 0.02)" << std::endl;
+    std::cout << "--cluster-params: Set clustering parameters (default: 0.02 100 250000)" << std::endl;
 }
 
 int main (int argc, char** argv)
