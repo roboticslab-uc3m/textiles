@@ -41,7 +41,7 @@ int main (int argc, char** argv)
     float ransac_threshold = 0.02;
     float cluster_tolerance = 0.02;
     float cluster_min_size = 100;
-    float cluster_max_size = 25000;
+    float cluster_max_size = 250000;
 
     //-- Show usage
     if (pcl::console::find_switch(argc, argv, "-h") || pcl::console::find_switch(argc, argv, "--help"))
