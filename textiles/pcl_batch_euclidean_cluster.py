@@ -13,8 +13,15 @@ from pcl_utils import  colorize_point_cloud
 
 parallelize = True # True to run several processes in parallel
 
-garment_data_names = ["LeatherJacket1", "Jacket2", "Jacket3", "Jacket4", "Jacket5"]
-garment_data_pattern = "~/Research/point_clouds/{0}/mesh_1_cut.ply"
+# garment_data_names = ["Jacket1", "Jacket2", "Jacket3", "Jacket4", "Jacket5",
+#                       "LeatherJacket1", "LeatherJacket2", "LeatherJacket3", "LeatherJacket4",
+#                       "Hoodie1", "Hoodie2", "Hoodie3",
+#                       "Parka1", "Parka2",
+#                       "TestBox"]
+garment_data_names = ["hoodie0", "hoodie1", "hoodie2", "hoodie3", "jeans0", "jeans1", "jeans2",
+                      "jersey0", "jersey1", "loli0", "pile"]
+#garment_data_pattern = "~/Research/point_clouds/{0}/mesh_1.ply"
+garment_data_pattern = "~/Research/jresearch/2016-04-20-textiles-draft/{0}/mesh_1.ply"
 
 pcl_processing_binary = "clusteringCleanup"
 pcl_processing_folder = "~/Repositories/textiles/pcl/build"
