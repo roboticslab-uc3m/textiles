@@ -58,6 +58,7 @@ class MeshPreprocessor
             voxel_grid_filter.setLeafSize(0.01f, 0.01f, 0.01f); //-- 1cm^3
             voxel_grid_filter.filter(*downsampled_point_cloud);
 
+
             //-- Find table's plane
             //------------------------------------------------------------------------------------
             pcl::ModelCoefficients::Ptr table_plane_coefficients(new pcl::ModelCoefficients);
@@ -94,6 +95,7 @@ class MeshPreprocessor
             extract_indices.setNegative(true);
             extract_indices.filter(*not_table_points);
 
+//            *not_table_points = *input_cloud;     //-- Add this to disable RANSAC filtering
 
             //-- Find bounding box:
             //-----------------------------------------------------------------------------------
@@ -141,6 +143,7 @@ class MeshPreprocessor
             passthrough_filter.setFilterLimitsNegative(false);
             passthrough_filter.filter(output_cloud);
 
+            output_cloud = *oriented_cloud; //-- Add to test if negative outliers shouldn't be removed
             return true;
         }
 
