@@ -42,6 +42,7 @@ bool Debug::show(std::string tag)
             current_viewer->setWindowName(tag);
 
         //-- Visualization thread
+        current_viewer->createInteractor();
         while(!current_viewer->wasStopped())
             current_viewer->spinOnce();
     }
@@ -55,7 +56,7 @@ bool Debug::show(std::string tag)
 
 bool Debug::init_viewer()
 {
-    current_viewer = new pcl::visualization::PCLVisualizer();
+    current_viewer = new pcl::visualization::PCLVisualizer("", false);
     current_viewer->addCoordinateSystem(1.0, "coordinate_system", 0);
     current_viewer->setBackgroundColor(0.05, 0.05, 0.05, 0);
     return true;
