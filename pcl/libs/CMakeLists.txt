@@ -3,3 +3,4 @@ set(TEXTILES_INCLUDE_DIRS ${TEXTILES_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR}/I
 # Add libraries
 add_subdirectory(ImageCreator)
 add_subdirectory(Preprocessor)
+add_subdirectory(Debug)
