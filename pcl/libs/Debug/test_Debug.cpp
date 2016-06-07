@@ -66,15 +66,15 @@ int main(int argc, char* argv[])
     Debug debug;
     debug.setEnabled(false);
     debug.plotPointCloud<pcl::PointXYZ>(source_cloud, Debug::RED);
-    debug.show();
+    debug.show("test1");
     std::cout << "Nothing should happen here, output is disabled." << std::endl;
-    std::cout << "Press key to continue.>";
+    std::cout << "Press key to continue>";
     std::cin.get();
 
     debug.setEnabled(true);
     debug.plotPointCloud<pcl::PointXYZ>(source_cloud, Debug::BLUE);
-    debug.show();
+    debug.show("test2");
     std::cout << "Now output is enabled, a viewer should show up. Only blue stuff is plotted." << std::endl;
-    std::cout << "Press key to continue.>";
+    std::cout << "Press key to continue>";
     std::cin.get();
 }

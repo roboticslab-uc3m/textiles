@@ -17,44 +17,51 @@ class Debug
 
         typedef struct DebugColor DebugColor;
 
+        Debug();
+        ~Debug();
+
         void setEnabled(bool enabled);
         void setAutoShow(bool enabled);
 
         template<typename PointT>
-        bool plotPointCloud(typename pcl::PointCloud<PointT>::Ptr& point_cloud, const DebugColor& color)
+        bool plotPointCloud(typename pcl::PointCloud<PointT>::Ptr& point_cloud,
+                            const DebugColor& color, int point_size = 1)
         {
-            return false;
+            if (current_viewer == nullptr)
+                if (!init_viewer())
+                    return false;
+
+            //-- Craft uuid string for current uuid
+            std::string uuid_str = std::to_string(uuid_counter);
+            uuid_counter++;
+
+            //-- Create color handler
+            pcl::visualization::PointCloudColorHandlerCustom<PointT> color_handler(point_cloud,
+                                                                                   color.r, color.g, color.b);
+            //-- Add cloud to viewer
+            current_viewer->addPointCloud(point_cloud, color_handler, uuid_str);
+            current_viewer->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE,
+                                                             point_size, uuid_str);
+
+            if (auto_show)
+                return show("auto");
+
+            return true;
         }
 
-        bool show(std::string tag);
+        bool show(std::string tag = "");
 
         //-- Available colors
         static const DebugColor RED;
         static const DebugColor BLUE;
 
     private:
+        bool init_viewer();
+
         pcl::visualization::PCLVisualizer* current_viewer;
         bool enabled;
         bool auto_show;
+        int uuid_counter;
 };
-
-const Debug::DebugColor Debug::RED = {255, 0, 0};
-const Debug::DebugColor Debug::BLUE = {255, 0, 0};
-
-void Debug::setEnabled(bool enabled)
-{
-    this->enabled = enabled;
-}
-
-void Debug::setAutoShow(bool enabled)
-{
-
-
-}
-
-bool Debug::show(std::string tag="")
-{
-    return false;
-}
 
 #endif
