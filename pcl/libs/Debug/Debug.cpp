@@ -1,8 +1,15 @@
 #include "Debug.hpp"
 
 
-const Debug::DebugColor Debug::RED = {255, 0, 0};
-const Debug::DebugColor Debug::BLUE = {0, 0, 255};
+const Debug::DebugColor Debug::RED =     {255,   0,   0};
+const Debug::DebugColor Debug::GREEN =   {255,   0,   0};
+const Debug::DebugColor Debug::BLUE =    {  0,   0, 255};
+const Debug::DebugColor Debug::YELLOW =  {255, 255,   0};
+const Debug::DebugColor Debug::CYAN =    {  0, 255, 255};
+const Debug::DebugColor Debug::MAGENTA = {255,   0, 255};
+const Debug::DebugColor Debug::WHITE =   {255, 255, 255};
+const Debug::DebugColor Debug::BLACK =   {  0,   0,   0};
+
 
 Debug::Debug()
 {
