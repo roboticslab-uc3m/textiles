@@ -46,7 +46,7 @@ def process_batch(args):
 
     # Call the processing program:
     args = [ os.path.expanduser(os.path.join(pcl_processing_folder, pcl_processing_binary)),
-             "-t",  str(0.01),
+             "-t",  str(0.0005),
              current_input_file,
              "--histogram",
              os.path.expanduser(os.path.join(output_folder, output_histogram_prefix + name + ".m" )),

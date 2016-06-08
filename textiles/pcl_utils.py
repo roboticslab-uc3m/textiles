@@ -67,7 +67,7 @@ def colorize_point_cloud(xyz_data, color_data, output_file, cmap=pylab.cm.cool):
 
 
 if __name__ == '__main__':
-    data = np.loadtxt('../pcl/build/rsd_data2.m')
+    data = np.loadtxt('../pcl/build/curvature_data.m')
     # surface_plot(data)
 
     colorize_point_cloud(data[:,0:3], data[:,3], 'cloud-r_min.pcd')

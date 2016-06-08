@@ -53,7 +53,13 @@ class Debug
 
         //-- Available colors
         static const DebugColor RED;
+        static const DebugColor GREEN;
         static const DebugColor BLUE;
+        static const DebugColor YELLOW;
+        static const DebugColor CYAN;
+        static const DebugColor MAGENTA;
+        static const DebugColor WHITE;
+        static const DebugColor BLACK;
 
     private:
         bool init_viewer();
