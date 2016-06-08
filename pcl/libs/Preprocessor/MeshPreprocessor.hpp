@@ -26,6 +26,8 @@
 //-- Projection
 #include <pcl/ModelCoefficients.h>
 #include <pcl/filters/project_inliers.h>
+//-- Debug
+#include "Debug/Debug.hpp"
 
 
 template<typename PointT>
@@ -51,6 +53,14 @@ class MeshPreprocessor
         }
 
         bool process(pcl::PointCloud<PointT>& output_cloud) {
+            //-- Create debug object
+            Debug debug;
+            debug.setEnabled(true);
+            PointCloudPtr print_cloud(new PointCloud);
+            *print_cloud = *input_cloud;
+            debug.plotPointCloud<PointT>(print_cloud, Debug::COLOR_CYAN);
+            debug.show("Original");
+
             //-- Downsampling the mesh prior to RANSAC
             PointCloudPtr downsampled_point_cloud(new PointCloud);
             typename pcl::VoxelGrid<PointT> voxel_grid_filter;
@@ -58,6 +68,8 @@ class MeshPreprocessor
             voxel_grid_filter.setLeafSize(0.01f, 0.01f, 0.01f); //-- 1cm^3
             voxel_grid_filter.filter(*downsampled_point_cloud);
 
+            debug.plotPointCloud<PointT>(downsampled_point_cloud, Debug::COLOR_CYAN);
+            debug.show("Downsampled");
 
             //-- Find table's plane
             //------------------------------------------------------------------------------------
@@ -95,6 +107,8 @@ class MeshPreprocessor
             extract_indices.setNegative(true);
             extract_indices.filter(*not_table_points);
 
+            debug.plotPointCloud<PointT>(not_table_points, Debug::COLOR_MAGENTA);
+            debug.show("Not table points");
 //            *not_table_points = *input_cloud;     //-- Add this to disable RANSAC filtering
 
             //-- Find bounding box:
@@ -134,6 +148,9 @@ class MeshPreprocessor
             Eigen::Vector3f normal_vector(table_plane_coefficients->values[0], table_plane_coefficients->values[1], table_plane_coefficients->values[2]);
             Eigen::Quaternionf rotation_quaternion = Eigen::Quaternionf().setFromTwoVectors(normal_vector, Eigen::Vector3f::UnitZ());
             pcl::transformPointCloud(*centered_cloud, *oriented_cloud, Eigen::Vector3f(0,0,0), rotation_quaternion);
+
+            debug.plotPointCloud<PointT>(oriented_cloud, Debug::COLOR_BLUE);
+            debug.show("Oriented");
 
             //-- Remove negative outliers (table noise)
             typename pcl::PassThrough<PointT> passthrough_filter;

@@ -52,14 +52,14 @@ class Debug
         bool show(std::string tag = "");
 
         //-- Available colors
-        static const DebugColor RED;
-        static const DebugColor GREEN;
-        static const DebugColor BLUE;
-        static const DebugColor YELLOW;
-        static const DebugColor CYAN;
-        static const DebugColor MAGENTA;
-        static const DebugColor WHITE;
-        static const DebugColor BLACK;
+        static const DebugColor COLOR_RED;
+        static const DebugColor COLOR_GREEN;
+        static const DebugColor COLOR_BLUE;
+        static const DebugColor COLOR_YELLOW;
+        static const DebugColor COLOR_CYAN;
+        static const DebugColor COLOR_MAGENTA;
+        static const DebugColor COLOR_WHITE;
+        static const DebugColor COLOR_BLACK;
 
     private:
         bool init_viewer();
