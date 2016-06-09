@@ -115,36 +115,26 @@ class HistogramImageCreator
 
             //-- Fill bins with the count of z values
 
-            this->depth_image = calculateHistogram(processed_cloud, width, height,
-                                                   bin_size_x, bin_size_y,
-                                                   max_point_AABB, min_point_AABB);
+            this->depth_image = Eigen::MatrixXi::Zero(height, width);
 
-            return true;
-        }
-
-    protected:
-        virtual Eigen::MatrixXi calculateHistogram(const PointCloudConstPtr& input,
-                                           int width, int height,
-                                           float bin_size_x, float bin_size_y,
-                                           PointT max_point_AABB, PointT min_point_AABB)
-        {
-            Eigen::MatrixXi histogram = Eigen::MatrixXi::Zero(bin_size_y, bin_size_x);
-
-            for (int i = 0; i < input->points.size(); i++)
+            for (int i = 0; i < processed_cloud->points.size(); i++)
             {
-                if (isnan(input->points[i].x) || isnan(input->points[i].y ))
+                if (isnan(processed_cloud->points[i].x) || isnan(processed_cloud->points[i].y ))
                     continue;
 
-                int index_x = (input->points[i].x-min_point_AABB.x) / bin_size_x;
-                int index_y = (max_point_AABB.y - input->points[i].y) / bin_size_y;
+                int index_x = (processed_cloud->points[i].x-min_point_AABB.x) / bin_size_x;
+                int index_y = (max_point_AABB.y - processed_cloud->points[i].y) / bin_size_y;
 
                 if (index_x >= width) index_x = width-1;
                 if (index_y >= height) index_y = height-1;
 
-                histogram(index_y, index_x) += 1;
-            }
+                std::cout << "Point " << i << "/" << processed_cloud->points.size()
+                          <<" (" << processed_cloud->points[i].x << ", " << processed_cloud->points[i].y << ", "<< processed_cloud->points[i].z
+                          << ") in bin (" << index_x << ", " << index_y << ")" << std::endl;
 
-            return histogram;
+                depth_image(index_y, index_x) += 1;
+            }
+            return true;
         }
 
     private:
