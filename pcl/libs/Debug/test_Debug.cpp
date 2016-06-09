@@ -68,13 +68,32 @@ int main(int argc, char* argv[])
     debug.plotPointCloud<pcl::PointXYZ>(source_cloud, Debug::COLOR_RED);
     debug.show("test1");
     std::cout << "Nothing should happen here, output is disabled." << std::endl;
-    std::cout << "Press key to continue>";
+    std::cout << "Press key to continue>" << std::endl;
     std::cin.get();
 
     debug.setEnabled(true);
     debug.plotPointCloud<pcl::PointXYZ>(source_cloud, Debug::COLOR_BLUE);
     debug.show("test2");
     std::cout << "Now output is enabled, a viewer should show up. Only blue stuff is plotted." << std::endl;
-    std::cout << "Press key to continue>";
-    std::cin.get();
+    std::cout << "Close display window to continue." << std::endl;
+
+    debug.plotPointCloud<pcl::PointXYZ>(source_cloud, Debug::COLOR_YELLOW);
+    debug.show("test3");
+    std::cout << "Another cloud is printed, a SINGLE viewer should show up. Only yellow stuff is plotted." << std::endl;
+    std::cout << "Close display window to continue."<< std::endl;
+
+    pcl::ModelCoefficients coeffs;
+    coeffs.values.push_back(0.0);
+    coeffs.values.push_back(0.0);
+    coeffs.values.push_back(1.0);
+    coeffs.values.push_back(0.0);
+    debug.plotPlane(coeffs, Debug::COLOR_GREEN);
+    debug.show("Plane1");
+    std::cout << "A nice green plane should show up on a new window." << std::endl;
+    std::cout << "Close display window to continue." << std::endl;;
+
+    debug.plotPlane(0, 1, 0, 0, Debug::COLOR_MAGENTA);
+    debug.show("Plane2");
+    std::cout << "A nice magenta plane should show up on a new window." << std::endl;
+    std::cout << "Close display window to continue." << std::endl;;
 }

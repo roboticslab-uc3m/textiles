@@ -49,6 +49,9 @@ class Debug
             return true;
         }
 
+        bool plotPlane(pcl::ModelCoefficients plane_coefficients, const DebugColor& color);
+        bool plotPlane(double A, double B, double C, double D, const DebugColor& color);
+
         bool show(std::string tag = "");
 
         //-- Available colors
