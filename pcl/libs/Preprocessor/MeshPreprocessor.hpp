@@ -55,7 +55,7 @@ class MeshPreprocessor
         bool process(pcl::PointCloud<PointT>& output_cloud) {
             //-- Create debug object
             Debug debug;
-            debug.setEnabled(true);
+            debug.setEnabled(false);
             PointCloudPtr print_cloud(new PointCloud);
             *print_cloud = *input_cloud;
             debug.plotPointCloud<PointT>(print_cloud, Debug::COLOR_CYAN);
@@ -156,11 +156,15 @@ class MeshPreprocessor
             typename pcl::PassThrough<PointT> passthrough_filter;
             passthrough_filter.setInputCloud(oriented_cloud);
             passthrough_filter.setFilterFieldName("z");
-            passthrough_filter.setFilterLimits(RANSAC_threshold_distance/2.0f, FLT_MAX);
-            passthrough_filter.setFilterLimitsNegative(false);
+            passthrough_filter.setFilterLimits(-RANSAC_threshold_distance/2.0f, FLT_MAX);
+            passthrough_filter.setFilterLimitsNegative(true); //-- Was false
             passthrough_filter.filter(output_cloud);
 
-            output_cloud = *oriented_cloud; //-- Add to test if negative outliers shouldn't be removed
+            //output_cloud = *oriented_cloud; //-- Add to test if negative outliers shouldn't be removed
+            PointCloudPtr print_out_cloud(new PointCloud);
+            *print_out_cloud = output_cloud;
+            debug.plotPointCloud<PointT>(print_out_cloud, Debug::COLOR_GREEN);
+            debug.show("Filtered stuff");
             return true;
         }
 
