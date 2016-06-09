@@ -17,9 +17,12 @@ parallelize = True # True to run several processes in parallel
 # garment_data_patterns = ["~/Research/point_clouds/{0}/textured_mesh.ply",
 #                          "~/Research/point_clouds/{0}/mesh_1_cut.ply"]
 
-garment_data_names = ["hoodie0", "hoodie1", "hoodie2", "hoodie3", "jeans0", "jeans1", "jeans2",
-                      "jersey0", "jersey1", "loli0", "pile"]
-garment_data_patterns = ["~/Repositories/textiles/data/3D data/{0}/cloud_cluster_0.pcd"]
+# garment_data_names = ["hoodie0", "hoodie1", "hoodie2", "hoodie3", "jeans0", "jeans1", "jeans2",
+#                       "jersey0", "jersey1", "loli0", "pile"]
+garment_data_names = ["dress1", "dress2", "dress3", "hoodie1", "hoodie2", "hoodie3", "hoodieBad",
+                      "pants1", "pants2", "pants3"]
+#garment_data_patterns = ["~/Repositories/textiles/data/3D data/{0}/cloud_cluster_0.pcd"]
+garment_data_patterns = ["~/Repositories/textiles/data/clustered-2016-05-06-thick-garments/{0}/cloud_cluster_0.pcd"]
 
 pcl_processing_binary = "foldingClothesMesh"
 pcl_processing_folder = "~/Repositories/textiles/pcl/build"
@@ -46,7 +49,7 @@ def process_batch(args):
 
     # Call the processing program:
     args = [ os.path.expanduser(os.path.join(pcl_processing_folder, pcl_processing_binary)),
-             "-t",  str(0.0005),
+             "-t",  str(0.008),
              current_input_file,
              "--histogram",
              os.path.expanduser(os.path.join(output_folder, output_histogram_prefix + name + ".m" )),
