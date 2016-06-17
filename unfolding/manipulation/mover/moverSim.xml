@@ -1,0 +1,22 @@
+<application>
+<name>moverSim App</name>
+
+    <module>
+        <name>teoSim</name>
+        <node>localhost</node>
+    </module>
+
+    <module>
+        <name>teoCartesianServer</name>
+        <parameters>--kinematics rightArmKinematics.ini --remote /teoSim/rightArm</parameters>
+        <node>localhost</node>
+    </module>
+
+    <module>
+        <name>mover</name>
+        <parameters>--arm /teoSim/rightArm</parameters>
+        <node>localhost</node>
+    </module>
+
+</application>
+

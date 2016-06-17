@@ -4,17 +4,15 @@
 Main repository for the research related to textile perception and manipulation at the University Carlos III of Madrid.
 
 <br><br>
-<img src="doc/images/roboticslab.png" height="100px" align= "left"> <img src="doc/images/uc3m.png" height="100px" align="right"><br><br><br><br>
+<img src="images/roboticslab.png" height="100px" align= "left"> <img src="images/uc3m.png" height="100px" align="right"><br><br><br><br>
 
 
 # Repository
 Structure of the repository:
-* **/data** Some datasets with 2D and 3D garment data used in first tests of our algorithms.
-* **/grabber** Code for extracting 2D and 3D garment data using [yarp](http://www.yarp.it/) and an ASUS XTION Live Pro RGB-D sensor.
-* **/mover** Textile manipulation algorithms.
-* **/notebooks** Jupyter notebooks to document the different algorithms and publications.
-* **/pcl** Textile perception algorithms using 3D data and the Point Cloud Library.
-* **/textiles** Textile perception algorithms using 2.5D data and 2D computer vision in Python.
+* **/images**
+* **/ironing** - robotic garment ironing applications developed with [TEO the humanoid robot](https://github.com/roboticslab-uc3m/teo-main) (Under development)
+* **/unfolding** - robotic garment unfolding applications developed with [TEO the humanoid robot](https://github.com/roboticslab-uc3m/teo-main).
+* **/unfolding-industrial** - robotic garment unfolding applications developed with industrial robots. (Under development).
 
 
 # Publications
