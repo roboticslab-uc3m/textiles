@@ -33,7 +33,7 @@
 #include <fstream>
 
 //-- Select which parts of the algorithm to enable
-//#define CURVATURE
+#define CURVATURE
 #define HISTOGRAM
 
 void show_usage(char * program_name)
@@ -236,50 +236,6 @@ int main(int argc, char* argv[])
     file << image;
     file.close();
 #endif
-
-    /********************************************************************************************************
-     * Visualization
-     * *****************************************************************************************************/
-    std::cout << "[+] Setting up visualization..." << std::endl;
-    //-- Visualization Setup
-    pcl::visualization::PCLVisualizer viewer("Folding clothes");
-    pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> red_color_handler(source_cloud, 255, 0, 0);
-    pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> green_color_handler(source_cloud, 0, 255, 0);
-    pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> blue_color_handler(source_cloud, 0, 0, 255);
-    viewer.addCoordinateSystem(1.0, "origin", 0);
-    viewer.setBackgroundColor(0.05, 0.05, 0.05, 0);
-
-    //-- Add point cloud
-    viewer.addPointCloud(garment_points, red_color_handler, "oriented_point_cloud");
-    viewer.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 2, "oriented_point_cloud");
-
-    //-- Add plane inliers
-    //pcl::PointCloud<pcl::PointXYZ>::Ptr plane_points(new pcl::PointCloud<pcl::PointXYZ>(*source_cloud, table_plane_points->indices));
-    //viewer.addPointCloud(plane_points, green_color_handler, "plane_point_cloud");
-    //viewer.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 2, "plane_point_cloud");
-
-    //-- Add normals
-    //viewer.addPointCloudNormals<pcl::PointXYZ, pcl::Normal> (garment_points, normals, 1, 0.03, "normals");
-    //viewer.setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_COLOR, 0, 0, 255, "normals");
-
-    //-- View AABB
-    //viewer.addCube(min_point_AABB.x, max_point_AABB.x, min_point_AABB.y, max_point_AABB.y, min_point_AABB.z, max_point_AABB.z, 1.0, 1.0, 0.0, "AABB");
-
-    //-- View OBB
-    Eigen::Vector3f position(position_OBB.x, position_OBB.y, position_OBB.z);
-    Eigen::Quaternionf quat_view(rotational_matrix_OBB);
-    //viewer.addCube(position, quat_view, max_point_OBB.x - min_point_OBB.x, max_point_OBB.y - min_point_OBB.y, max_point_OBB.z - min_point_OBB.z, "OBB");
-
-    //viewer.addLine(pcl::PointXYZ(0,0,0), position_OBB, "line");
-    //viewer.addLine(pcl::PointXYZ(0,0,0), pcl::PointXYZ(mass_center[0], mass_center[1], mass_center[2]), "line2");
-    //viewer.addLine(pcl::PointXYZ(0,0,0), pcl::PointXYZ(30*normal_vector[0], 30*normal_vector[1], 30*normal_vector[2]), "normal");
-
-
-    //-- Visualization thread
-    while(!viewer.wasStopped())
-    {
-        viewer.spinOnce();
-    }
 
     return 0;
 }

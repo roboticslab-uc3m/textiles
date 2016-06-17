@@ -18,10 +18,10 @@ parallelize = True # True to run several processes in parallel
 #                       "Hoodie1", "Hoodie2", "Hoodie3",
 #                       "Parka1", "Parka2",
 #                       "TestBox"]
-garment_data_names = ["hoodie0", "hoodie1", "hoodie2", "hoodie3", "jeans0", "jeans1", "jeans2",
-                      "jersey0", "jersey1", "loli0", "pile"]
+garment_data_names = ["dress1", "dress2", "dress3", "hoodie1", "hoodie2", "hoodie3", "hoodieBad",
+                      "pants1", "pants2", "pants3"]
 #garment_data_pattern = "~/Research/point_clouds/{0}/mesh_1.ply"
-garment_data_pattern = "~/Research/jresearch/2016-04-20-textiles-draft/{0}/mesh_1.ply"
+garment_data_pattern = "~/Research/jresearch/2016-05-06-textiles-draft/{0}/mesh_1.ply"
 
 pcl_processing_binary = "clusteringCleanup"
 pcl_processing_folder = "~/Repositories/textiles/pcl/build"
@@ -29,7 +29,7 @@ pcl_processing_folder = "~/Repositories/textiles/pcl/build"
 pcl_renderer_binary = "render2png"
 pcl_renderer_folder = "~/Repositories/textiles/pcl/build"
 
-output_folder = "~/Repositories/textiles/data/3D data"
+output_folder = "~/Repositories/textiles/data/clustered-2016-05-06-thick-garments"
 
 def process_single_cloud(args):
     name, debug = args
