@@ -4,7 +4,7 @@
 Main repository for the research related to textile perception and manipulation at the University Carlos III of Madrid.
 
 <br><br>
-<img src="doc/images/roboticslab.png" height="100px" align= "left"> <img src="doc/images/uc3m.png" height="100px" align="right"><br><br><br><br>
+<img src="images/roboticslab.png" height="100px" align= "left"> <img src="images/uc3m.png" height="100px" align="right"><br><br><br><br>
 
 
 # Repository
