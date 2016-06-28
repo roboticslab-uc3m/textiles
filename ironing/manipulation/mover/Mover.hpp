@@ -8,8 +8,6 @@
 #include <stdlib.h>
 #include <string>
 
-#include "InCommandPort.hpp"
-
 #define DEFAULT_ARM "/teoSim/rightArm"
 
 using namespace yarp::os;
@@ -28,8 +26,6 @@ class Mover : public RFModule {
         bool configure(ResourceFinder &rf);
 
     protected:
-        InCommandPort inCommandPort;
-        BufferedPort<Bottle> inCvPort;
         yarp::dev::PolyDriver armDevice;
         yarp::dev::IPositionControl *iPositionControl;
         yarp::os::RpcClient cartesianPort;
