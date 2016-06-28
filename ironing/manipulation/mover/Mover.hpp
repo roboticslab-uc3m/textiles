@@ -10,6 +10,8 @@
 
 #include "ICartesianControl.h"
 
+#include "ColorDebug.hpp"
+
 #define DEFAULT_ARM "/teoSim/rightArm"
 
 namespace teo

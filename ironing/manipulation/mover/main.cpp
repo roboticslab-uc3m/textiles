@@ -28,7 +28,11 @@
 
 using namespace yarp::os;
 
+YARP_DECLARE_PLUGINS(TeoYarp)
+
 int main(int argc, char **argv) {
+
+    YARP_REGISTER_PLUGINS(TeoYarp);
 
     ResourceFinder rf;
     rf.setVerbose(true);

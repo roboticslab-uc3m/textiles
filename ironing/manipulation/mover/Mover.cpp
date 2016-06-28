@@ -18,6 +18,19 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
         printf("\t--arm: %s [%s]\n",arm.c_str(),DEFAULT_ARM);
     }
 
+    yarp::os::Property cartesianControlOptions("(device BasicCartesianControl) (robot FakeControlboard) (axes 1) (solver KdlSolver) (angleRepr axisAngle) (gravity 0 -10 0) (numLinks 1) (link_0 (A 1) (mass 1) (cog -0.5 0 0) (inertia 1 1 1))");
+
+    cartesianControlDevice.open(cartesianControlOptions);
+    if( ! cartesianControlDevice.isValid() ) {
+        CD_ERROR("CartesianControl device not valid: %s.\n",cartesianControlOptions.find("device").asString().c_str());
+        return false;
+    }
+    if( ! cartesianControlDevice.view(iCartesianControl) ) {
+        CD_ERROR("Could not view iCartesianControl in: %s.\n",cartesianControlOptions.find("device").asString().c_str());
+        return false;
+    }
+    yarp::os::Time::delay(1);
+
     return true;
 }
 
