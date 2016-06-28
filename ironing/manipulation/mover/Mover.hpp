@@ -12,7 +12,7 @@
 
 #include "ColorDebug.hpp"
 
-//#define DEFAULT_ARM "/teoSim/rightArm"
+#define DEFAULT_CARTESIAN_CONTROL "CartesianControlClient"
 
 namespace teo
 {

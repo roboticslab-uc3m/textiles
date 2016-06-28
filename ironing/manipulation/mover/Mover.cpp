@@ -9,18 +9,18 @@ namespace teo
 
 bool Mover::configure(yarp::os::ResourceFinder &rf) {
 
-    //std::string arm = rf.check("arm",yarp::os::Value(DEFAULT_ARM),"full name of arm to be used").asString();
+    std::string cartesianControl = rf.check("cartesianControl",yarp::os::Value(DEFAULT_CARTESIAN_CONTROL),"full name of arm to be used").asString();
 
     printf("--------------------------------------------------------------\n");
     if (rf.check("help")) {
         printf("Mover options:\n");
         printf("\t--help (this help)\t--from [file.ini]\t--context [path]\n");
-    //    printf("\t--arm: %s [%s]\n",arm.c_str(),DEFAULT_ARM);
+        printf("\t--cartesianControl: %s [%s]\n",cartesianControl.c_str(),DEFAULT_CARTESIAN_CONTROL);
     }
 
-    //yarp::os::Property cartesianControlOptions("(device BasicCartesianControl) (robot FakeControlboard) (axes 1) (solver KdlSolver) (angleRepr axisAngle) (gravity 0 -10 0) (numLinks 1) (link_0 (A 1) (mass 1) (cog -0.5 0 0) (inertia 1 1 1))");
     yarp::os::Property cartesianControlOptions;
     cartesianControlOptions.fromString( rf.toString() );
+    cartesianControlOptions.put("device",cartesianControl);
 
     cartesianControlDevice.open(cartesianControlOptions);
     if( ! cartesianControlDevice.isValid() ) {
