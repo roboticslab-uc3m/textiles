@@ -36,9 +36,7 @@ bool Mover::updateModule() {
 
 bool Mover::interruptModule() {
     printf("Mover closing...\n");
-    cartesianPort.interrupt();
-    armDevice.close();
-    cartesianPort.close();
+    cartesianControlDevice.close();
     return true;
 }
 

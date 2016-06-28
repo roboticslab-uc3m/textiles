@@ -26,9 +26,8 @@ class Mover : public yarp::os::RFModule {
         bool configure(yarp::os::ResourceFinder &rf);
 
     protected:
-        yarp::dev::PolyDriver armDevice;
-        yarp::dev::IPositionControl *iPositionControl;
-        yarp::os::RpcClient cartesianPort;
+        yarp::dev::PolyDriver cartesianControlDevice;
+        teo::ICartesianControl *iCartesianControl;
 
         bool interruptModule();
         double getPeriod();
