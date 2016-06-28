@@ -42,6 +42,7 @@ double Mover::getPeriod() {
 /************************************************************************/
 bool Mover::updateModule() {
     //printf("StateMachine in state [%d]. Mover alive...\n", stateMachine.getMachineState());
+    CD_INFO("Mover alive...\n");
     return true;
 }
 
