@@ -8,6 +8,8 @@
 #include <stdlib.h>
 #include <string>
 
+#include "ICartesianControl.h"
+
 #define DEFAULT_ARM "/teoSim/rightArm"
 
 namespace teo
