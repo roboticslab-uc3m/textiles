@@ -10,13 +10,29 @@ namespace teo
 bool Mover::configure(yarp::os::ResourceFinder &rf) {
 
     std::string cartesianControl = rf.check("cartesianControl",yarp::os::Value(DEFAULT_CARTESIAN_CONTROL),"full name of arm to be used").asString();
+    std::string robot = rf.check("robot",yarp::os::Value(DEFAULT_ROBOT),"full name of arm to be used").asString();
 
     printf("--------------------------------------------------------------\n");
     if (rf.check("help")) {
         printf("Mover options:\n");
         printf("\t--help (this help)\t--from [file.ini]\t--context [path]\n");
         printf("\t--cartesianControl: %s [%s]\n",cartesianControl.c_str(),DEFAULT_CARTESIAN_CONTROL);
+        printf("\t--robot: %s [%s]\n",robot.c_str(),DEFAULT_ROBOT);
         ::exit(0);
+    }
+
+    //-- Connect to robot arm (w/hand) device to send joint space commands.
+    yarp::os::Property robotOptions;
+    robotOptions.fromString( rf.toString() );
+    robotOptions.put("device",robot);
+    robotDevice.open(robotOptions);
+    if( ! robotDevice.isValid() ) {
+        CD_ERROR("robot device not valid: %s.\n",robotOptions.find("device").asString().c_str());
+        return false;
+    }
+    if ( ! robotDevice.view(iPositionControl) ) {
+        CD_ERROR("Could not view iPositionControl in: %s.\n",robotOptions.find("device").asString().c_str());
+        return false;
     }
 
     yarp::os::Property cartesianControlOptions;
