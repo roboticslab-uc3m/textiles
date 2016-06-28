@@ -1,3 +1,5 @@
+set(TEXTILES_INCLUDE_DIRS ${TEXTILES_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR} CACHE INTERNAL "appended header dirs")
+
 include_directories(${TEXTILES_INCLUDE_DIRS})
 
 ADD_LIBRARY(Debug Debug.cpp)

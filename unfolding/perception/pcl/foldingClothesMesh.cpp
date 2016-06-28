@@ -27,8 +27,8 @@
 #include <pcl/features/rsd.h>
 
 //-- My classes
-#include "Preprocessor/MeshPreprocessor.hpp"
-#include "ImageCreator/HistogramImageCreator.hpp"
+#include "MeshPreprocessor.hpp"
+#include "HistogramImageCreator.hpp"
 
 #include <fstream>
 

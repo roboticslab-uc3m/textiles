@@ -27,7 +27,7 @@
 #include <pcl/ModelCoefficients.h>
 #include <pcl/filters/project_inliers.h>
 //-- Debug
-#include "Debug/Debug.hpp"
+#include "Debug.hpp"
 
 
 template<typename PointT>
