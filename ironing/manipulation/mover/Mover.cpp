@@ -16,6 +16,7 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
         printf("Mover options:\n");
         printf("\t--help (this help)\t--from [file.ini]\t--context [path]\n");
         printf("\t--cartesianControl: %s [%s]\n",cartesianControl.c_str(),DEFAULT_CARTESIAN_CONTROL);
+        ::exit(0);
     }
 
     yarp::os::Property cartesianControlOptions;
