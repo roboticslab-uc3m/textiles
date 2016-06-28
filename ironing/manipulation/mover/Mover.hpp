@@ -10,8 +10,6 @@
 
 #define DEFAULT_ARM "/teoSim/rightArm"
 
-using namespace yarp::os;
-
 namespace teo
 {
 
@@ -21,9 +19,9 @@ namespace teo
  * @brief Execution Core 1.
  *
  */
-class Mover : public RFModule {
+class Mover : public yarp::os::RFModule {
     public:
-        bool configure(ResourceFinder &rf);
+        bool configure(yarp::os::ResourceFinder &rf);
 
     protected:
         yarp::dev::PolyDriver armDevice;

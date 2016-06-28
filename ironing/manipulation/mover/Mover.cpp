@@ -7,9 +7,9 @@ namespace teo
 
 /************************************************************************/
 
-bool Mover::configure(ResourceFinder &rf) {
+bool Mover::configure(yarp::os::ResourceFinder &rf) {
 
-    std::string arm = rf.check("arm",Value(DEFAULT_ARM),"full name of arm to be used").asString();
+    std::string arm = rf.check("arm",yarp::os::Value(DEFAULT_ARM),"full name of arm to be used").asString();
 
     printf("--------------------------------------------------------------\n");
     if (rf.check("help")) {
