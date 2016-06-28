@@ -7,6 +7,9 @@
  *
  */
 
+//-- Uncomment to use GPU for computations
+#define USE_GPU
+
 #include <iostream>
 #include <pcl/console/parse.h>
 #include <pcl/io/pcd_io.h>
@@ -16,11 +19,20 @@
 #include <pcl/filters/extract_indices.h>
 #include <pcl/filters/voxel_grid.h>
 #include <pcl/features/normal_3d.h>
-#include <pcl/kdtree/kdtree.h>
 #include <pcl/sample_consensus/method_types.h>
 #include <pcl/sample_consensus/model_types.h>
 #include <pcl/segmentation/sac_segmentation.h>
+
+
+#ifdef USE_GPU
+#include <pcl/gpu/containers/initialization.h>
+#include <pcl/gpu/segmentation/gpu_extract_clusters.h>
+#include <pcl/gpu/segmentation/impl/gpu_extract_clusters.hpp>
+#include <pcl/gpu/octree/octree.hpp>
+#else
 #include <pcl/segmentation/extract_clusters.h>
+#include <pcl/kdtree/kdtree.h>
+#endif
 
 void show_usage(char * program_name)
 {
@@ -180,16 +192,33 @@ int main (int argc, char** argv)
     }
 
     // Creating the KdTree object for the search method of the extraction
+#ifdef USE_GPU
+    pcl::gpu::setDevice (0);
+    pcl::gpu::printShortCudaDeviceInfo (0);
+
+    pcl::gpu::Octree::PointCloud cloud_device;
+    cloud_device.upload(cloud_filtered->points);
+
+    pcl::gpu::Octree::Ptr tree(new pcl::gpu::Octree);
+    tree->setCloud(cloud_device);
+    tree->build();
+    pcl::gpu::EuclideanClusterExtraction ec;
+#else
     pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>);
     tree->setInputCloud(cloud_filtered);
-
-    std::vector<pcl::PointIndices> cluster_indices;
     pcl::EuclideanClusterExtraction<pcl::PointXYZ> ec;
+#endif
+    std::vector<pcl::PointIndices> cluster_indices;
+
     ec.setClusterTolerance(cluster_tolerance);
     ec.setMinClusterSize(cluster_min_size);
     ec.setMaxClusterSize(cluster_max_size);
     ec.setSearchMethod(tree);
+#ifdef USE_GPU
+    ec.setHostCloud(cloud_filtered);
+#else
     ec.setInputCloud(cloud_filtered);
+#endif
     ec.extract(cluster_indices);
 
     int j = 0;
