@@ -14,11 +14,10 @@
 #include <pcl/ModelCoefficients.h>
 #include <pcl/filters/extract_indices.h>
 #include <pcl/filters/voxel_grid.h>
-#include <pcl/features/normal_3d.h>
-#include <pcl/kdtree/kdtree.h>
 #include <pcl/sample_consensus/method_types.h>
 #include <pcl/sample_consensus/model_types.h>
 #include <pcl/segmentation/sac_segmentation.h>
+#include <pcl/filters/project_inliers.h>
 #include <pcl/segmentation/extract_clusters.h>
 
 #include "Debug.hpp"
@@ -33,6 +32,10 @@ void show_usage(char * program_name)
 
 int main (int argc, char** argv)
 {
+    //---------------------------------------------------------------------------------------------------
+    //-- Initialization stuff
+    //---------------------------------------------------------------------------------------------------
+
     //-- Command-line arguments
     float ransac_threshold = 0.02;
 
@@ -47,9 +50,7 @@ int main (int argc, char** argv)
         pcl::console::parse_argument(argc, argv, "--ransac-threshold", ransac_threshold);
     else
     {
-        std::cerr << "RANSAC theshold not specified" << std::endl;
-        show_usage(argv[0]);
-        return -2;
+        std::cerr << "RANSAC theshold not specified, using default value..." << std::endl;
     }
 
     //-- Get point cloud file from arguments
@@ -99,29 +100,40 @@ int main (int argc, char** argv)
 
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered(new pcl::PointCloud<pcl::PointXYZ>);
 
-    // Create the filtering object: downsample the dataset using a leaf size of 1cm
+
+    //--------------------------------------------------------------------------------------------------------
+    //-- Program does actual work from here
+    //--------------------------------------------------------------------------------------------------------
+    Debug debug;
+    debug.setAutoShow(false);
+    debug.setEnabled(false);
+
+    //-- Downsample the dataset prior to plane detection (using a leaf size of 1cm)
     pcl::VoxelGrid<pcl::PointXYZ> voxel_grid;
     voxel_grid.setInputCloud(source_cloud);
     voxel_grid.setLeafSize(0.01f, 0.01f, 0.01f);
     voxel_grid.filter(*cloud_filtered);
-    std::cout << "PointCloud after filtering has: " << cloud_filtered->points.size ()  << " data points." << std::endl; //*
+    std::cout << "Initially PointCloud has: " << source_cloud->points.size ()  << " data points." << std::endl;
+    std::cout << "PointCloud after filtering has: " << cloud_filtered->points.size ()  << " data points." << std::endl;
 
-    // Create the segmentation object for the planar model and set all the parameters
-    pcl::SACSegmentation<pcl::PointXYZ> seg;
+    //-- Detect all possible planes
+    std::vector<pcl::ModelCoefficientsPtr> all_planes;
+
+    pcl::SACSegmentation<pcl::PointXYZ> ransac_segmentation;
+    ransac_segmentation.setOptimizeCoefficients(true);
+    ransac_segmentation.setModelType(pcl::SACMODEL_PLANE);
+    ransac_segmentation.setMethodType(pcl::SAC_RANSAC);
+    ransac_segmentation.setDistanceThreshold(ransac_threshold);
+
     pcl::PointIndices::Ptr inliers(new pcl::PointIndices);
-    pcl::ModelCoefficients::Ptr coefficients(new pcl::ModelCoefficients);
-    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_plane(new pcl::PointCloud<pcl::PointXYZ> ());
-    seg.setOptimizeCoefficients(true);
-    seg.setModelType(pcl::SACMODEL_PLANE);
-    seg.setMethodType(pcl::SAC_RANSAC);
-    seg.setDistanceThreshold(ransac_threshold);
+    pcl::ModelCoefficients::Ptr current_plane(new pcl::ModelCoefficients);
 
     int i=0, nr_points = (int) cloud_filtered->points.size();
     while (cloud_filtered->points.size() > 0.3 * nr_points)
     {
         // Segment the largest planar component from the remaining cloud
-        seg.setInputCloud(cloud_filtered);
-        seg.segment(*inliers, *coefficients);
+        ransac_segmentation.setInputCloud(cloud_filtered);
+        ransac_segmentation.segment(*inliers, *current_plane);
         if (inliers->indices.size() == 0)
         {
             std::cout << "Could not estimate a planar model for the given dataset." << std::endl;
@@ -135,15 +147,81 @@ int main (int argc, char** argv)
         extract.setIndices(inliers);
         extract.setNegative(false);
 
-        // Get the points associated with the planar surface
-        extract.filter(*cloud_plane);
-        std::cout << "PointCloud representing the planar component: " << cloud_plane->points.size () << " data points." << std::endl;
-
         // Remove the planar inliers, extract the rest
         extract.setNegative(true);
         extract.filter(*cloud_f);
         *cloud_filtered = *cloud_f;
+
+        //-- Save plane
+        pcl::ModelCoefficients::Ptr copy_current_plane(new pcl::ModelCoefficients);
+        *copy_current_plane = *current_plane;
+        all_planes.push_back(copy_current_plane);
+
+        //-- Debug stuff
+        debug.plotPlane(*current_plane, Debug::COLOR_BLUE);
+        debug.plotPointCloud<pcl::PointXYZ>(cloud_filtered, Debug::COLOR_RED);
+        debug.show("Plane segmentation");
     }
+
+    //-- Filter planes to obtain garment plane
+    pcl::ModelCoefficients::Ptr garment_plane(new pcl::ModelCoefficients);
+    float min_height = FLT_MAX;
+    for(int i = 0; i < all_planes.size(); i++)
+    {
+        //-- Check orientation
+        Eigen::Vector3f normal_vector(all_planes[i]->values[0],
+                                      all_planes[i]->values[1],
+                                      all_planes[i]->values[2]);
+        normal_vector.normalize();
+        Eigen::Vector3f good_orientation(0, -1, -1);
+        good_orientation.normalize();
+
+        std::cout << "Checking vector with dot product: " << std::abs(normal_vector.dot(good_orientation)) << std::endl;
+        if (std::abs(normal_vector.dot(good_orientation)) >= 0.9)
+        {
+            //-- Check "height" (height is defined in the local frame of reference in the yz direction)
+            //-- With this frame, it is approximately equal to the norm of the vector OO' (being O the
+            //-- center of the old frame and O' the projection of that center onto the plane).
+
+            //-- Project center point onto given plane:
+            pcl::PointCloud<pcl::PointXYZ>::Ptr center_to_be_projected_cloud(new pcl::PointCloud<pcl::PointXYZ>);
+            center_to_be_projected_cloud->points.push_back(pcl::PointXYZ(0,0,0));
+            pcl::PointCloud<pcl::PointXYZ>::Ptr center_projected_cloud(new pcl::PointCloud<pcl::PointXYZ>);
+
+            pcl::ProjectInliers<pcl::PointXYZ> project_inliners;
+            project_inliners.setModelType(pcl::SACMODEL_PLANE);
+            project_inliners.setInputCloud(center_to_be_projected_cloud);
+            project_inliners.setModelCoefficients(all_planes[i]);
+            project_inliners.filter(*center_projected_cloud);
+            pcl::PointXYZ projected_center = center_projected_cloud->points[0];
+            Eigen::Vector3f projected_center_vector(projected_center.x, projected_center.y, projected_center.z);
+
+            float height = projected_center_vector.norm();
+            if (height < min_height)
+            {
+                min_height = height;
+                *garment_plane = *all_planes[i];
+            }
+        }
+    }
+
+    if (!(min_height < FLT_MAX))
+    {
+        std::cerr << "Garment plane not found!" << std::endl;
+        return -3;
+    }
+    else
+    {
+        std::cout << "Found closest plane with h=" << min_height << std::endl;
+
+        //-- Debug stuff
+        debug.setEnabled(true);
+        debug.plotPlane(*garment_plane, Debug::COLOR_BLUE);
+        debug.plotPointCloud<pcl::PointXYZ>(source_cloud, Debug::COLOR_RED);
+        debug.show("Garment plane");
+    }
+
+
 
     return 0;
 }
