@@ -19,6 +19,7 @@
 #include <pcl/segmentation/sac_segmentation.h>
 #include <pcl/filters/project_inliers.h>
 #include <pcl/segmentation/extract_clusters.h>
+#include <pcl/common/transforms.h>
 
 #include "Debug.hpp"
 
@@ -109,6 +110,7 @@ int main (int argc, char** argv)
     debug.setEnabled(false);
 
     //-- Downsample the dataset prior to plane detection (using a leaf size of 1cm)
+    //-----------------------------------------------------------------------------------
     pcl::VoxelGrid<pcl::PointXYZ> voxel_grid;
     voxel_grid.setInputCloud(source_cloud);
     voxel_grid.setLeafSize(0.01f, 0.01f, 0.01f);
@@ -117,6 +119,7 @@ int main (int argc, char** argv)
     std::cout << "PointCloud after filtering has: " << cloud_filtered->points.size ()  << " data points." << std::endl;
 
     //-- Detect all possible planes
+    //-----------------------------------------------------------------------------------
     std::vector<pcl::ModelCoefficientsPtr> all_planes;
 
     pcl::SACSegmentation<pcl::PointXYZ> ransac_segmentation;
@@ -164,8 +167,11 @@ int main (int argc, char** argv)
     }
 
     //-- Filter planes to obtain garment plane
+    //-----------------------------------------------------------------------------------
     pcl::ModelCoefficients::Ptr garment_plane(new pcl::ModelCoefficients);
     float min_height = FLT_MAX;
+    pcl::PointXYZ garment_projected_center;
+
     for(int i = 0; i < all_planes.size(); i++)
     {
         //-- Check orientation
@@ -201,6 +207,7 @@ int main (int argc, char** argv)
             {
                 min_height = height;
                 *garment_plane = *all_planes[i];
+                garment_projected_center = projected_center;
             }
         }
     }
@@ -221,7 +228,30 @@ int main (int argc, char** argv)
         debug.show("Garment plane");
     }
 
+    //-- Reorient cloud to origin
+    //-----------------------------------------------------------------------------------
+    //-- Translating to center
+    pcl::PointCloud<pcl::PointXYZ>::Ptr centered_cloud(new pcl::PointCloud<pcl::PointXYZ>);
+    Eigen::Affine3f translation_transform = Eigen::Affine3f::Identity();
+    translation_transform.translation() << -garment_projected_center.x, -garment_projected_center.y, -garment_projected_center.z;
+    pcl::transformPointCloud(*source_cloud, *centered_cloud, translation_transform);
 
+    //-- Orient using the plane normal
+    pcl::PointCloud<pcl::PointXYZ>::Ptr oriented_cloud(new pcl::PointCloud<pcl::PointXYZ>);
+    Eigen::Vector3f normal_vector(garment_plane->values[0], garment_plane->values[1], garment_plane->values[2]);
+    Eigen::Quaternionf rotation_quaternion = Eigen::Quaternionf().setFromTwoVectors(normal_vector, Eigen::Vector3f::UnitZ());
+    pcl::transformPointCloud(*centered_cloud, *oriented_cloud, Eigen::Vector3f(0,0,0), rotation_quaternion);
+
+    debug.plotPointCloud<pcl::PointXYZ>(oriented_cloud, Debug::COLOR_BLUE);
+    debug.show("Oriented");
+
+    //-- Filter points under the garment table
+    //-----------------------------------------------------------------------------------
+    //-- Code goes here
+
+    //-- Filter points with clustering to remove outliers / do a color segmentation of the garment
+    //-----------------------------------------------------------------------------------
+    //-- Code goes here
 
     return 0;
 }
