@@ -1,6 +1,5 @@
 #include "Debug.hpp"
 
-
 const Debug::DebugColor Debug::COLOR_RED =     {255,   0,   0};
 const Debug::DebugColor Debug::COLOR_GREEN =   {  0, 255,   0};
 const Debug::DebugColor Debug::COLOR_BLUE =    {  0,   0, 255};
@@ -9,7 +8,7 @@ const Debug::DebugColor Debug::COLOR_CYAN =    {  0, 255, 255};
 const Debug::DebugColor Debug::COLOR_MAGENTA = {255,   0, 255};
 const Debug::DebugColor Debug::COLOR_WHITE =   {255, 255, 255};
 const Debug::DebugColor Debug::COLOR_BLACK =   {  0,   0,   0};
-
+const Debug::DebugColor Debug::COLOR_ORIGINAL ={ -1,  -1,  -1};
 
 Debug::Debug()
 {
@@ -104,3 +103,31 @@ bool Debug::init_viewer()
     current_viewer->setBackgroundColor(0.05, 0.05, 0.05, 0);
     return true;
 }
+
+template<>
+bool Debug::plotPointCloud<pcl::PointXYZRGB>(typename pcl::PointCloud<pcl::PointXYZRGB>::Ptr& point_cloud,
+                    const DebugColor& color, int point_size)
+{
+    if (current_viewer == nullptr)
+        if (!init_viewer())
+            return false;
+
+    //-- Craft uuid string for current uuid
+    std::string uuid_str = std::to_string(uuid_counter);
+    uuid_counter++;
+
+
+    //-- Create color handler
+    pcl::visualization::PointCloudColorHandlerRGBField<pcl::PointXYZRGB> rgb_handler(point_cloud);
+
+    //-- Add cloud to viewer
+    current_viewer->addPointCloud(point_cloud, rgb_handler, uuid_str);
+    current_viewer->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE,
+                                                     point_size, uuid_str);
+
+    if (auto_show)
+        return show("auto");
+
+    return true;
+}
+
