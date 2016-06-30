@@ -256,16 +256,16 @@ int main (int argc, char** argv)
         debug.show("Garment plane");
     }
 
-    //-- Reorient cloud to origin
+    //-- Reorient cloud to origin (with color point cloud)
     //-----------------------------------------------------------------------------------
     //-- Translating to center
-    pcl::PointCloud<pcl::PointXYZ>::Ptr centered_cloud(new pcl::PointCloud<pcl::PointXYZ>);
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr centered_cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
     Eigen::Affine3f translation_transform = Eigen::Affine3f::Identity();
     translation_transform.translation() << -garment_projected_center.x, -garment_projected_center.y, -garment_projected_center.z;
-    pcl::transformPointCloud(*source_cloud, *centered_cloud, translation_transform);
+    pcl::transformPointCloud(*source_cloud_color, *centered_cloud, translation_transform);
 
     //-- Orient using the plane normal
-    pcl::PointCloud<pcl::PointXYZ>::Ptr oriented_cloud(new pcl::PointCloud<pcl::PointXYZ>);
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr oriented_cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
     Eigen::Vector3f normal_vector(garment_plane->values[0], garment_plane->values[1], garment_plane->values[2]);
     //-- Check normal vector orientation
     if (normal_vector.dot(Eigen::Vector3f::UnitZ()) >= 0 && normal_vector.dot(Eigen::Vector3f::UnitY()) >= 0)
@@ -273,20 +273,20 @@ int main (int argc, char** argv)
     Eigen::Quaternionf rotation_quaternion = Eigen::Quaternionf().setFromTwoVectors(normal_vector, Eigen::Vector3f::UnitZ());
     pcl::transformPointCloud(*centered_cloud, *oriented_cloud, Eigen::Vector3f(0,0,0), rotation_quaternion);
 
-    debug.plotPointCloud<pcl::PointXYZ>(oriented_cloud, Debug::COLOR_GREEN);
+    debug.plotPointCloud<pcl::PointXYZRGB>(oriented_cloud, Debug::COLOR_GREEN);
     debug.show("Oriented");
 
     //-- Filter points under the garment table
     //-----------------------------------------------------------------------------------
-    pcl::PointCloud<pcl::PointXYZ>::Ptr garment_table_cloud(new pcl::PointCloud<pcl::PointXYZ>);
-    pcl::PassThrough<pcl::PointXYZ> passthrough_filter;
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr garment_table_cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+    pcl::PassThrough<pcl::PointXYZRGB> passthrough_filter;
     passthrough_filter.setInputCloud(oriented_cloud);
     passthrough_filter.setFilterFieldName("z");
     passthrough_filter.setFilterLimits(-ransac_threshold/2.0f, FLT_MAX);
     passthrough_filter.setFilterLimitsNegative(false);
     passthrough_filter.filter(*garment_table_cloud);
 
-    debug.plotPointCloud<pcl::PointXYZ>(garment_table_cloud, Debug::COLOR_GREEN);
+    debug.plotPointCloud<pcl::PointXYZRGB>(garment_table_cloud, Debug::COLOR_GREEN);
     debug.show("Table cloud (filtered)");
 
     //-- Filter points with clustering to remove outliers / do a color segmentation of the garment
