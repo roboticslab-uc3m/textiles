@@ -21,6 +21,9 @@
 #include <pcl/segmentation/extract_clusters.h>
 #include <pcl/common/transforms.h>
 #include <pcl/filters/passthrough.h>
+#include <pcl/search/search.h>
+#include <pcl/search/kdtree.h>
+#include <pcl/segmentation/region_growing_rgb.h>
 
 #include "Debug.hpp"
 
@@ -30,6 +33,8 @@ void show_usage(char * program_name)
     std::cout << "Usage: " << program_name << " cloud_filename.[pcd|ply]" << std::endl;
     std::cout << "-h:  Show this help." << std::endl;
     std::cout << "--ransac-threshold: Set ransac threshold value (default: 0.02)" << std::endl;
+    std::cout << "--color-point-threshold: threshold for local points when using region growing (default: ??)" << std::endl;
+    std::cout << "--color-region-threshold: threshold for region merging when using region growing (default: ??)" << std::endl;
 }
 
 int main (int argc, char** argv)
@@ -40,6 +45,8 @@ int main (int argc, char** argv)
 
     //-- Command-line arguments
     float ransac_threshold = 0.02;
+    float color_point_threshold = 10;
+    float color_region_threshold = 15;
 
     //-- Show usage
     if (pcl::console::find_switch(argc, argv, "-h") || pcl::console::find_switch(argc, argv, "--help"))
@@ -53,6 +60,20 @@ int main (int argc, char** argv)
     else
     {
         std::cerr << "RANSAC theshold not specified, using default value..." << std::endl;
+    }
+
+    if (pcl::console::find_switch(argc, argv, "--color-point-threshold"))
+        pcl::console::parse_argument(argc, argv, "--color-point-threshold", color_point_threshold);
+    else
+    {
+        std::cerr << "Color point theshold not specified, using default value..." << std::endl;
+    }
+
+    if (pcl::console::find_switch(argc, argv, "--color-region-threshold"))
+        pcl::console::parse_argument(argc, argv, "--color-region-threshold", color_region_threshold);
+    else
+    {
+        std::cerr << "Color region theshold not specified, using default value..." << std::endl;
     }
 
     //-- Get point cloud file from arguments
@@ -120,7 +141,9 @@ int main (int argc, char** argv)
 
     //-- Print arguments to user
     std::cout << "Selected arguments: " << std::endl
-              << "\tRANSAC threshold: " << ransac_threshold << std::endl;
+              << "\tRANSAC threshold: " << ransac_threshold << std::endl
+              << "\tColor point threshold: " << color_point_threshold << std::endl
+              << "\tColor region threshold: " << color_region_threshold << std::endl;
 
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered(new pcl::PointCloud<pcl::PointXYZ>);
 
@@ -132,10 +155,9 @@ int main (int argc, char** argv)
     debug.setAutoShow(false);
     debug.setEnabled(false);
 
-    debug.setEnabled(true);
+    debug.setEnabled(false);
     debug.plotPointCloud<pcl::PointXYZRGB>(source_cloud_color, Debug::COLOR_ORIGINAL);
     debug.show("Original with color");
-    debug.setEnabled(false);
 
     //-- Downsample the dataset prior to plane detection (using a leaf size of 1cm)
     //-----------------------------------------------------------------------------------
@@ -189,6 +211,7 @@ int main (int argc, char** argv)
         all_planes.push_back(copy_current_plane);
 
         //-- Debug stuff
+        debug.setEnabled(false);
         debug.plotPlane(*current_plane, Debug::COLOR_BLUE);
         debug.plotPointCloud<pcl::PointXYZ>(cloud_filtered, Debug::COLOR_RED);
         debug.show("Plane segmentation");
@@ -250,7 +273,7 @@ int main (int argc, char** argv)
         std::cout << "Found closest plane with h=" << min_height << std::endl;
 
         //-- Debug stuff
-        debug.setEnabled(true);
+        debug.setEnabled(false);
         debug.plotPlane(*garment_plane, Debug::COLOR_BLUE);
         debug.plotPointCloud<pcl::PointXYZ>(source_cloud, Debug::COLOR_RED);
         debug.show("Garment plane");
@@ -273,6 +296,7 @@ int main (int argc, char** argv)
     Eigen::Quaternionf rotation_quaternion = Eigen::Quaternionf().setFromTwoVectors(normal_vector, Eigen::Vector3f::UnitZ());
     pcl::transformPointCloud(*centered_cloud, *oriented_cloud, Eigen::Vector3f(0,0,0), rotation_quaternion);
 
+    debug.setEnabled(false);
     debug.plotPointCloud<pcl::PointXYZRGB>(oriented_cloud, Debug::COLOR_GREEN);
     debug.show("Oriented");
 
@@ -286,12 +310,28 @@ int main (int argc, char** argv)
     passthrough_filter.setFilterLimitsNegative(false);
     passthrough_filter.filter(*garment_table_cloud);
 
+    debug.setEnabled(false);
     debug.plotPointCloud<pcl::PointXYZRGB>(garment_table_cloud, Debug::COLOR_GREEN);
     debug.show("Table cloud (filtered)");
 
-    //-- Filter points with clustering to remove outliers / do a color segmentation of the garment
+    //-- Color segmentation of the garment
     //-----------------------------------------------------------------------------------
-    //-- Code goes here
+    std::vector<pcl::PointIndices> clusters;
+
+    pcl::RegionGrowingRGB<pcl::PointXYZRGB> region_growing;
+    pcl::search::Search<pcl::PointXYZRGB>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZRGB>);
+    region_growing.setInputCloud(garment_table_cloud);
+    region_growing.setSearchMethod(tree);
+    region_growing.setDistanceThreshold(7);
+    region_growing.setPointColorThreshold(10);
+    region_growing.setRegionColorThreshold(15);
+    region_growing.setMinClusterSize(600);
+    region_growing.extract(clusters);
+
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr colored_cloud = region_growing.getColoredCloud();
+    debug.setEnabled(true);
+    debug.plotPointCloud<pcl::PointXYZRGB>(colored_cloud, Debug::COLOR_GREEN);
+    debug.show("Garment cloud");
 
     return 0;
 }
