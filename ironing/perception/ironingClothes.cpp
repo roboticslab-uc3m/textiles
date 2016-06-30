@@ -96,6 +96,28 @@ int main (int argc, char** argv)
         }
     }
 
+    //-- Load point cloud data (with color)
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr source_cloud_color(new pcl::PointCloud<pcl::PointXYZRGB>);
+
+    if (file_is_pcd)
+    {
+        if (pcl::io::loadPCDFile(argv[filenames[0]], *source_cloud_color) < 0)
+        {
+            std::cout << "Error loading colored point cloud " << argv[filenames[0]] << std::endl << std::endl;
+            show_usage(argv[0]);
+            return -1;
+        }
+    }
+    else
+    {
+        if (pcl::io::loadPLYFile(argv[filenames[0]], *source_cloud_color) < 0)
+        {
+            std::cout << "Error loading colored point cloud " << argv[filenames[0]] << std::endl << std::endl;
+            show_usage(argv[0]);
+            return -1;
+        }
+    }
+
     //-- Print arguments to user
     std::cout << "Selected arguments: " << std::endl
               << "\tRANSAC threshold: " << ransac_threshold << std::endl;
@@ -108,6 +130,11 @@ int main (int argc, char** argv)
     //--------------------------------------------------------------------------------------------------------
     Debug debug;
     debug.setAutoShow(false);
+    debug.setEnabled(false);
+
+    debug.setEnabled(true);
+    debug.plotPointCloud<pcl::PointXYZRGB>(source_cloud_color, Debug::COLOR_ORIGINAL);
+    debug.show("Original with color");
     debug.setEnabled(false);
 
     //-- Downsample the dataset prior to plane detection (using a leaf size of 1cm)
