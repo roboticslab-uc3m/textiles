@@ -24,6 +24,7 @@
 #include <pcl/search/search.h>
 #include <pcl/search/kdtree.h>
 #include <pcl/segmentation/region_growing_rgb.h>
+#include <pcl/point_types_conversion.h>
 
 #include "Debug.hpp"
 
@@ -33,8 +34,8 @@ void show_usage(char * program_name)
     std::cout << "Usage: " << program_name << " cloud_filename.[pcd|ply]" << std::endl;
     std::cout << "-h:  Show this help." << std::endl;
     std::cout << "--ransac-threshold: Set ransac threshold value (default: 0.02)" << std::endl;
-    std::cout << "--color-point-threshold: threshold for local points when using region growing (default: ??)" << std::endl;
-    std::cout << "--color-region-threshold: threshold for region merging when using region growing (default: ??)" << std::endl;
+    std::cout << "--hsv-s-threshold: threshold for saturation channel on hsv (default: ??)" << std::endl;
+    std::cout << "--hsv-v-threshold: threshold for value channel on hsv (default: ??)" << std::endl;
 }
 
 int main (int argc, char** argv)
@@ -45,8 +46,8 @@ int main (int argc, char** argv)
 
     //-- Command-line arguments
     float ransac_threshold = 0.02;
-    float color_point_threshold = 10;
-    float color_region_threshold = 15;
+    float hsv_s_threshold = 0.30;
+    float hsv_v_threshold = 0.35;
 
     //-- Show usage
     if (pcl::console::find_switch(argc, argv, "-h") || pcl::console::find_switch(argc, argv, "--help"))
@@ -62,18 +63,18 @@ int main (int argc, char** argv)
         std::cerr << "RANSAC theshold not specified, using default value..." << std::endl;
     }
 
-    if (pcl::console::find_switch(argc, argv, "--color-point-threshold"))
-        pcl::console::parse_argument(argc, argv, "--color-point-threshold", color_point_threshold);
+    if (pcl::console::find_switch(argc, argv, "--hsv-s-threshold"))
+        pcl::console::parse_argument(argc, argv, "--hsv-s-threshold", hsv_s_threshold);
     else
     {
-        std::cerr << "Color point theshold not specified, using default value..." << std::endl;
+        std::cerr << "Saturation theshold not specified, using default value..." << std::endl;
     }
 
-    if (pcl::console::find_switch(argc, argv, "--color-region-threshold"))
-        pcl::console::parse_argument(argc, argv, "--color-region-threshold", color_region_threshold);
+    if (pcl::console::find_switch(argc, argv, "--hsv-v-threshold"))
+        pcl::console::parse_argument(argc, argv, "--hsv-v-threshold", hsv_v_threshold);
     else
     {
-        std::cerr << "Color region theshold not specified, using default value..." << std::endl;
+        std::cerr << "Value theshold not specified, using default value..." << std::endl;
     }
 
     //-- Get point cloud file from arguments
@@ -142,8 +143,8 @@ int main (int argc, char** argv)
     //-- Print arguments to user
     std::cout << "Selected arguments: " << std::endl
               << "\tRANSAC threshold: " << ransac_threshold << std::endl
-              << "\tColor point threshold: " << color_point_threshold << std::endl
-              << "\tColor region threshold: " << color_region_threshold << std::endl;
+              << "\tColor point threshold: " << hsv_s_threshold << std::endl
+              << "\tColor region threshold: " << hsv_v_threshold << std::endl;
 
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered(new pcl::PointCloud<pcl::PointXYZ>);
 
@@ -316,22 +317,58 @@ int main (int argc, char** argv)
 
     //-- Color segmentation of the garment
     //-----------------------------------------------------------------------------------
-    std::vector<pcl::PointIndices> clusters;
+    //-- HSV thresholding
+    pcl::PointCloud<pcl::PointXYZHSV>::Ptr hsv_cloud(new pcl::PointCloud<pcl::PointXYZHSV>);
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr filtered_garment_cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+    pcl::PointCloudXYZRGBtoXYZHSV(*garment_table_cloud, *hsv_cloud);
+    for (int i = 0; i < hsv_cloud->points.size(); i++)
+    {
+        if (isnan(hsv_cloud->points[i].x) || isnan(hsv_cloud->points[i].y || isnan(hsv_cloud->points[i].z)))
+            continue;
+        if (hsv_cloud->points[i].s > hsv_s_threshold &&  hsv_cloud->points[i].v > hsv_v_threshold)
+            filtered_garment_cloud->push_back(garment_table_cloud->points[i]);
+    }
 
-    pcl::RegionGrowingRGB<pcl::PointXYZRGB> region_growing;
-    pcl::search::Search<pcl::PointXYZRGB>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZRGB>);
-    region_growing.setInputCloud(garment_table_cloud);
-    region_growing.setSearchMethod(tree);
-    region_growing.setDistanceThreshold(7);
-    region_growing.setPointColorThreshold(10);
-    region_growing.setRegionColorThreshold(15);
-    region_growing.setMinClusterSize(600);
-    region_growing.extract(clusters);
-
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr colored_cloud = region_growing.getColoredCloud();
     debug.setEnabled(true);
-    debug.plotPointCloud<pcl::PointXYZRGB>(colored_cloud, Debug::COLOR_GREEN);
+    debug.plotPointCloud<pcl::PointXYZRGB>(filtered_garment_cloud, Debug::COLOR_GREEN);
     debug.show("Garment cloud");
+
+    //-- Euclidean Clustering of the resultant cloud
+    pcl::search::KdTree<pcl::PointXYZRGB>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZRGB>);
+    tree->setInputCloud(filtered_garment_cloud);
+
+    std::vector<pcl::PointIndices> cluster_indices;
+    pcl::EuclideanClusterExtraction<pcl::PointXYZRGB> euclidean_custering;
+    euclidean_custering.setClusterTolerance(0.003);
+    euclidean_custering.setMinClusterSize(100);
+    euclidean_custering.setSearchMethod(tree);
+    euclidean_custering.setInputCloud(filtered_garment_cloud);
+    euclidean_custering.extract(cluster_indices);
+
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr largest_color_cluster(new pcl::PointCloud<pcl::PointXYZRGB>);
+    int largest_cluster_size = 0;
+    for (auto it = cluster_indices.begin (); it != cluster_indices.end (); ++it)
+    {
+      pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_cluster (new pcl::PointCloud<pcl::PointXYZRGB>);
+      for (auto pit = it->indices.begin (); pit != it->indices.end (); ++pit)
+        cloud_cluster->points.push_back(filtered_garment_cloud->points[*pit]);
+      cloud_cluster->width = cloud_cluster->points.size ();
+      cloud_cluster->height = 1;
+      cloud_cluster->is_dense = true;
+
+      if (cloud_cluster->points.size() > largest_cluster_size)
+      {
+          largest_cluster_size = cloud_cluster->points.size();
+          *largest_color_cluster = *filtered_garment_cloud;
+      }
+    }
+
+    debug.setEnabled(true);
+    debug.plotPointCloud<pcl::PointXYZRGB>(largest_color_cluster, Debug::COLOR_GREEN);
+    debug.show("Filtered garment cloud");
+
+    //-- Modelling wrinkles
+    //-- (Insert code here)
 
     return 0;
 }
