@@ -339,7 +339,7 @@ int main (int argc, char** argv)
 
     std::vector<pcl::PointIndices> cluster_indices;
     pcl::EuclideanClusterExtraction<pcl::PointXYZRGB> euclidean_custering;
-    euclidean_custering.setClusterTolerance(0.003);
+    euclidean_custering.setClusterTolerance(0.005);
     euclidean_custering.setMinClusterSize(100);
     euclidean_custering.setSearchMethod(tree);
     euclidean_custering.setInputCloud(filtered_garment_cloud);
@@ -356,10 +356,11 @@ int main (int argc, char** argv)
       cloud_cluster->height = 1;
       cloud_cluster->is_dense = true;
 
+      std::cout << "Found cluster of " << cloud_cluster->points.size() << " points." << std::endl;
       if (cloud_cluster->points.size() > largest_cluster_size)
       {
           largest_cluster_size = cloud_cluster->points.size();
-          *largest_color_cluster = *filtered_garment_cloud;
+          *largest_color_cluster = *cloud_cluster;
       }
     }
 
