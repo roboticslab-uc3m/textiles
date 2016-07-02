@@ -14,7 +14,7 @@
 
     <module>
         <name>mover</name>
-        <parameters></parameters>
+        <parameters>--robot /teoSim</parameters>
         <node>localhost</node>
     </module>
 

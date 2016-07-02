@@ -10,28 +10,31 @@ namespace teo
 bool Mover::configure(yarp::os::ResourceFinder &rf) {
 
     std::string cartesianControl = rf.check("cartesianControl",yarp::os::Value(DEFAULT_CARTESIAN_CONTROL),"full name of arm to be used").asString();
-    std::string arm = rf.check("arm",yarp::os::Value(DEFAULT_ARM),"full name of arm to be used").asString();
+    std::string robot = rf.check("robot",yarp::os::Value(DEFAULT_ROBOT),"name of /robot to be used").asString();
 
     printf("--------------------------------------------------------------\n");
     if (rf.check("help")) {
         printf("Mover options:\n");
         printf("\t--help (this help)\t--from [file.ini]\t--context [path]\n");
         printf("\t--cartesianControl: %s [%s]\n",cartesianControl.c_str(),DEFAULT_CARTESIAN_CONTROL);
-        printf("\t--arm: %s [%s]\n",arm.c_str(),DEFAULT_ARM);
+        printf("\t--robot: %s [%s]\n",robot.c_str(),DEFAULT_ROBOT);
         ::exit(0);
     }
 
+    std::string moverStr("/mover");
     //-- Connect to arm device to send joint space commands.
-    yarp::os::Property armOptions;
-    armOptions.fromString( rf.toString() );
-    armOptions.put("device",arm);
-    armDevice.open(armOptions);
-    if( ! armDevice.isValid() ) {
-        CD_ERROR("arm device not valid: %s.\n",armOptions.find("device").asString().c_str());
+    yarp::os::Property rightArmOptions;
+    rightArmOptions.fromString( rf.toString() );
+    rightArmOptions.put("device","remote_controlboard");
+    rightArmOptions.put("local",moverStr+robot+"/rightArm");
+    rightArmOptions.put("remote",robot+"/rightArm");
+    rightArmDevice.open(rightArmOptions);
+    if( ! rightArmDevice.isValid() ) {
+        CD_ERROR("rightArm device not valid: %s.\n",rightArmOptions.find("device").asString().c_str());
         return false;
     }
-    if ( ! armDevice.view(armIPositionControl) ) {
-        CD_ERROR("Could not view armIPositionControl in: %s.\n",armOptions.find("device").asString().c_str());
+    if ( ! rightArmDevice.view(rightArmIPositionControl) ) {
+        CD_ERROR("Could not view rightArmIPositionControl in: %s.\n",rightArmOptions.find("device").asString().c_str());
         return false;
     }
 

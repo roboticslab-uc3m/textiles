@@ -9,7 +9,7 @@
 
     <module>
         <name>mover</name>
-        <parameters></parameters>
+        <parameters>--robot /teo</parameters>
         <node>localhost</node>
     </module>
 

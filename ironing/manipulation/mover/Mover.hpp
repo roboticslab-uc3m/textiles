@@ -13,7 +13,7 @@
 #include "ColorDebug.hpp"
 
 #define DEFAULT_CARTESIAN_CONTROL "CartesianControlClient"
-#define DEFAULT_ARM "remote_controlboard"
+#define DEFAULT_ROBOT "/robot"
 
 namespace teo
 {
@@ -32,8 +32,8 @@ class Mover : public yarp::os::RFModule {
         yarp::dev::PolyDriver cartesianControlDevice;
         teo::ICartesianControl *iCartesianControl;
 
-        yarp::dev::PolyDriver armDevice;
-        yarp::dev::IPositionControl *armIPositionControl;
+        yarp::dev::PolyDriver rightArmDevice;
+        yarp::dev::IPositionControl *rightArmIPositionControl;
 
         bool interruptModule();
         double getPeriod();
