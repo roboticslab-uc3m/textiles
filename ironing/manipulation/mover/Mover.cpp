@@ -43,7 +43,7 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
     trunkOptions.fromString( rf.toString() );
     trunkOptions.put("device","remote_controlboard");
     trunkOptions.put("local",moverStr+robot+"/trunk");
-    rightArmOptions.put("remote",robot+"/trunk");
+    trunkOptions.put("remote",robot+"/trunk");
     trunkDevice.open(trunkOptions);
     if( ! trunkDevice.isValid() ) {
         CD_ERROR("trunk device not valid: %s.\n",trunkOptions.find("device").asString().c_str());
