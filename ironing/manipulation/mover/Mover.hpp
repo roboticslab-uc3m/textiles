@@ -16,6 +16,7 @@
 #define DEFAULT_ROBOT "/robot"
 
 #define DEFAULT_TRUNK_TILT 15.0
+#define DEFAULT_HEAD_TILT 7.0
 
 namespace teo
 {
@@ -39,6 +40,9 @@ class Mover : public yarp::os::RFModule {
 
         yarp::dev::PolyDriver trunkDevice;
         yarp::dev::IPositionControl *trunkIPositionControl;
+
+        yarp::dev::PolyDriver headDevice;
+        yarp::dev::IPositionControl *headIPositionControl;
 
         bool interruptModule();
         double getPeriod();

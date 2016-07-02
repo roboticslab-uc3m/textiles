@@ -22,6 +22,7 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
     }
 
     std::string moverStr("/mover");
+
     //-- Connect to arm device to send joint space commands.
     yarp::os::Property rightArmOptions;
     rightArmOptions.fromString( rf.toString() );
@@ -54,6 +55,22 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
         return false;
     }
 
+    //-- Connect to head device to send joint space commands.
+    yarp::os::Property headOptions;
+    headOptions.fromString( rf.toString() );
+    headOptions.put("device","remote_controlboard");
+    headOptions.put("local",moverStr+robot+"/head");
+    headOptions.put("remote",robot+"/head");
+    headDevice.open(headOptions);
+    if( ! headDevice.isValid() ) {
+        CD_ERROR("head device not valid: %s.\n",headOptions.find("device").asString().c_str());
+        return false;
+    }
+    if ( ! headDevice.view(headIPositionControl) ) {
+        CD_ERROR("Could not view headIPositionControl in: %s.\n",headOptions.find("device").asString().c_str());
+        return false;
+    }
+
     //-- Connect to send Cartesian space commands.
     yarp::os::Property cartesianControlOptions;
     cartesianControlOptions.fromString( rf.toString() );
@@ -70,8 +87,11 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
     }
     yarp::os::Time::delay(1);
 
-    //-----------
+    //-- Tilt trunk forward/down
     trunkIPositionControl->positionMove(1,DEFAULT_TRUNK_TILT);
+
+    //-- Tilt head forward/down
+    headIPositionControl->positionMove(1,DEFAULT_HEAD_TILT);
 
     return true;
 }
