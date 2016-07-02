@@ -70,6 +70,9 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
     }
     yarp::os::Time::delay(1);
 
+    //-----------
+    trunkIPositionControl->positionMove(1,DEFAULT_TRUNK_TILT);
+
     return true;
 }
 
