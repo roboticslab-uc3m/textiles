@@ -1,5 +1,5 @@
 <application>
-<name>moverSim App</name>
+<name>ironingSim App</name>
 
     <module>
         <name>teoSim</name>
@@ -14,7 +14,7 @@
 
     <module>
         <name>mover</name>
-        <parameters>--arm /teoSim/rightArm</parameters>
+        <parameters></parameters>
         <node>localhost</node>
     </module>
 

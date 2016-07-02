@@ -1,5 +1,5 @@
 <application>
-<name>moverTools App</name>
+<name>ironingTools App</name>
 
     <module>
         <name>gnome-terminal</name>
