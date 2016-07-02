@@ -9,14 +9,9 @@
 
     <module>
         <name>mover</name>
-        <parameters>--arm /teo/rightArm</parameters>
+        <parameters></parameters>
         <node>localhost</node>
     </module>
-
-    <connection>
-        <from>/Unfolding/pnpPoints:o</from>
-        <to>/mover/cv/state:i</to>
-    </connection>
 
 </application>
 

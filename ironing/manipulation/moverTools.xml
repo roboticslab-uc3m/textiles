@@ -7,29 +7,5 @@
         <node>localhost</node>
     </module>
 
-    <module>
-        <name>gnome-terminal</name>
-        <parameters>-e "yarp rpc /teoCartesianServer/teo/rightArm/rpc:i"</parameters>
-        <node>localhost</node>
-    </module>
-
-    <module>
-        <name>gnome-terminal</name>
-        <parameters>-e "yarp write ... /mover/cv/state:i"</parameters>
-        <node>localhost</node>
-    </module>
-
-    <module>
-        <name>gnome-terminal</name>
-        <parameters>-e "yarp write ... /mover/command:i"</parameters>
-        <node>localhost</node>
-    </module>
-
-    <!-- module>
-        <name>gnome-terminal</name>
-        <parameters>-e "yarp read ... /speechRecognition1:o"</parameters>
-        <node>localhost</node>
-    </module -->
-
 </application>
 
