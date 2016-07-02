@@ -35,6 +35,9 @@ class Mover : public yarp::os::RFModule {
         yarp::dev::PolyDriver rightArmDevice;
         yarp::dev::IPositionControl *rightArmIPositionControl;
 
+        yarp::dev::PolyDriver trunkDevice;
+        yarp::dev::IPositionControl *trunkIPositionControl;
+
         bool interruptModule();
         double getPeriod();
         bool updateModule();

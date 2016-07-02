@@ -38,6 +38,23 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
         return false;
     }
 
+    //-- Connect to trunk device to send joint space commands.
+    yarp::os::Property trunkOptions;
+    trunkOptions.fromString( rf.toString() );
+    trunkOptions.put("device","remote_controlboard");
+    trunkOptions.put("local",moverStr+robot+"/trunk");
+    rightArmOptions.put("remote",robot+"/trunk");
+    trunkDevice.open(trunkOptions);
+    if( ! trunkDevice.isValid() ) {
+        CD_ERROR("trunk device not valid: %s.\n",trunkOptions.find("device").asString().c_str());
+        return false;
+    }
+    if ( ! trunkDevice.view(trunkIPositionControl) ) {
+        CD_ERROR("Could not view trunkIPositionControl in: %s.\n",trunkOptions.find("device").asString().c_str());
+        return false;
+    }
+
+    //-- Connect to send Cartesian space commands.
     yarp::os::Property cartesianControlOptions;
     cartesianControlOptions.fromString( rf.toString() );
     cartesianControlOptions.put("device",cartesianControl);
@@ -73,6 +90,8 @@ bool Mover::updateModule() {
 bool Mover::interruptModule() {
     printf("Mover closing...\n");
     cartesianControlDevice.close();
+    rightArmDevice.close();
+    trunkDevice.close();
     return true;
 }
 
