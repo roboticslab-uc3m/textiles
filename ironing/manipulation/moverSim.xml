@@ -7,8 +7,8 @@
     </module>
 
     <module>
-        <name>teoCartesianServer</name>
-        <parameters>--kinematics rightArmKinematics.ini --remote /teoSim/rightArm</parameters>
+        <name>launchTeoYarp</name>
+        <parameters>--from /usr/local/share/teo/contexts/kinematics/rightArmKinematics.ini --device BasicCartesianControl --angleRepr axisAngle --robot remote_controlboard --local /BasicCartesianControl/teoSim/rightArm --remote /teoSim/rightArm</parameters>
         <node>localhost</node>
     </module>
 
