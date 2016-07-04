@@ -329,7 +329,7 @@ int main (int argc, char** argv)
             filtered_garment_cloud->push_back(garment_table_cloud->points[i]);
     }
 
-    debug.setEnabled(true);
+    debug.setEnabled(false);
     debug.plotPointCloud<pcl::PointXYZRGB>(filtered_garment_cloud, Debug::COLOR_GREEN);
     debug.show("Garment cloud");
 
@@ -364,12 +364,12 @@ int main (int argc, char** argv)
       }
     }
 
-    debug.setEnabled(true);
+    debug.setEnabled(false);
     debug.plotPointCloud<pcl::PointXYZRGB>(largest_color_cluster, Debug::COLOR_GREEN);
     debug.show("Filtered garment cloud");
 
-    //-- Modelling wrinkles
-    //-- (Insert code here)
+    //-- Save point cloud in file to process it in Python
+    pcl::io::savePCDFileBinary(argv[filenames[0]]+std::string("-output.pcd"), *largest_color_cluster);
 
     return 0;
 }
