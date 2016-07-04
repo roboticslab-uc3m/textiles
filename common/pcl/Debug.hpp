@@ -27,11 +27,16 @@ class Debug
         bool plotPointCloud(typename pcl::PointCloud<PointT>::Ptr& point_cloud,
                             const DebugColor& color, int point_size = 1);
 
-
+        template<typename PointT, typename PointNT>
+        bool plotNormals(typename pcl::PointCloud<PointT>::Ptr& cloud,
+                         typename pcl::PointCloud<PointNT>::Ptr& normals,
+                         const DebugColor& color, int density = 100, float scale = 0.02);
         bool plotPlane(pcl::ModelCoefficients plane_coefficients, const DebugColor& color);
         bool plotPlane(double A, double B, double C, double D, const DebugColor& color);
 
         bool show(std::string tag = "");
+
+        pcl::visualization::PCLVisualizer* getRawViewer();
 
         //-- Available colors
         static const DebugColor COLOR_RED;
@@ -52,6 +57,29 @@ class Debug
         bool auto_show;
         int uuid_counter;
 };
+
+template<typename PointT, typename PointNT>
+bool Debug::plotNormals(typename pcl::PointCloud<PointT>::Ptr& cloud,
+                        typename pcl::PointCloud<PointNT>::Ptr &normals,
+                        const Debug::DebugColor &color, int density, float scale)
+{
+    if (current_viewer == nullptr)
+        if (!init_viewer())
+            return false;
+
+    //-- Craft uuid string for current uuid
+    std::string uuid_str = std::to_string(uuid_counter);
+    uuid_counter++;
+
+    //-- Add normals to the viewer
+    current_viewer->addPointCloudNormals<PointT, PointNT>(cloud,normals, density,
+                                                          scale, uuid_str);
+
+    if (auto_show)
+        return show("auto");
+
+    return true;
+}
 
 template<typename PointT>
 bool Debug::plotPointCloud(typename pcl::PointCloud<PointT>::Ptr& point_cloud,

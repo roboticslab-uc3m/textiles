@@ -96,6 +96,11 @@ bool Debug::show(std::string tag)
     return true;
 }
 
+pcl::visualization::PCLVisualizer *Debug::getRawViewer()
+{
+    return current_viewer;
+}
+
 bool Debug::init_viewer()
 {
     current_viewer = new pcl::visualization::PCLVisualizer("", false);
