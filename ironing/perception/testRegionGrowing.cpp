@@ -77,10 +77,14 @@ int main (int argc, char** argv)
   std::vector <pcl::PointIndices> clusters;
   reg.extract (clusters);
   pcl::PointCloud <pcl::PointXYZRGB>::Ptr colored_cloud = reg.getColoredCloud();
+  debug.setEnabled(false);
+  debug.plotPointCloud<pcl::PointXYZRGB>(colored_cloud, Debug::COLOR_RED);
+  debug.show("Clusters");
 
 //  pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_filtered(new pcl::PointCloud<pcl::PointXYZRGB>);
 
 
+  //-----------------------------------------------------------------------------------
   //-- Bounding box filter:
   //-----------------------------------------------------------------------------------
   pcl::MomentOfInertiaEstimation<pcl::PointXYZRGB> feature_extractor;
