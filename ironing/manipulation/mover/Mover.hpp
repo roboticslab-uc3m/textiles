@@ -44,6 +44,8 @@ class Mover : public yarp::os::RFModule {
         yarp::dev::PolyDriver headDevice;
         yarp::dev::IPositionControl *headIPositionControl;
 
+        yarp::os::Port rightArmFTSensorPort;
+
         bool interruptModule();
         double getPeriod();
         bool updateModule();

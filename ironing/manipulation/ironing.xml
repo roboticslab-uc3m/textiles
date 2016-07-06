@@ -7,16 +7,16 @@
         <node>localhost</node>
     </module>
 
-    <connection>
-        <from>/jr3ch3:o</from>
-        <to>/CartesianControl/force:i</to>
-    </connection>
-
     <module>
         <name>mover</name>
         <parameters>--robot /teo</parameters>
         <node>localhost</node>
     </module>
+
+    <connection>
+        <from>/jr3ch3:o</from>
+        <to>/mover/force:i</to>
+    </connection>
 
 </application>
 

@@ -85,6 +85,10 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
         CD_ERROR("Could not view iCartesianControl in: %s.\n",cartesianControlOptions.find("device").asString().c_str());
         return false;
     }
+
+    //-- Connect to FT sensor device to send joint space commands.
+    rightArmFTSensorPort.open("/mover/force:i");
+
     yarp::os::Time::delay(1);
 
     //-- Tilt trunk forward/down
