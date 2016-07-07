@@ -149,7 +149,7 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
 
     {
         std::vector<double> q(7,0.0);
-        double qd[]={20.298769, -81.177521, -27.311066, 87.434097, 76.266257, -24.235504, 0.0};
+        double qd[7]={6.151142, -65.448151, 9.40246, 97.978912, 72.664323, -48.400696, 0.0};
         for(int i=0;i<7;i++) q[i]=qd[i];
         qMoveAndWait(q);
     }
