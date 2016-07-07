@@ -107,51 +107,23 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
     //-- Move arm to good position out of singularity
     CD_DEBUG("Move arm to good position out of singularity\n");
     std::vector<double> q(7,0.0);
-    q[0] = -10;  //-- shoulder first
+    q[0] = 20;  //-- shoulder first
     q[3] = 30;  //-- elbow
     qMoveAndWait(q);
 
-    int state;
+    /*int state;
     std::vector<double> x;
     //-- Move arm up
     CD_DEBUG("Move arm up\n");
     iCartesianControl->stat(state,x);
     x[2] += 0.1;
-    iCartesianControl->movj(x);
+    iCartesianControl->movj(x);*/
 
-    //-- Move arm front
-    CD_DEBUG("Move arm front\n");
-    //iCartesianControl->stat(state,x);
-    x[0] += 0.2;
-    x[2] += 0.1;
-    iCartesianControl->movj(x);
 
-    //-- Move arm more front
-    CD_DEBUG("Move arm more front\n");
-    //iCartesianControl->stat(state,x);
-    x[0] += 0.1;
-    iCartesianControl->movj(x);
-
-    //-- Rotate
-    /*CD_DEBUG("Rotate\n");
-    double q1[7] = { 32.601055, -33.989471, -42.776794, 68.014061, 33.378273, -54.288239 ,0.0};
-    for(int i=0;i<7;i++) q[i] = q1[i];
-    rightArmIPositionControl->positionMove( q.data() );
-    CD_SUCCESS("Waiting\n");
-    done = false;
-    while(!done)
-    {
-        rightArmIPositionControl->checkMotionDone(&done);
-        printf(".");
-        fflush(stdout);
-        yarp::os::Time::delay(0.5);
-    }*/
-
-    //CD_DEBUG("***************PRE-LOOP*****************\n");
     //iCartesianControl->stat(state,x);
     //iCartesianControl->movj(x);
-    CD_DEBUG("***************LOOP*****************\n");
-    double force = 0;
+    CD_DEBUG("***************DOWN*****************\n");
+    /*double force = 0;
     while( force > -0.2)
     {
         yarp::os::Bottle b;
@@ -160,11 +132,13 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
         rightArmFTSensorPort.read(b);
         force = b.get(3).asDouble();
         CD_DEBUG("Moved arm down, %f\n",b.get(3).asDouble());
-    }
+    }*/
+
+    CD_DEBUG("***************ADVANCE*****************\n");
 
     CD_DEBUG("***************RETURN*****************\n");
 
-    while( 1 )
+    /*while( 1 )
     {
         yarp::os::Bottle b;
         x[2] += 0.005;
@@ -172,7 +146,7 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
         rightArmFTSensorPort.read(b);
         force = b.get(3).asDouble();
         CD_DEBUG("Moved arm up, %f\n",b.get(3).asDouble());
-    }
+    }*/
 
     CD_DEBUG("***************DONE*****************\n");
     return true;
