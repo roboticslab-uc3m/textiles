@@ -154,18 +154,12 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
         qMoveAndWait(q);
     }
 
-    /*int state;
+    int state;
     std::vector<double> x;
-    //-- Move arm up
-    CD_DEBUG("Move arm up\n");
     iCartesianControl->stat(state,x);
-    x[2] += 0.1;
-    iCartesianControl->movj(x);*/
-
-    //iCartesianControl->stat(state,x);
-    //iCartesianControl->movj(x);
+    iCartesianControl->movj(x);
     CD_DEBUG("***************DOWN*****************\n");
-    /*double force = 0;
+    double force = 0;
     while( force > -0.2)
     {
         yarp::os::Bottle b;
@@ -174,13 +168,13 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
         rightArmFTSensorPort.read(b);
         force = b.get(3).asDouble();
         CD_DEBUG("Moved arm down, %f\n",b.get(3).asDouble());
-    }*/
+    }
 
     CD_DEBUG("***************ADVANCE*****************\n");
 
     CD_DEBUG("***************RETURN*****************\n");
 
-    /*while( 1 )
+    while( 1 )
     {
         yarp::os::Bottle b;
         x[2] += 0.005;
@@ -188,7 +182,7 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
         rightArmFTSensorPort.read(b);
         force = b.get(3).asDouble();
         CD_DEBUG("Moved arm up, %f\n",b.get(3).asDouble());
-    }*/
+    }
 
     CD_DEBUG("***************DONE*****************\n");
     return true;
