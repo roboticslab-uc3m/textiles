@@ -109,16 +109,7 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
     std::vector<double> q(7,0.0);
     q[0] = -10;  //-- shoulder first
     q[3] = 30;  //-- elbow
-    rightArmIPositionControl->positionMove( q.data() );
-    CD_SUCCESS("Waiting\n");
-    bool done = false;
-    while(!done)
-    {
-        rightArmIPositionControl->checkMotionDone(&done);
-        printf(".");
-        fflush(stdout);
-        yarp::os::Time::delay(0.5);
-    }
+    qMoveAndWait(q);
 
     int state;
     std::vector<double> x;
@@ -210,5 +201,20 @@ bool Mover::interruptModule() {
 }
 
 /************************************************************************/
+
+bool Mover::qMoveAndWait(std::vector<double>& q)
+{
+    rightArmIPositionControl->positionMove( q.data() );
+    CD_SUCCESS("Waiting\n");
+    bool done = false;
+    while(!done)
+    {
+        rightArmIPositionControl->checkMotionDone(&done);
+        printf(".");
+        fflush(stdout);
+        yarp::os::Time::delay(0.5);
+    }
+    return true;
+}
 
 }  // namespace teo

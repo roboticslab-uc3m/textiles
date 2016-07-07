@@ -46,6 +46,8 @@ class Mover : public yarp::os::RFModule {
 
         yarp::os::Port rightArmFTSensorPort;
 
+        bool qMoveAndWait(std::vector<double>& q);
+
         bool interruptModule();
         double getPeriod();
         bool updateModule();
