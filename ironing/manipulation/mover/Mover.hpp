@@ -15,7 +15,7 @@
 #define DEFAULT_CARTESIAN_CONTROL "CartesianControlClient"
 #define DEFAULT_ROBOT "/robot"
 
-#define DEFAULT_TRUNK_TILT 15.0
+#define DEFAULT_TRUNK_TILT 30.0
 #define DEFAULT_HEAD_TILT 7.0
 
 namespace teo
