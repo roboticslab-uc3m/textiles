@@ -40,7 +40,7 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
     }
 
     //-- Connect to trunk device to send joint space commands.
-    /*yarp::os::Property trunkOptions;
+    yarp::os::Property trunkOptions;
     trunkOptions.fromString( rf.toString() );
     trunkOptions.put("device","remote_controlboard");
     trunkOptions.put("local",moverStr+robot+"/trunk");
@@ -56,7 +56,7 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
     }
 
     //-- Connect to head device to send joint space commands.
-    yarp::os::Property headOptions;
+    /*yarp::os::Property headOptions;
     headOptions.fromString( rf.toString() );
     headOptions.put("device","remote_controlboard");
     headOptions.put("local",moverStr+robot+"/head");
@@ -98,17 +98,61 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
     yarp::os::Time::delay(1);
 
     //-- Tilt trunk forward/down
-    //trunkIPositionControl->positionMove(1,DEFAULT_TRUNK_TILT);
-
+    trunkIPositionControl->setRefSpeed(1,0.1);
+    trunkIPositionControl->positionMove(1,DEFAULT_TRUNK_TILT);
+    CD_SUCCESS("Waiting trunk\n");
+    bool done = false;
+    while(!done)
+    {
+        trunkIPositionControl->checkMotionDone(&done);
+        printf(".");
+        fflush(stdout);
+        yarp::os::Time::delay(0.5);
+    }
     //-- Tilt head forward/down
     //headIPositionControl->positionMove(1,DEFAULT_HEAD_TILT);
 
     rightArmIPositionControl->setPositionMode();
+    yarp::os::Time::delay(1);
     //-- Move arm to good position out of singularity
     CD_DEBUG("Move arm to good position out of singularity\n");
-    std::vector<double> q(7,0.0);
-    q[0] = 30;  //-- shoulder first
-    qMoveAndWait(q);
+    {
+        std::vector<double> q(7,0.0);
+        q[0] = 20;
+        q[3] = 30;
+        qMoveAndWait(q);
+    }
+
+    {
+        std::vector<double> q(7,0.0);
+        q[0] = -40;
+        q[1] = -30;
+        q[3] = 30;
+        qMoveAndWait(q);
+    }
+
+    {
+        std::vector<double> q(7,0.0);
+        q[0] = -40;
+        q[1] = -70;
+        q[3] = 30;
+        qMoveAndWait(q);
+    }
+
+    {
+        std::vector<double> q(7,0.0);
+        q[0] = 30;
+        q[1] = -70;
+        q[3] = 30;
+        qMoveAndWait(q);
+    }
+
+    {
+        std::vector<double> q(7,0.0);
+        double qd[]={20.298769, -81.177521 -27.311066, 87.434097, 76.266257, -24.235504, 0.0};
+        for(int i=0;i<7;i++) q[i]=qd[i];
+        qMoveAndWait(q);
+    }
 
     /*int state;
     std::vector<double> x;
@@ -117,7 +161,6 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
     iCartesianControl->stat(state,x);
     x[2] += 0.1;
     iCartesianControl->movj(x);*/
-
 
     //iCartesianControl->stat(state,x);
     //iCartesianControl->movj(x);
