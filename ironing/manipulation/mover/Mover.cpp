@@ -107,8 +107,7 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
     //-- Move arm to good position out of singularity
     CD_DEBUG("Move arm to good position out of singularity\n");
     std::vector<double> q(7,0.0);
-    q[0] = 20;  //-- shoulder first
-    q[3] = 30;  //-- elbow
+    q[0] = 30;  //-- shoulder first
     qMoveAndWait(q);
 
     /*int state;
