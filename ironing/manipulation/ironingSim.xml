@@ -3,6 +3,7 @@
 
     <module>
         <name>teoSim</name>
+        <parameters>--env /home/yo/repos/textiles/ironing/manipulation/ironingSim/ironingSim.env.xml</parameters>
         <node>localhost</node>
     </module>
 
@@ -14,7 +15,7 @@
 
     <module>
         <name>mover</name>
-        <parameters>--robot /teoSim</parameters>
+        <parameters>--robot /teoSim --forceThreshold -0.003</parameters>
         <node>localhost</node>
     </module>
 

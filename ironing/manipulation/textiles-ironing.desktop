@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=textiles-ironing yarpmanager
+Type=Application
+MimeType=application/vnd.ms-htmlhelp;
+Exec=yarpmanager
+NoDisplay=true
+StartupNotify=true
+Icon=A35F_hh.0
+Path=/home/yo/repos/textiles/ironing/manipulation
