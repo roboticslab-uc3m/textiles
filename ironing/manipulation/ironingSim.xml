@@ -3,6 +3,7 @@
 
     <module>
         <name>teoSim</name>
+        <parameters>--env /home/yo/repos/textiles/ironing/manipulation/ironingSim/ironingSim.env.xml</parameters>
         <node>localhost</node>
     </module>
 
