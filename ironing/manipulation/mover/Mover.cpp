@@ -11,6 +11,7 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
 
     std::string cartesianControl = rf.check("cartesianControl",yarp::os::Value(DEFAULT_CARTESIAN_CONTROL),"full name of arm to be used").asString();
     std::string robot = rf.check("robot",yarp::os::Value(DEFAULT_ROBOT),"name of /robot to be used").asString();
+    double forceThreshold = rf.check("forceThreshold",yarp::os::Value(DEFAULT_FORCE_THRESHOLD),"force threshold").asDouble();
 
     printf("--------------------------------------------------------------\n");
     if (rf.check("help")) {
@@ -18,6 +19,7 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
         printf("\t--help (this help)\t--from [file.ini]\t--context [path]\n");
         printf("\t--cartesianControl: %s [%s]\n",cartesianControl.c_str(),DEFAULT_CARTESIAN_CONTROL);
         printf("\t--robot: %s [%s]\n",robot.c_str(),DEFAULT_ROBOT);
+        printf("\t--forceThreshold: %f [%f]\n",forceThreshold,DEFAULT_FORCE_THRESHOLD);
         ::exit(0);
     }
 
@@ -98,7 +100,9 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
     yarp::os::Time::delay(1);
 
     //-- Tilt trunk forward/down
-    trunkIPositionControl->setRefSpeed(1,0.1);
+    //trunkIPositionControl->setRefSpeed(0,0.1);
+    trunkIPositionControl->positionMove(0,DEFAULT_TRUNK_PAN);
+    //trunkIPositionControl->setRefSpeed(1,0.1);
     trunkIPositionControl->positionMove(1,DEFAULT_TRUNK_TILT);
     CD_SUCCESS("Waiting trunk\n");
     bool done = false;
@@ -160,7 +164,7 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
     iCartesianControl->movj(x);
     CD_DEBUG("***************DOWN*****************\n");
     double force = 0;
-    while( force > -0.2)
+    while( force > forceThreshold)
     {
         yarp::os::Bottle b;
         x[2] -= 0.005;
