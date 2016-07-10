@@ -9,7 +9,7 @@
 
     <module>
         <name>mover</name>
-        <parameters>--robot /teo</parameters>
+        <parameters>--robot /teo --forceThreshold -5.0</parameters>
         <node>localhost</node>
     </module>
 
