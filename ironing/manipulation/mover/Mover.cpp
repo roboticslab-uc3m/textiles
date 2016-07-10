@@ -58,7 +58,7 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
     }
 
     //-- Connect to head device to send joint space commands.
-    /*yarp::os::Property headOptions;
+    yarp::os::Property headOptions;
     headOptions.fromString( rf.toString() );
     headOptions.put("device","remote_controlboard");
     headOptions.put("local",moverStr+robot+"/head");
@@ -71,7 +71,7 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
     if ( ! headDevice.view(headIPositionControl) ) {
         CD_ERROR("Could not view headIPositionControl in: %s.\n",headOptions.find("device").asString().c_str());
         return false;
-    }*/
+    }
 
     //-- Connect to send Cartesian space commands.
     yarp::os::Property cartesianControlOptions;
@@ -99,9 +99,11 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
 
     yarp::os::Time::delay(1);
 
-    //-- Tilt trunk forward/down
+    //-- Pan trunk
     //trunkIPositionControl->setRefSpeed(0,0.1);
     trunkIPositionControl->positionMove(0,DEFAULT_TRUNK_PAN);
+
+    //-- Tilt trunk forward/down
     //trunkIPositionControl->setRefSpeed(1,0.1);
     trunkIPositionControl->positionMove(1,DEFAULT_TRUNK_TILT);
     CD_SUCCESS("Waiting trunk\n");
@@ -113,8 +115,11 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
         fflush(stdout);
         yarp::os::Time::delay(0.5);
     }
+
+    //-- Pan head
+    headIPositionControl->positionMove(0,DEFAULT_HEAD_PAN);
     //-- Tilt head forward/down
-    //headIPositionControl->positionMove(1,DEFAULT_HEAD_TILT);
+    headIPositionControl->positionMove(1,DEFAULT_HEAD_TILT);
 
     rightArmIPositionControl->setPositionMode();
     yarp::os::Time::delay(1);
@@ -189,7 +194,7 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
     for(int i=0;i<24;i++)
     {
         yarp::os::Bottle b;
-        x[1] += 0.005;
+        x[2] += 0.005;
         iCartesianControl->movj(x);
         rightArmFTSensorPort.read(b);
         force = b.get(3).asDouble();
