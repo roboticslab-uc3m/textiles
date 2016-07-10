@@ -7,5 +7,35 @@
         <node>localhost</node>
     </module>
 
+    <module>
+        <name>gnome-terminal</name>
+        <parameters>-e "yarp rpc /teo/trunk/rpc:i"</parameters>
+        <node>localhost</node>
+    </module>
+
+    <module>
+        <name>gnome-terminal</name>
+        <parameters>-e "yarp rpc /teo/head/rpc:i"</parameters>
+        <node>localhost</node>
+    </module>
+
+    <module>
+        <name>gnome-terminal</name>
+        <parameters>-e "yarp rpc /teoSim/rightArm/rpc:i"</parameters>
+        <node>localhost</node>
+    </module>
+
+    <module>
+        <name>gnome-terminal</name>
+        <parameters>-e "yarp rpc /teoSim/trunk/rpc:i"</parameters>
+        <node>localhost</node>
+    </module>
+
+    <module>
+        <name>gnome-terminal</name>
+        <parameters>-e "yarp rpc /teoSim/head/rpc:i"</parameters>
+        <node>localhost</node>
+    </module>
+
 </application>
 
