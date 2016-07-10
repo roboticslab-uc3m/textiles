@@ -175,13 +175,21 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
     }
 
     CD_DEBUG("***************ADVANCE*****************\n");
+    for(int i=0;i<24;i++)
+    {
+        yarp::os::Bottle b;
+        x[0] += 0.005;
+        iCartesianControl->movj(x);
+        rightArmFTSensorPort.read(b);
+        CD_DEBUG("Moved arm advance, %f\n",b.get(3).asDouble());
+    }
 
     CD_DEBUG("***************RETURN*****************\n");
 
-    while( 1 )
+    for(int i=0;i<24;i++)
     {
         yarp::os::Bottle b;
-        x[2] += 0.005;
+        x[1] += 0.005;
         iCartesianControl->movj(x);
         rightArmFTSensorPort.read(b);
         force = b.get(3).asDouble();
