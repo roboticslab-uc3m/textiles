@@ -13,10 +13,5 @@
         <node>localhost</node>
     </module>
 
-    <connection>
-        <from>/jr3ch3:o</from>
-        <to>/mover/force:i</to>
-    </connection>
-
 </application>
 
