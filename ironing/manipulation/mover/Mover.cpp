@@ -171,8 +171,6 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
     return strategyBasic();
 }
 
-
-
 /************************************************************************/
 double Mover::getPeriod() {
     return 2.0;  // Fixed, in seconds, the slow thread that calls updateModule below
