@@ -168,14 +168,18 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
     iCartesianControl->movj(x);
     CD_DEBUG("***************DOWN*****************\n");
     double force = 0;
-    while( force > forceThreshold)
+    while( force > forceThreshold )
     {
         yarp::os::Bottle b;
         x[2] -= 0.005;
-        iCartesianControl->movj(x);
+        bool okMove = iCartesianControl->movj(x);
         rightArmFTSensorPort.read(b);
         force = b.get(3).asDouble();
-        CD_DEBUG("Moved arm down, %f\n",b.get(3).asDouble());
+        if( okMove ) {
+            CD_DEBUG("Moved arm down, %f\n",force);
+        } else {
+            CD_WARNING("Failed to move arm down, %f\n",force);
+        }
     }
 
     CD_DEBUG("***************ADVANCE*****************\n");
@@ -183,21 +187,34 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
     {
         yarp::os::Bottle b;
         x[0] += 0.005;
-        iCartesianControl->movj(x);
+        bool okMove = iCartesianControl->movj(x);
+
         rightArmFTSensorPort.read(b);
-        CD_DEBUG("Moved arm advance, %f\n",b.get(3).asDouble());
+
+        if( okMove ) {
+            CD_DEBUG("[i:%d of 24] Moved arm advance, %f\n",i,b.get(3).asDouble());
+        } else {
+            CD_WARNING("[i:%d of 24] Failed to move arm advance, %f\n",i,b.get(3).asDouble());
+        }
     }
 
-    CD_DEBUG("***************RETURN*****************\n");
+    CD_DEBUG("***************UP*****************\n");
 
     for(int i=0;i<24;i++)
     {
         yarp::os::Bottle b;
         x[2] += 0.005;
-        iCartesianControl->movj(x);
+        bool okMove = iCartesianControl->movj(x);
+
         rightArmFTSensorPort.read(b);
+
         force = b.get(3).asDouble();
-        CD_DEBUG("Moved arm up, %f\n",b.get(3).asDouble());
+
+        if( okMove ) {
+            CD_DEBUG("[i:%d of 24] Moved arm up, %f\n",i,b.get(3).asDouble());
+        } else {
+            CD_WARNING("[i:%d of 24] Failed to move arm up, %f\n",i,b.get(3).asDouble());
+        }
     }
 
     CD_DEBUG("***************DONE*****************\n");
