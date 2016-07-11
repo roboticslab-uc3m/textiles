@@ -136,7 +136,6 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
     yarp::os::Time::delay(1);
     {
         std::vector<double> q(7,0.0);
-        q[3] = 10;
         qMoveAndWait(q);
     }
 
