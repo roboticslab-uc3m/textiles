@@ -7,7 +7,7 @@ namespace teo
 
 /************************************************************************/
 
-bool Mover::configure(yarp::os::ResourceFinder &rf) {
+bool IroningMover::configure(yarp::os::ResourceFinder &rf) {
 
     std::string cartesianControl = rf.check("cartesianControl",yarp::os::Value(DEFAULT_CARTESIAN_CONTROL),"full name of arm to be used").asString();
     std::string robot = rf.check("robot",yarp::os::Value(DEFAULT_ROBOT),"name of /robot to be used").asString();
@@ -186,12 +186,12 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
 }
 
 /************************************************************************/
-double Mover::getPeriod() {
+double IroningMover::getPeriod() {
     return 2.0;  // Fixed, in seconds, the slow thread that calls updateModule below
 }
 
 /************************************************************************/
-bool Mover::updateModule() {
+bool IroningMover::updateModule() {
     //printf("StateMachine in state [%d]. Mover alive...\n", stateMachine.getMachineState());
     CD_INFO("Mover alive...\n");
     return true;
@@ -199,7 +199,7 @@ bool Mover::updateModule() {
 
 /************************************************************************/
 
-bool Mover::interruptModule() {
+bool IroningMover::interruptModule() {
     printf("Mover closing...\n");
     cartesianControlDevice.close();
     rightArmDevice.close();
@@ -209,7 +209,7 @@ bool Mover::interruptModule() {
 
 /************************************************************************/
 
-bool Mover::qMoveAndWait(std::vector<double>& q)
+bool IroningMover::qMoveAndWait(std::vector<double>& q)
 {
     rightArmIPositionControl->positionMove( q.data() );
     CD_DEBUG("Waiting for right arm.");
@@ -227,7 +227,7 @@ bool Mover::qMoveAndWait(std::vector<double>& q)
 
 /************************************************************************/
 
-bool Mover::strategyBasicPosition()
+bool IroningMover::strategyBasicPosition()
 {
     int state;
     std::vector<double> x;
@@ -291,7 +291,7 @@ bool Mover::strategyBasicPosition()
 
 /************************************************************************/
 
-bool Mover::strategyBasicVelocity()
+bool IroningMover::strategyBasicVelocity()
 {
     int state;
     std::vector<double> x;
@@ -371,7 +371,7 @@ bool Mover::strategyBasicVelocity()
 
 /************************************************************************/
 
-bool Mover::strategyAdvancedVelocity()
+bool IroningMover::strategyAdvancedVelocity()
 {
     int state;
     std::vector<double> x;

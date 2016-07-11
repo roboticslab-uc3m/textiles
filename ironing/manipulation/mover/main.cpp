@@ -40,7 +40,7 @@ int main(int argc, char **argv) {
     rf.setDefaultConfigFile("mover.ini");
     rf.configure(argc, argv);
 
-    teo::Mover mod;
+    teo::IroningMover mod;
     if(rf.check("help")) {
         return mod.runModule(rf);
     }

@@ -34,7 +34,7 @@ namespace teo
  * @brief Execution Core 1.
  *
  */
-class Mover : public yarp::os::RFModule {
+class IroningMover : public yarp::os::RFModule {
     public:
         bool configure(yarp::os::ResourceFinder &rf);
 
