@@ -15,7 +15,7 @@
 
     <module>
         <name>mover</name>
-        <parameters>--robot /teoSim --targetForce -0.001 --strategy advancedVel</parameters>
+        <parameters>--robot /teoSim --targetForce -0.001 --strategy advancedVelocity</parameters>
         <node>localhost</node>
     </module>
 

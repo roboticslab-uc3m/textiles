@@ -21,7 +21,7 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
         printf("\t--cartesianControl: %s [%s]\n",cartesianControl.c_str(),DEFAULT_CARTESIAN_CONTROL);
         printf("\t--robot: %s [%s]\n",robot.c_str(),DEFAULT_ROBOT);
         printf("\t--targetForce: %f [%f]\n",targetForce,DEFAULT_TARGET_FORCE);
-        printf("\t--strategy: %s [%s] (basic, basicVel, advancedVel)\n",strategy.c_str(),DEFAULT_STRATEGY);
+        printf("\t--strategy: %s [%s] (basicPosition, basicVelocity, advancedVelocity)\n",strategy.c_str(),DEFAULT_STRATEGY);
         ::exit(0);
     }
 
@@ -172,12 +172,12 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
         qMoveAndWait(q);
     }
 
-    if(strategy == "basic")
-        return strategyBasic();
-    else if (strategy == "basicVel")
-        return strategyBasicVel();
-    else if (strategy == "advancedVel")
-        return strategyAdvancedVel();
+    if(strategy == "basicPosition")
+        return strategyBasicPosition();
+    else if (strategy == "basicVelocity")
+        return strategyBasicVelocity();
+    else if (strategy == "advancedVelocity")
+        return strategyAdvancedVelocity();
     else
     {
         CD_ERROR("Unknoen strategy. Init program with the --help parameter to see possible --strategy.\n");
@@ -227,7 +227,7 @@ bool Mover::qMoveAndWait(std::vector<double>& q)
 
 /************************************************************************/
 
-bool Mover::strategyBasic()
+bool Mover::strategyBasicPosition()
 {
     int state;
     std::vector<double> x;
@@ -291,7 +291,7 @@ bool Mover::strategyBasic()
 
 /************************************************************************/
 
-bool Mover::strategyBasicVel()
+bool Mover::strategyBasicVelocity()
 {
     int state;
     std::vector<double> x;
@@ -371,7 +371,7 @@ bool Mover::strategyBasicVel()
 
 /************************************************************************/
 
-bool Mover::strategyAdvancedVel()
+bool Mover::strategyAdvancedVelocity()
 {
     int state;
     std::vector<double> x;

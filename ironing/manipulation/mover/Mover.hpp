@@ -17,7 +17,7 @@
 
 #define DEFAULT_TARGET_FORCE -0.2
 
-#define DEFAULT_STRATEGY "basic"
+#define DEFAULT_STRATEGY "basicPosition"
 
 #define DEFAULT_HEAD_PAN -45.0
 #define DEFAULT_HEAD_TILT 7.0
@@ -42,9 +42,9 @@ class Mover : public yarp::os::RFModule {
 
         double targetForce;
 
-        bool strategyBasic();
-        bool strategyBasicVel();
-        bool strategyAdvancedVel();
+        bool strategyBasicPosition();
+        bool strategyBasicVelocity();
+        bool strategyAdvancedVelocity();
 
         yarp::dev::PolyDriver cartesianControlDevice;
         teo::ICartesianControl *iCartesianControl;

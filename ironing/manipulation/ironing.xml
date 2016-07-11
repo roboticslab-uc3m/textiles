@@ -9,7 +9,7 @@
 
     <module>
         <name>mover</name>
-        <parameters>--robot /teo --targetForce -5.0 --strategy basic</parameters>
+        <parameters>--robot /teo --targetForce -5.0 --strategy basicPosition</parameters>
         <node>localhost</node>
     </module>
 
