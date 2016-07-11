@@ -8,7 +8,7 @@
     </module>
 
     <module>
-        <name>mover</name>
+        <name>ironingMover</name>
         <parameters>--robot /teo --targetForce -5.0 --strategy basicPosition</parameters>
         <node>localhost</node>
     </module>

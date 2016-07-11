@@ -24,7 +24,7 @@
 
 #include <yarp/os/all.h>
 
-#include "Mover.hpp"
+#include "IroningMover.hpp"
 
 using namespace yarp::os;
 

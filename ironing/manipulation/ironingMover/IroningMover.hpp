@@ -1,7 +1,7 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-#ifndef __TEXTILES_MOVER_HPP__
-#define __TEXTILES_MOVER_HPP__
+#ifndef __IRONING_MOVER_HPP__
+#define __IRONING_MOVER_HPP__
 
 #include <yarp/os/all.h>
 #include <yarp/dev/all.h>
@@ -28,13 +28,8 @@
 namespace teo
 {
 
-/**
- * @ingroup mover
- *
- * @brief Execution Core 1.
- *
- */
-class IroningMover : public yarp::os::RFModule {
+class IroningMover : public yarp::os::RFModule
+{
     public:
         bool configure(yarp::os::ResourceFinder &rf);
 
@@ -70,4 +65,4 @@ class IroningMover : public yarp::os::RFModule {
 
 }  // namespace teo
 
-#endif  // __TEXTILES_MOVER_HPP__
+#endif  // __IRONING_MOVER_HPP__
