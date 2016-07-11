@@ -186,7 +186,7 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
     for(int i=0;i<24;i++)
     {
         yarp::os::Bottle b;
-        x[0] += 0.005;
+        x[1] += 0.005;
         bool okMove = iCartesianControl->movj(x);
 
         rightArmFTSensorPort.read(b);
