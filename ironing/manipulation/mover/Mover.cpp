@@ -100,11 +100,17 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
     yarp::os::Time::delay(1);
 
     //-- Pan trunk
-    //trunkIPositionControl->setRefSpeed(0,0.1);
+    if(robot=="/teo")
+        trunkIPositionControl->setRefSpeed(0,0.1);
+    else if(robot=="/teoSim")
+        trunkIPositionControl->setRefSpeed(0,15);
     trunkIPositionControl->positionMove(0,DEFAULT_TRUNK_PAN);
 
     //-- Tilt trunk forward/down
-    //trunkIPositionControl->setRefSpeed(1,0.1);
+    if(robot=="/teo")
+        trunkIPositionControl->setRefSpeed(1,0.1);
+    else if(robot=="/teoSim")
+        trunkIPositionControl->setRefSpeed(1,15);
     trunkIPositionControl->positionMove(1,DEFAULT_TRUNK_TILT);
     CD_SUCCESS("Waiting trunk\n");
     bool done = false;
@@ -113,7 +119,7 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
         trunkIPositionControl->checkMotionDone(&done);
         printf(".");
         fflush(stdout);
-        yarp::os::Time::delay(0.5);
+        yarp::os::Time::delay(0.25);
     }
 
     //-- Pan head
@@ -168,7 +174,7 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
     iCartesianControl->movj(x);
     CD_DEBUG("***************DOWN*****************\n");
     double force = 0;
-    while( force > forceThreshold )
+    while( fabs(force) < forceThreshold )
     {
         yarp::os::Bottle b;
         x[2] -= 0.005;
@@ -255,7 +261,7 @@ bool Mover::qMoveAndWait(std::vector<double>& q)
         rightArmIPositionControl->checkMotionDone(&done);
         printf(".");
         fflush(stdout);
-        yarp::os::Time::delay(0.5);
+        yarp::os::Time::delay(0.25);
     }
     return true;
 }
