@@ -112,15 +112,16 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
     else if(robot=="/teoSim")
         trunkIPositionControl->setRefSpeed(1,15);
     trunkIPositionControl->positionMove(1,DEFAULT_TRUNK_TILT);
-    CD_SUCCESS("Waiting trunk\n");
+    CD_DEBUG("Waiting for trunk.");
     bool done = false;
     while(!done)
     {
         trunkIPositionControl->checkMotionDone(&done);
-        printf(".");
+        CD_DEBUG_NO_HEADER(".");
         fflush(stdout);
         yarp::os::Time::delay(0.25);
     }
+    CD_DEBUG_NO_HEADER("\n");
 
     //-- Pan head
     headIPositionControl->positionMove(0,DEFAULT_HEAD_PAN);
@@ -130,7 +131,6 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
     rightArmIPositionControl->setPositionMode();
     yarp::os::Time::delay(1);
     //-- Move arm to good position out of singularity
-    CD_DEBUG("Move arm to good position out of singularity\n");
     {
         std::vector<double> q(7,0.0);
         q[3] = 10;
@@ -174,7 +174,7 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
     iCartesianControl->movj(x);
     CD_DEBUG("***************DOWN*****************\n");
     double force = 0;
-    while( fabs(force) < forceThreshold )
+    while( force > forceThreshold )
     {
         yarp::os::Bottle b;
         x[2] -= 0.005;
@@ -254,15 +254,16 @@ bool Mover::interruptModule() {
 bool Mover::qMoveAndWait(std::vector<double>& q)
 {
     rightArmIPositionControl->positionMove( q.data() );
-    CD_SUCCESS("Waiting\n");
+    CD_DEBUG("Waiting for right arm.");
     bool done = false;
     while(!done)
     {
         rightArmIPositionControl->checkMotionDone(&done);
-        printf(".");
+        CD_DEBUG_NO_HEADER(".");
         fflush(stdout);
         yarp::os::Time::delay(0.25);
     }
+    CD_DEBUG_NO_HEADER("\n");
     return true;
 }
 
