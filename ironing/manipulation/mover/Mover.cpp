@@ -287,7 +287,7 @@ bool Mover::strategyBasicVel()
 
     CD_DEBUG("***************DOWN*****************\n");
     std::vector<double> xdot(6,0.0);
-    xdot[2] = -0.1;
+    xdot[2] = -0.0025;
     bool okMove = iCartesianControl->movv(xdot);
     if( okMove ) {
         CD_DEBUG("Begin move arm down.\n");
