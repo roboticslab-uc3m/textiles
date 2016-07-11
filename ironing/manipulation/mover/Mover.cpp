@@ -292,7 +292,7 @@ bool Mover::strategyBasicVel()
     std::vector<double> xdot(6,0.0);
     xdot[0] = 0;
     xdot[1] = 0;
-    xdot[2] = -0.005;
+    xdot[2] = -0.03;
     bool okMove = iCartesianControl->movv(xdot);
     if( okMove ) {
         CD_DEBUG("Begin move arm down.\n");
@@ -311,7 +311,7 @@ bool Mover::strategyBasicVel()
 
     CD_DEBUG("***************ADVANCE*****************\n");
     xdot[0] = 0;
-    xdot[1] = +0.005;
+    xdot[1] = +0.015;
     xdot[2] = 0;
 
     bool okMove2 = iCartesianControl->movv(xdot);
@@ -334,7 +334,7 @@ bool Mover::strategyBasicVel()
     CD_DEBUG("***************UP*****************\n");
     xdot[0] = 0;
     xdot[1] = 0;
-    xdot[2] = +0.005;
+    xdot[2] = +0.03;
 
     bool okMove3 = iCartesianControl->movv(xdot);
     if( okMove3 ) {
@@ -343,14 +343,14 @@ bool Mover::strategyBasicVel()
         CD_WARNING("Failed to begin move arm up.\n");
     }
 
-    for(int i=0;i<12;i++)
+    for(int i=0;i<7;i++)
     {
         yarp::os::Time::delay(0.5);
         yarp::os::Bottle b;
 
         rightArmFTSensorPort.read(b);
 
-        CD_DEBUG("[i:%d of 12] Moved arm up, %f\n",i,b.get(2).asDouble());
+        CD_DEBUG("[i:%d of 7] Moved arm up, %f\n",i,b.get(2).asDouble());
     }
     iCartesianControl->stopControl();
 
