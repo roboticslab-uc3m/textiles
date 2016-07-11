@@ -392,23 +392,25 @@ bool Mover::strategyAdvancedVel()
     CD_DEBUG("***************ADVANCE*****************\n");
     xdot[0] = 0;
     xdot[1] = +0.015;
-    xdot[2] = 0;
-
-    bool okMove2 = iCartesianControl->movv(xdot);
-    if( okMove2 ) {
-        CD_DEBUG("Begin move arm advance.\n");
-    } else {
-        CD_WARNING("Failed to begin move arm advance.\n");
-    }
+    xdot[2] = 0; //-- Change this to make some noise (e.g. +-0.002, even -0.01 with 0.1 gain)!
 
     for(int i=0;i<50;i++)
     {
+        bool okMove2 = iCartesianControl->movv(xdot);
+
         yarp::os::Time::delay(0.5);
         yarp::os::Bottle b;
 
         rightArmFTSensorPort.read(b);
 
-        CD_DEBUG("[i:%d of 50] Moved arm advance, %f\n",i,b.get(2).asDouble());
+        double fe = b.get(2).asDouble()-forceThreshold;
+        xdot[2] -= 0.05 * fe;  // 0.05 conservative but good, 0.1 works, but 0.5 too much.
+
+        if( okMove2 ) {
+            CD_DEBUG("[i:%d of 50] Moved arm advance, f:%f fd:%f fe:%f vz:%f\n",i,b.get(2).asDouble(),forceThreshold,fe,xdot[2]);
+        } else {
+            CD_WARNING("[i:%d of 50] Failed to move arm advance, f:%f fd:%f fe:%f vz:%f\n",i,b.get(2).asDouble(),forceThreshold,fe,xdot[2]);
+        }
     }
 
     CD_DEBUG("***************UP*****************\n");
