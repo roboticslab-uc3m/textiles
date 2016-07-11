@@ -12,6 +12,7 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
     std::string cartesianControl = rf.check("cartesianControl",yarp::os::Value(DEFAULT_CARTESIAN_CONTROL),"full name of arm to be used").asString();
     std::string robot = rf.check("robot",yarp::os::Value(DEFAULT_ROBOT),"name of /robot to be used").asString();
     targetForce = rf.check("targetForce",yarp::os::Value(DEFAULT_TARGET_FORCE),"target force").asDouble();
+    std::string strategy = rf.check("strategy",yarp::os::Value(DEFAULT_STRATEGY),"strategy").asString();
 
     printf("--------------------------------------------------------------\n");
     if (rf.check("help")) {
@@ -20,6 +21,7 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
         printf("\t--cartesianControl: %s [%s]\n",cartesianControl.c_str(),DEFAULT_CARTESIAN_CONTROL);
         printf("\t--robot: %s [%s]\n",robot.c_str(),DEFAULT_ROBOT);
         printf("\t--targetForce: %f [%f]\n",targetForce,DEFAULT_TARGET_FORCE);
+        printf("\t--strategy: %s [%s] (basic, basicVel, advancedVel)\n",strategy.c_str(),DEFAULT_STRATEGY);
         ::exit(0);
     }
 
@@ -170,9 +172,17 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
         qMoveAndWait(q);
     }
 
-    //return strategyBasic();
-    //return strategyBasicVel();
-    return strategyAdvancedVel();
+    if(strategy == "basic")
+        return strategyBasic();
+    else if (strategy == "basicVel")
+        return strategyBasicVel();
+    else if (strategy == "advancedVel")
+        return strategyAdvancedVel();
+    else
+    {
+        CD_ERROR("Unknoen strategy. Init program with the --help parameter to see possible --strategy.\n");
+        return false;
+    }
 }
 
 /************************************************************************/

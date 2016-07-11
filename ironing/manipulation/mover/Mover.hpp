@@ -13,9 +13,11 @@
 #include "ColorDebug.hpp"
 
 #define DEFAULT_CARTESIAN_CONTROL "CartesianControlClient"
-#define DEFAULT_ROBOT "/robot"
+#define DEFAULT_ROBOT "/teo"
 
 #define DEFAULT_TARGET_FORCE -0.2
+
+#define DEFAULT_STRATEGY "basic"
 
 #define DEFAULT_HEAD_PAN -45.0
 #define DEFAULT_HEAD_TILT 7.0
