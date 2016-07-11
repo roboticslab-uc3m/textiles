@@ -129,8 +129,8 @@
             <Translation>0 0 0</Translation>
             <RotationAxis>0 0 1 0</RotationAxis>
             <!--Geom type="trimesh">
-            <Render>models/1.5^brazo_derecho_links.wrl</Render>
-            <collision>models/1.5^brazo_derecho_links.wrl</collision>
+                <Render>models/1.5^brazo_derecho_links.wrl</Render>
+                <collision>models/1.5^brazo_derecho_links.wrl</collision>
             </Geom-->
             <Geom type="cylinder">
                 <radius>0.03</radius>
