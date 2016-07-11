@@ -277,4 +277,68 @@ bool Mover::strategyBasic()
 
 /************************************************************************/
 
+bool Mover::strategyBasicVel()
+{
+    int state;
+    std::vector<double> x;
+    iCartesianControl->stat(state,x);
+    iCartesianControl->movj(x);
+    CD_DEBUG("***************DOWN*****************\n");
+    double force = 0;
+    while( force > forceThreshold )
+    {
+        yarp::os::Bottle b;
+        x[2] -= 0.005;
+        bool okMove = iCartesianControl->movj(x);
+        rightArmFTSensorPort.read(b);
+        force = b.get(2).asDouble();
+        if( okMove ) {
+            CD_DEBUG("Moved arm down, %f\n",force);
+        } else {
+            CD_WARNING("Failed to move arm down, %f\n",force);
+        }
+    }
+
+    CD_DEBUG("***************ADVANCE*****************\n");
+    for(int i=0;i<24;i++)
+    {
+        yarp::os::Bottle b;
+        x[1] += 0.005;
+        bool okMove = iCartesianControl->movj(x);
+
+        rightArmFTSensorPort.read(b);
+
+        if( okMove ) {
+            CD_DEBUG("[i:%d of 24] Moved arm advance, %f\n",i,b.get(3).asDouble());
+        } else {
+            CD_WARNING("[i:%d of 24] Failed to move arm advance, %f\n",i,b.get(3).asDouble());
+        }
+    }
+
+    CD_DEBUG("***************UP*****************\n");
+
+    for(int i=0;i<24;i++)
+    {
+        yarp::os::Bottle b;
+        x[2] += 0.005;
+        bool okMove = iCartesianControl->movj(x);
+
+        rightArmFTSensorPort.read(b);
+
+        force = b.get(3).asDouble();
+
+        if( okMove ) {
+            CD_DEBUG("[i:%d of 24] Moved arm up, %f\n",i,b.get(3).asDouble());
+        } else {
+            CD_WARNING("[i:%d of 24] Failed to move arm up, %f\n",i,b.get(3).asDouble());
+        }
+    }
+
+    CD_DEBUG("***************DONE*****************\n");
+
+    return true;
+}
+
+/************************************************************************/
+
 }  // namespace teo
