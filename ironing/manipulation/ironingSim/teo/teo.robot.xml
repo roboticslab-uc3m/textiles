@@ -1,7 +1,7 @@
 <Robot name="teoSim">
 
     <KinBody name="base">
-        <Body name="cintura" type="dynamic">
+        <Body name="cintura" type="static">
         <Geom type="trimesh">
             <Translation>0 0 0</Translation>
             <rotationaxis>0 0 1 0</rotationaxis>
