@@ -14,8 +14,8 @@
     </module>
 
     <module>
-        <name>mover</name>
-        <parameters>--robot /teoSim --forceThreshold -0.000001</parameters>
+        <name>ironingMover</name>
+        <parameters>--robot /teoSim --targetForce -0.001 --strategy advancedVelocity</parameters>
         <node>localhost</node>
     </module>
 
