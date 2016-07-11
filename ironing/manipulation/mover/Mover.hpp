@@ -37,6 +37,10 @@ class Mover : public yarp::os::RFModule {
         bool configure(yarp::os::ResourceFinder &rf);
 
     protected:
+
+        bool strategyBasic();
+        double forceThreshold;
+
         yarp::dev::PolyDriver cartesianControlDevice;
         teo::ICartesianControl *iCartesianControl;
 

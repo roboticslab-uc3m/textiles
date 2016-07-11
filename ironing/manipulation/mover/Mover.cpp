@@ -11,7 +11,7 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
 
     std::string cartesianControl = rf.check("cartesianControl",yarp::os::Value(DEFAULT_CARTESIAN_CONTROL),"full name of arm to be used").asString();
     std::string robot = rf.check("robot",yarp::os::Value(DEFAULT_ROBOT),"name of /robot to be used").asString();
-    double forceThreshold = rf.check("forceThreshold",yarp::os::Value(DEFAULT_FORCE_THRESHOLD),"force threshold").asDouble();
+    forceThreshold = rf.check("forceThreshold",yarp::os::Value(DEFAULT_FORCE_THRESHOLD),"force threshold").asDouble();
 
     printf("--------------------------------------------------------------\n");
     if (rf.check("help")) {
@@ -168,6 +168,55 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
         qMoveAndWait(q);
     }
 
+    return strategyBasic();
+}
+
+
+
+/************************************************************************/
+double Mover::getPeriod() {
+    return 2.0;  // Fixed, in seconds, the slow thread that calls updateModule below
+}
+
+/************************************************************************/
+bool Mover::updateModule() {
+    //printf("StateMachine in state [%d]. Mover alive...\n", stateMachine.getMachineState());
+    CD_INFO("Mover alive...\n");
+    return true;
+}
+
+/************************************************************************/
+
+bool Mover::interruptModule() {
+    printf("Mover closing...\n");
+    cartesianControlDevice.close();
+    rightArmDevice.close();
+    trunkDevice.close();
+    return true;
+}
+
+/************************************************************************/
+
+bool Mover::qMoveAndWait(std::vector<double>& q)
+{
+    rightArmIPositionControl->positionMove( q.data() );
+    CD_DEBUG("Waiting for right arm.");
+    bool done = false;
+    while(!done)
+    {
+        rightArmIPositionControl->checkMotionDone(&done);
+        CD_DEBUG_NO_HEADER(".");
+        fflush(stdout);
+        yarp::os::Time::delay(0.25);
+    }
+    CD_DEBUG_NO_HEADER("\n");
+    return true;
+}
+
+/************************************************************************/
+
+bool Mover::strategyBasic()
+{
     int state;
     std::vector<double> x;
     iCartesianControl->stat(state,x);
@@ -224,46 +273,7 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
     }
 
     CD_DEBUG("***************DONE*****************\n");
-    return true;
-}
 
-/************************************************************************/
-double Mover::getPeriod() {
-    return 2.0;  // Fixed, in seconds, the slow thread that calls updateModule below
-}
-
-/************************************************************************/
-bool Mover::updateModule() {
-    //printf("StateMachine in state [%d]. Mover alive...\n", stateMachine.getMachineState());
-    CD_INFO("Mover alive...\n");
-    return true;
-}
-
-/************************************************************************/
-
-bool Mover::interruptModule() {
-    printf("Mover closing...\n");
-    cartesianControlDevice.close();
-    rightArmDevice.close();
-    trunkDevice.close();
-    return true;
-}
-
-/************************************************************************/
-
-bool Mover::qMoveAndWait(std::vector<double>& q)
-{
-    rightArmIPositionControl->positionMove( q.data() );
-    CD_DEBUG("Waiting for right arm.");
-    bool done = false;
-    while(!done)
-    {
-        rightArmIPositionControl->checkMotionDone(&done);
-        CD_DEBUG_NO_HEADER(".");
-        fflush(stdout);
-        yarp::os::Time::delay(0.25);
-    }
-    CD_DEBUG_NO_HEADER("\n");
     return true;
 }
 
