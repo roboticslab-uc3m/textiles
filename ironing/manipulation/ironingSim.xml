@@ -15,7 +15,7 @@
 
     <module>
         <name>mover</name>
-        <parameters>--robot /teoSim --forceThreshold -0.001</parameters>
+        <parameters>--robot /teoSim --targetForce -0.001</parameters>
         <node>localhost</node>
     </module>
 

@@ -15,7 +15,7 @@
 #define DEFAULT_CARTESIAN_CONTROL "CartesianControlClient"
 #define DEFAULT_ROBOT "/robot"
 
-#define DEFAULT_FORCE_THRESHOLD -0.2
+#define DEFAULT_TARGET_FORCE -0.2
 
 #define DEFAULT_HEAD_PAN -45.0
 #define DEFAULT_HEAD_TILT 7.0
@@ -38,7 +38,7 @@ class Mover : public yarp::os::RFModule {
 
     protected:
 
-        double forceThreshold;
+        double targetForce;
 
         bool strategyBasic();
         bool strategyBasicVel();

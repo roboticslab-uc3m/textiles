@@ -11,7 +11,7 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
 
     std::string cartesianControl = rf.check("cartesianControl",yarp::os::Value(DEFAULT_CARTESIAN_CONTROL),"full name of arm to be used").asString();
     std::string robot = rf.check("robot",yarp::os::Value(DEFAULT_ROBOT),"name of /robot to be used").asString();
-    forceThreshold = rf.check("forceThreshold",yarp::os::Value(DEFAULT_FORCE_THRESHOLD),"force threshold").asDouble();
+    targetForce = rf.check("targetForce",yarp::os::Value(DEFAULT_TARGET_FORCE),"target force").asDouble();
 
     printf("--------------------------------------------------------------\n");
     if (rf.check("help")) {
@@ -19,7 +19,7 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
         printf("\t--help (this help)\t--from [file.ini]\t--context [path]\n");
         printf("\t--cartesianControl: %s [%s]\n",cartesianControl.c_str(),DEFAULT_CARTESIAN_CONTROL);
         printf("\t--robot: %s [%s]\n",robot.c_str(),DEFAULT_ROBOT);
-        printf("\t--forceThreshold: %f [%f]\n",forceThreshold,DEFAULT_FORCE_THRESHOLD);
+        printf("\t--targetForce: %f [%f]\n",targetForce,DEFAULT_TARGET_FORCE);
         ::exit(0);
     }
 
@@ -225,7 +225,7 @@ bool Mover::strategyBasic()
     iCartesianControl->movj(x);
     CD_DEBUG("***************DOWN*****************\n");
     double force = 0;
-    while( force > forceThreshold )
+    while( force > targetForce )
     {
         yarp::os::Bottle b;
         x[2] -= 0.005;
@@ -301,7 +301,7 @@ bool Mover::strategyBasicVel()
     }
 
     double force = 0;
-    while( force > forceThreshold )
+    while( force > targetForce )
     {
         yarp::os::Bottle b;
         rightArmFTSensorPort.read(b);
@@ -381,7 +381,7 @@ bool Mover::strategyAdvancedVel()
     }
 
     double force = 0;
-    while( force > forceThreshold )
+    while( force > targetForce )
     {
         yarp::os::Bottle b;
         rightArmFTSensorPort.read(b);
@@ -403,13 +403,13 @@ bool Mover::strategyAdvancedVel()
 
         rightArmFTSensorPort.read(b);
 
-        double fe = b.get(2).asDouble()-forceThreshold;
+        double fe = b.get(2).asDouble()-targetForce;
         xdot[2] -= 0.05 * fe;  // 0.05 conservative but good, 0.1 works, but 0.5 too much.
 
         if( okMove2 ) {
-            CD_DEBUG("[i:%d of 50] Moved arm advance, f:%f fd:%f fe:%f vz:%f\n",i,b.get(2).asDouble(),forceThreshold,fe,xdot[2]);
+            CD_DEBUG("[i:%d of 50] Moved arm advance, f:%f fd:%f fe:%f vz:%f\n",i,b.get(2).asDouble(),targetForce,fe,xdot[2]);
         } else {
-            CD_WARNING("[i:%d of 50] Failed to move arm advance, f:%f fd:%f fe:%f vz:%f\n",i,b.get(2).asDouble(),forceThreshold,fe,xdot[2]);
+            CD_WARNING("[i:%d of 50] Failed to move arm advance, f:%f fd:%f fe:%f vz:%f\n",i,b.get(2).asDouble(),targetForce,fe,xdot[2]);
         }
     }
 
