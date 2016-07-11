@@ -246,9 +246,9 @@ bool Mover::strategyBasic()
         rightArmFTSensorPort.read(b);
 
         if( okMove ) {
-            CD_DEBUG("[i:%d of 24] Moved arm advance, %f\n",i,b.get(3).asDouble());
+            CD_DEBUG("[i:%d of 24] Moved arm advance, %f\n",i,b.get(2).asDouble());
         } else {
-            CD_WARNING("[i:%d of 24] Failed to move arm advance, %f\n",i,b.get(3).asDouble());
+            CD_WARNING("[i:%d of 24] Failed to move arm advance, %f\n",i,b.get(2).asDouble());
         }
     }
 
@@ -262,12 +262,12 @@ bool Mover::strategyBasic()
 
         rightArmFTSensorPort.read(b);
 
-        force = b.get(3).asDouble();
+        force = b.get(2).asDouble();
 
         if( okMove ) {
-            CD_DEBUG("[i:%d of 24] Moved arm up, %f\n",i,b.get(3).asDouble());
+            CD_DEBUG("[i:%d of 24] Moved arm up, %f\n",i,b.get(2).asDouble());
         } else {
-            CD_WARNING("[i:%d of 24] Failed to move arm up, %f\n",i,b.get(3).asDouble());
+            CD_WARNING("[i:%d of 24] Failed to move arm up, %f\n",i,b.get(2).asDouble());
         }
     }
 
@@ -315,9 +315,9 @@ bool Mover::strategyBasicVel()
         rightArmFTSensorPort.read(b);
 
         if( okMove ) {
-            CD_DEBUG("[i:%d of 24] Moved arm advance, %f\n",i,b.get(3).asDouble());
+            CD_DEBUG("[i:%d of 24] Moved arm advance, %f\n",i,b.get(2).asDouble());
         } else {
-            CD_WARNING("[i:%d of 24] Failed to move arm advance, %f\n",i,b.get(3).asDouble());
+            CD_WARNING("[i:%d of 24] Failed to move arm advance, %f\n",i,b.get(2).asDouble());
         }
     }
 
@@ -331,12 +331,12 @@ bool Mover::strategyBasicVel()
 
         rightArmFTSensorPort.read(b);
 
-        force = b.get(3).asDouble();
+        force = b.get(2).asDouble();
 
         if( okMove ) {
-            CD_DEBUG("[i:%d of 24] Moved arm up, %f\n",i,b.get(3).asDouble());
+            CD_DEBUG("[i:%d of 24] Moved arm up, %f\n",i,b.get(2).asDouble());
         } else {
-            CD_WARNING("[i:%d of 24] Failed to move arm up, %f\n",i,b.get(3).asDouble());
+            CD_WARNING("[i:%d of 24] Failed to move arm up, %f\n",i,b.get(2).asDouble());
         }
     }
 
