@@ -128,9 +128,22 @@
             <offsetfrom>r14</offsetfrom>
             <Translation>0 0 0</Translation>
             <RotationAxis>0 0 1 0</RotationAxis>
-            <Geom type="trimesh">
+            <!--Geom type="trimesh">
             <Render>models/1.5^brazo_derecho_links.wrl</Render>
             <collision>models/1.5^brazo_derecho_links.wrl</collision>
+            </Geom-->
+            <Geom type="cylinder">
+                <radius>0.03</radius>
+                <height>0.15</height>
+                <Translation>0 0 -0.1</Translation>
+                <RotationAxis>1 0 0 90</RotationAxis>
+                <diffuseColor>1 1 1</diffuseColor>
+            </Geom>
+            <Geom type="box">
+                <Extents>0.05 0.05 0.05</Extents>
+                <Translation>0 0 -0.25</Translation>
+                <RotationAxis>0 1 0 45</RotationAxis>
+                <diffuseColor>1 1 1</diffuseColor>
             </Geom>
             <Mass type="custom">
               <density>1</density>
@@ -147,6 +160,7 @@
             <maxvel>3</maxvel>
             <resolution>1</resolution>
             </Joint>
+
 
 	  </KinBody>
 
