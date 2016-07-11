@@ -275,4 +275,6 @@ bool Mover::strategyBasic()
     return true;
 }
 
+/************************************************************************/
+
 }  // namespace teo
