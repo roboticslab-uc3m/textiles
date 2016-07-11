@@ -168,7 +168,8 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
         qMoveAndWait(q);
     }
 
-    return strategyBasic();
+    //return strategyBasic();
+    return strategyBasicVel();
 }
 
 /************************************************************************/
