@@ -127,7 +127,7 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
     CD_DEBUG("Move arm to good position out of singularity\n");
     {
         std::vector<double> q(7,0.0);
-        q[3] = 30;
+        q[3] = 10;
         qMoveAndWait(q);
     }
 
