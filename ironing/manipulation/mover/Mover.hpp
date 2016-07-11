@@ -7,6 +7,7 @@
 #include <yarp/dev/all.h>
 #include <stdlib.h>
 #include <string>
+#include <math.h>
 
 #include "ICartesianControl.h"
 
