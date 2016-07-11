@@ -171,7 +171,8 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
     }
 
     //return strategyBasic();
-    return strategyBasicVel();
+    //return strategyBasicVel();
+    return strategyAdvancedVel();
 }
 
 /************************************************************************/
@@ -281,6 +282,86 @@ bool Mover::strategyBasic()
 /************************************************************************/
 
 bool Mover::strategyBasicVel()
+{
+    int state;
+    std::vector<double> x;
+    iCartesianControl->stat(state,x);
+    iCartesianControl->movj(x);
+
+    CD_DEBUG("***************DOWN*****************\n");
+    std::vector<double> xdot(6,0.0);
+    xdot[0] = 0;
+    xdot[1] = 0;
+    xdot[2] = -0.03;
+    bool okMove = iCartesianControl->movv(xdot);
+    if( okMove ) {
+        CD_DEBUG("Begin move arm down.\n");
+    } else {
+        CD_WARNING("Failed to begin move arm down.\n");
+    }
+
+    double force = 0;
+    while( force > forceThreshold )
+    {
+        yarp::os::Bottle b;
+        rightArmFTSensorPort.read(b);
+        force = b.get(2).asDouble();
+        CD_DEBUG("Moving arm down, %f\n",b.get(2).asDouble());
+    }
+
+    CD_DEBUG("***************ADVANCE*****************\n");
+    xdot[0] = 0;
+    xdot[1] = +0.015;
+    xdot[2] = 0;
+
+    bool okMove2 = iCartesianControl->movv(xdot);
+    if( okMove2 ) {
+        CD_DEBUG("Begin move arm advance.\n");
+    } else {
+        CD_WARNING("Failed to begin move arm advance.\n");
+    }
+
+    for(int i=0;i<50;i++)
+    {
+        yarp::os::Time::delay(0.5);
+        yarp::os::Bottle b;
+
+        rightArmFTSensorPort.read(b);
+
+        CD_DEBUG("[i:%d of 50] Moved arm advance, %f\n",i,b.get(2).asDouble());
+    }
+
+    CD_DEBUG("***************UP*****************\n");
+    xdot[0] = 0;
+    xdot[1] = 0;
+    xdot[2] = +0.03;
+
+    bool okMove3 = iCartesianControl->movv(xdot);
+    if( okMove3 ) {
+        CD_DEBUG("Begin move arm up.\n");
+    } else {
+        CD_WARNING("Failed to begin move arm up.\n");
+    }
+
+    for(int i=0;i<7;i++)
+    {
+        yarp::os::Time::delay(0.5);
+        yarp::os::Bottle b;
+
+        rightArmFTSensorPort.read(b);
+
+        CD_DEBUG("[i:%d of 7] Moved arm up, %f\n",i,b.get(2).asDouble());
+    }
+    iCartesianControl->stopControl();
+
+    CD_DEBUG("***************DONE*****************\n");
+
+    return true;
+}
+
+/************************************************************************/
+
+bool Mover::strategyAdvancedVel()
 {
     int state;
     std::vector<double> x;
