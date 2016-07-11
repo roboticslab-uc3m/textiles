@@ -180,7 +180,7 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
         x[2] -= 0.005;
         bool okMove = iCartesianControl->movj(x);
         rightArmFTSensorPort.read(b);
-        force = b.get(3).asDouble();
+        force = b.get(2).asDouble();
         if( okMove ) {
             CD_DEBUG("Moved arm down, %f\n",force);
         } else {
