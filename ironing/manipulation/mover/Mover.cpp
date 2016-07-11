@@ -119,7 +119,7 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
         trunkIPositionControl->checkMotionDone(&done);
         CD_DEBUG_NO_HEADER(".");
         fflush(stdout);
-        yarp::os::Time::delay(0.25);
+        yarp::os::Time::delay(0.1);
     }
     CD_DEBUG_NO_HEADER("\n");
 
@@ -131,7 +131,7 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
     //-- Right arm
     if(robot=="/teoSim")
         for(int i=0;i<6;i++)
-            rightArmIPositionControl->setRefSpeed(i,25);
+            rightArmIPositionControl->setRefSpeed(i,35);
     rightArmIPositionControl->setPositionMode();
     yarp::os::Time::delay(1);
     {
@@ -209,7 +209,7 @@ bool Mover::qMoveAndWait(std::vector<double>& q)
         rightArmIPositionControl->checkMotionDone(&done);
         CD_DEBUG_NO_HEADER(".");
         fflush(stdout);
-        yarp::os::Time::delay(0.25);
+        yarp::os::Time::delay(0.1);
     }
     CD_DEBUG_NO_HEADER("\n");
     return true;
@@ -290,7 +290,9 @@ bool Mover::strategyBasicVel()
 
     CD_DEBUG("***************DOWN*****************\n");
     std::vector<double> xdot(6,0.0);
-    xdot[2] = -0.0025;
+    xdot[0] = 0;
+    xdot[1] = 0;
+    xdot[2] = -0.005;
     bool okMove = iCartesianControl->movv(xdot);
     if( okMove ) {
         CD_DEBUG("Begin move arm down.\n");
@@ -306,42 +308,51 @@ bool Mover::strategyBasicVel()
         force = b.get(2).asDouble();
         CD_DEBUG("Moving arm down, %f\n",b.get(2).asDouble());
     }
-    iCartesianControl->stopControl();
 
     CD_DEBUG("***************ADVANCE*****************\n");
-    for(int i=0;i<24;i++)
+    xdot[0] = 0;
+    xdot[1] = +0.005;
+    xdot[2] = 0;
+
+    bool okMove2 = iCartesianControl->movv(xdot);
+    if( okMove2 ) {
+        CD_DEBUG("Begin move arm advance.\n");
+    } else {
+        CD_WARNING("Failed to begin move arm advance.\n");
+    }
+
+    for(int i=0;i<50;i++)
     {
+        yarp::os::Time::delay(0.5);
         yarp::os::Bottle b;
-        x[1] += 0.005;
-        bool okMove = iCartesianControl->movj(x);
 
         rightArmFTSensorPort.read(b);
 
-        if( okMove ) {
-            CD_DEBUG("[i:%d of 24] Moved arm advance, %f\n",i,b.get(2).asDouble());
-        } else {
-            CD_WARNING("[i:%d of 24] Failed to move arm advance, %f\n",i,b.get(2).asDouble());
-        }
+        CD_DEBUG("[i:%d of 50] Moved arm advance, %f\n",i,b.get(2).asDouble());
     }
 
     CD_DEBUG("***************UP*****************\n");
+    xdot[0] = 0;
+    xdot[1] = 0;
+    xdot[2] = +0.005;
 
-    for(int i=0;i<24;i++)
+    bool okMove3 = iCartesianControl->movv(xdot);
+    if( okMove3 ) {
+        CD_DEBUG("Begin move arm up.\n");
+    } else {
+        CD_WARNING("Failed to begin move arm up.\n");
+    }
+
+    for(int i=0;i<12;i++)
     {
+        yarp::os::Time::delay(0.5);
         yarp::os::Bottle b;
-        x[2] += 0.005;
-        bool okMove = iCartesianControl->movj(x);
 
         rightArmFTSensorPort.read(b);
 
-        force = b.get(2).asDouble();
-
-        if( okMove ) {
-            CD_DEBUG("[i:%d of 24] Moved arm up, %f\n",i,b.get(2).asDouble());
-        } else {
-            CD_WARNING("[i:%d of 24] Failed to move arm up, %f\n",i,b.get(2).asDouble());
-        }
+        CD_DEBUG("[i:%d of 12] Moved arm up, %f\n",i,b.get(2).asDouble());
     }
+    iCartesianControl->stopControl();
 
     CD_DEBUG("***************DONE*****************\n");
 
