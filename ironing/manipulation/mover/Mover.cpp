@@ -128,9 +128,12 @@ bool Mover::configure(yarp::os::ResourceFinder &rf) {
     //-- Tilt head forward/down
     headIPositionControl->positionMove(1,DEFAULT_HEAD_TILT);
 
+    //-- Right arm
+    if(robot=="/teoSim")
+        for(int i=0;i<6;i++)
+            rightArmIPositionControl->setRefSpeed(i,25);
     rightArmIPositionControl->setPositionMode();
     yarp::os::Time::delay(1);
-    //-- Move arm to good position out of singularity
     {
         std::vector<double> q(7,0.0);
         q[3] = 10;
