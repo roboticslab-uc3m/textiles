@@ -2,10 +2,10 @@
 
 /**
  *
- * @ingroup teo_body_programs
- * \defgroup mover mover
+ * @ingroup textiles_programs
+ * \defgroup ironingMover ironingMover
  *
- * @brief Creates an instance of teo::Mover.
+ * @brief Creates an instance of teo::IroningMover.
  *
  * @section mover_legal Legal
  *
@@ -18,7 +18,7 @@
  *
  * <hr>
  *
- * This file can be edited at mover
+ * This file can be edited at ironingMover
  *
  */
 
