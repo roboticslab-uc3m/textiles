@@ -90,7 +90,7 @@ bool IroningMover::configure(yarp::os::ResourceFinder &rf) {
         return false;
     }
 
-    //-- Connect to FT sensor device to send joint space commands.
+    //-- Connect to FT sensor device to read values.
     rightArmFTSensorPort.open("/mover/force:i");
     if( ! yarp::os::Network::connect("/jr3ch3:o","/mover/force:i") )
     {
