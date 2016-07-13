@@ -33,7 +33,7 @@ class IroningMover : public yarp::os::RFModule
     public:
         bool configure(yarp::os::ResourceFinder &rf);
 
-    protected:
+    private:
 
         double targetForce;
 
