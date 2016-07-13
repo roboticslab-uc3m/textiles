@@ -15,7 +15,7 @@
 
     <module>
         <name>ironingMover</name>
-        <parameters>--robot /teoSim --targetForce -0.001 --strategy advancedVelocity</parameters>
+        <parameters>--robot /teoSim --targetForce -0.001 --strategy velocityForce</parameters>
         <node>localhost</node>
     </module>
 

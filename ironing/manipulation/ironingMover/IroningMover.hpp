@@ -17,7 +17,7 @@
 
 #define DEFAULT_TARGET_FORCE -0.2
 
-#define DEFAULT_STRATEGY "basicPosition"
+#define DEFAULT_STRATEGY "position"
 
 #define DEFAULT_HEAD_PAN -45.0
 #define DEFAULT_HEAD_TILT 7.0
@@ -37,9 +37,9 @@ class IroningMover : public yarp::os::RFModule
 
         double targetForce;
 
-        bool strategyBasicPosition();
-        bool strategyBasicVelocity();
-        bool strategyAdvancedVelocity();
+        bool strategyPosition();
+        bool strategyVelocity();
+        bool strategyVelocityForce();
 
         yarp::dev::PolyDriver cartesianControlDevice;
         teo::ICartesianControl *iCartesianControl;

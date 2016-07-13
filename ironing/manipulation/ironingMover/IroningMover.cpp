@@ -21,7 +21,7 @@ bool IroningMover::configure(yarp::os::ResourceFinder &rf) {
         printf("\t--cartesianControl: %s [%s]\n",cartesianControl.c_str(),DEFAULT_CARTESIAN_CONTROL);
         printf("\t--robot: %s [%s]\n",robot.c_str(),DEFAULT_ROBOT);
         printf("\t--targetForce: %f [%f]\n",targetForce,DEFAULT_TARGET_FORCE);
-        printf("\t--strategy: %s [%s] (basicPosition, basicVelocity, advancedVelocity)\n",strategy.c_str(),DEFAULT_STRATEGY);
+        printf("\t--strategy: %s [%s] (position, velocity, velocityForce)\n",strategy.c_str(),DEFAULT_STRATEGY);
         ::exit(0);
     }
 
@@ -172,12 +172,12 @@ bool IroningMover::configure(yarp::os::ResourceFinder &rf) {
         qMoveAndWait(q);
     }
 
-    if(strategy == "basicPosition")
-        return strategyBasicPosition();
-    else if (strategy == "basicVelocity")
-        return strategyBasicVelocity();
-    else if (strategy == "advancedVelocity")
-        return strategyAdvancedVelocity();
+    if(strategy == "position")
+        return strategyPosition();
+    else if (strategy == "velocity")
+        return strategyVelocity();
+    else if (strategy == "velocityForce")
+        return strategyVelocityForce();
     else
     {
         CD_ERROR("Unknown strategy. Init program with the --help parameter to see possible --strategy.\n");
@@ -227,7 +227,7 @@ bool IroningMover::qMoveAndWait(std::vector<double>& q)
 
 /************************************************************************/
 
-bool IroningMover::strategyBasicPosition()
+bool IroningMover::strategyPosition()
 {
     int state;
     std::vector<double> x;
@@ -291,7 +291,7 @@ bool IroningMover::strategyBasicPosition()
 
 /************************************************************************/
 
-bool IroningMover::strategyBasicVelocity()
+bool IroningMover::strategyVelocity()
 {
     int state;
     std::vector<double> x;
@@ -371,7 +371,7 @@ bool IroningMover::strategyBasicVelocity()
 
 /************************************************************************/
 
-bool IroningMover::strategyAdvancedVelocity()
+bool IroningMover::strategyVelocityForce()
 {
     int state;
     std::vector<double> x;
