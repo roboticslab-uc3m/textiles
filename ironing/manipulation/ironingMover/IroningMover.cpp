@@ -138,7 +138,7 @@ bool IroningMover::configure(yarp::os::ResourceFinder &rf) {
     yarp::os::Time::delay(1);
     {
         std::vector<double> q(7,0.0);
-        qMoveAndWait(q);
+        rightArmJointsMoveAndWait(q);
     }
 
     {
@@ -146,7 +146,7 @@ bool IroningMover::configure(yarp::os::ResourceFinder &rf) {
         q[0] = -40;
         q[1] = -30;
         q[3] = 30;
-        qMoveAndWait(q);
+        rightArmJointsMoveAndWait(q);
     }
 
     {
@@ -154,7 +154,7 @@ bool IroningMover::configure(yarp::os::ResourceFinder &rf) {
         q[0] = -40;
         q[1] = -70;
         q[3] = 30;
-        qMoveAndWait(q);
+        rightArmJointsMoveAndWait(q);
     }
 
     {
@@ -162,14 +162,14 @@ bool IroningMover::configure(yarp::os::ResourceFinder &rf) {
         q[0] = 30;
         q[1] = -70;
         q[3] = 30;
-        qMoveAndWait(q);
+        rightArmJointsMoveAndWait(q);
     }
 
     {
         std::vector<double> q(7,0.0);
         double qd[7]={6.151142, -65.448151, 9.40246, 97.978912, 72.664323, -48.400696, 0.0};
         for(int i=0;i<7;i++) q[i]=qd[i];
-        qMoveAndWait(q);
+        rightArmJointsMoveAndWait(q);
     }
 
     if(strategy == "position")
@@ -209,7 +209,7 @@ bool IroningMover::interruptModule() {
 
 /************************************************************************/
 
-bool IroningMover::qMoveAndWait(std::vector<double>& q)
+bool IroningMover::rightArmJointsMoveAndWait(std::vector<double>& q)
 {
     rightArmIPositionControl->positionMove( q.data() );
     CD_DEBUG("Waiting for right arm.");

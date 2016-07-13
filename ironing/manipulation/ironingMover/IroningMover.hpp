@@ -35,13 +35,20 @@ class IroningMover : public yarp::os::RFModule
 
     private:
 
-        double targetForce;
-
+        /** Strategy: Position. */
         bool strategyPosition();
+
+        /** Strategy: Velocity. */
         bool strategyVelocity();
+
+        /** Strategy: Velocity Force. */
         bool strategyVelocityForce();
 
-        bool qMoveAndWait(std::vector<double>& q);
+        /** Target force, used in all strategies for now. */
+        double targetForce;
+
+        /** Right arm joints move and wait (auxiliary function due to many calls) */
+        bool rightArmJointsMoveAndWait(std::vector<double>& q);
 
         /** Port to read from force sensor */
         yarp::os::Port rightArmFTSensorPort;
