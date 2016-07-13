@@ -60,6 +60,9 @@ class IroningMover : public yarp::os::RFModule
         /** Robot port prefix, such as /teo or /teoSim. */
         std::string robot;
 
+        /** Open Ports and Devices */
+        bool openPortsAndDevices(yarp::os::ResourceFinder &rf);
+
         /** Preprogrammed Initialization Trajectory */
         bool preprogrammedInitTrajectory();
 
@@ -69,6 +72,8 @@ class IroningMover : public yarp::os::RFModule
         /** Port to read from force sensor */
         yarp::os::Port rightArmFTSensorPort;
 
+        /** Cartesian Control Name */
+        std::string cartesianControl;
         /** Cartesian Control Device */
         yarp::dev::PolyDriver cartesianControlDevice;
         /** Cartesian Control Interface */
