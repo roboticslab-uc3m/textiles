@@ -41,21 +41,30 @@ class IroningMover : public yarp::os::RFModule
         bool strategyVelocity();
         bool strategyVelocityForce();
 
-        yarp::dev::PolyDriver cartesianControlDevice;
-        teo::ICartesianControl *iCartesianControl;
+        bool qMoveAndWait(std::vector<double>& q);
 
-        yarp::dev::PolyDriver rightArmDevice;
-        yarp::dev::IPositionControl *rightArmIPositionControl;
-
-        yarp::dev::PolyDriver trunkDevice;
-        yarp::dev::IPositionControl *trunkIPositionControl;
-
-        yarp::dev::PolyDriver headDevice;
-        yarp::dev::IPositionControl *headIPositionControl;
-
+        /** Port to read from force sensor */
         yarp::os::Port rightArmFTSensorPort;
 
-        bool qMoveAndWait(std::vector<double>& q);
+        /** Cartesian Control Device */
+        yarp::dev::PolyDriver cartesianControlDevice;
+        /** Cartesian Control Interface */
+        teo::ICartesianControl *iCartesianControl;
+
+        /** Right Arm Device */
+        yarp::dev::PolyDriver rightArmDevice;
+        /** Right Arm Position Interface */
+        yarp::dev::IPositionControl *rightArmIPositionControl;
+
+        /** Trunk Device */
+        yarp::dev::PolyDriver trunkDevice;
+        /** Trunk Position Interface */
+        yarp::dev::IPositionControl *trunkIPositionControl;
+
+        /** Head Device */
+        yarp::dev::PolyDriver headDevice;
+        /** Head Position Interface */
+        yarp::dev::IPositionControl *headIPositionControl;
 
         /** RFModule interruptModule. */
         bool interruptModule();
