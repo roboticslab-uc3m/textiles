@@ -35,13 +35,23 @@ class IroningMover : public yarp::os::RFModule
 
     private:
 
-        /** Strategy: Position. */
+        /** Strategy: Position.
+         *  - Down: Moves down (negative of root Z) in 5 mm increments of movj, until targetForce check in each iteration.
+         *  - Advance: Advances (positive of root Y) in 5 mm increments of movj, done after 24 iterations.
+         *  - Up:  Moves up (positive of root Z) in 5 mm increments of movj, done after 24 iterations. */
         bool strategyPosition();
 
-        /** Strategy: Velocity. */
+        /** Strategy: Velocity.
+         *  - Down: Moves down (negative of root Z) at 30 mm/s using movv, until targetForce check in each iteration with no delay.
+         *  - Advance: Advances (positive of root Y) at 15 mm/s using movv, done after 50 iterations with 0.5 s delays.
+         *  - Up:  Moves up (positive of root Z) at 30 mm/s using movv, done after 7 iterations with 0.5 s delays. */
         bool strategyVelocity();
 
-        /** Strategy: Velocity Force. */
+        /** Strategy: Velocity Force.
+         *  - Down: Moves down (negative of root Z) at 30 mm/s using movv, until targetForce check in each iteration with no delay.
+         *  - Advance: Advances (positive of root Y) at 15 mm/s using movv, modifying root Z component proportional to force error
+         *    at each iteration with 0.5 s delays, done after 50 iterations.
+         *  - Up:  Moves up (positive of root Z) at 30 mm/s using movv, done after 7 iterations with 0.5 s delays. */
         bool strategyVelocityForce();
 
         /** Target force, used in all strategies for now. */
