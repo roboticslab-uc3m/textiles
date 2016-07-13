@@ -57,8 +57,11 @@ class IroningMover : public yarp::os::RFModule
 
         bool qMoveAndWait(std::vector<double>& q);
 
+        /** RFModule interruptModule. */
         bool interruptModule();
+        /** RFModule getPeriod. */
         double getPeriod();
+        /** RFModule updateModule. */
         bool updateModule();
 
 };
