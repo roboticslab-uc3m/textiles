@@ -57,6 +57,12 @@ class IroningMover : public yarp::os::RFModule
         /** Target force, used in all strategies for now. */
         double targetForce;
 
+        /** Robot port prefix, such as /teo or /teoSim. */
+        std::string robot;
+
+        /** Preprogrammed Initialization Trajectory */
+        bool preprogrammedInitTrajectory();
+
         /** Right arm joints move and wait (auxiliary function due to many calls) */
         bool rightArmJointsMoveAndWait(std::vector<double>& q);
 

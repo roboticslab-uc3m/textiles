@@ -10,7 +10,7 @@ namespace teo
 bool IroningMover::configure(yarp::os::ResourceFinder &rf) {
 
     std::string cartesianControl = rf.check("cartesianControl",yarp::os::Value(DEFAULT_CARTESIAN_CONTROL),"full name of arm to be used").asString();
-    std::string robot = rf.check("robot",yarp::os::Value(DEFAULT_ROBOT),"name of /robot to be used").asString();
+    robot = rf.check("robot",yarp::os::Value(DEFAULT_ROBOT),"name of /robot to be used").asString();
     targetForce = rf.check("targetForce",yarp::os::Value(DEFAULT_TARGET_FORCE),"target force").asDouble();
     std::string strategy = rf.check("strategy",yarp::os::Value(DEFAULT_STRATEGY),"strategy").asString();
 
@@ -101,6 +101,50 @@ bool IroningMover::configure(yarp::os::ResourceFinder &rf) {
 
     yarp::os::Time::delay(1);
 
+    if( ! preprogrammedInitTrajectory() )
+        return false;
+
+    if(strategy == "position")
+        return strategyPosition();
+    else if (strategy == "velocity")
+        return strategyVelocity();
+    else if (strategy == "velocityForce")
+        return strategyVelocityForce();
+    else
+    {
+        CD_ERROR("Unknown strategy. Init program with the --help parameter to see possible --strategy.\n");
+        return false;
+    }
+}
+
+/************************************************************************/
+double IroningMover::getPeriod() {
+    return 2.0;  // Fixed, in seconds, the slow thread that calls updateModule below
+}
+
+/************************************************************************/
+
+bool IroningMover::updateModule() {
+    //printf("StateMachine in state [%d]. Mover alive...\n", stateMachine.getMachineState());
+    CD_INFO("Mover alive...\n");
+    return true;
+}
+
+/************************************************************************/
+
+bool IroningMover::interruptModule() {
+    printf("Mover closing...\n");
+    cartesianControlDevice.close();
+    rightArmDevice.close();
+    trunkDevice.close();
+    return true;
+}
+
+
+/************************************************************************/
+
+bool IroningMover::preprogrammedInitTrajectory()
+{
     //-- Pan trunk
     if(robot=="/teo")
         trunkIPositionControl->setRefSpeed(0,0.1);
@@ -172,38 +216,6 @@ bool IroningMover::configure(yarp::os::ResourceFinder &rf) {
         rightArmJointsMoveAndWait(q);
     }
 
-    if(strategy == "position")
-        return strategyPosition();
-    else if (strategy == "velocity")
-        return strategyVelocity();
-    else if (strategy == "velocityForce")
-        return strategyVelocityForce();
-    else
-    {
-        CD_ERROR("Unknown strategy. Init program with the --help parameter to see possible --strategy.\n");
-        return false;
-    }
-}
-
-/************************************************************************/
-double IroningMover::getPeriod() {
-    return 2.0;  // Fixed, in seconds, the slow thread that calls updateModule below
-}
-
-/************************************************************************/
-bool IroningMover::updateModule() {
-    //printf("StateMachine in state [%d]. Mover alive...\n", stateMachine.getMachineState());
-    CD_INFO("Mover alive...\n");
-    return true;
-}
-
-/************************************************************************/
-
-bool IroningMover::interruptModule() {
-    printf("Mover closing...\n");
-    cartesianControlDevice.close();
-    rightArmDevice.close();
-    trunkDevice.close();
     return true;
 }
 
