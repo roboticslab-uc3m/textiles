@@ -180,7 +180,7 @@ bool IroningMover::configure(yarp::os::ResourceFinder &rf) {
         return strategyAdvancedVelocity();
     else
     {
-        CD_ERROR("Unknoen strategy. Init program with the --help parameter to see possible --strategy.\n");
+        CD_ERROR("Unknown strategy. Init program with the --help parameter to see possible --strategy.\n");
         return false;
     }
 }
