@@ -18,6 +18,7 @@
 #include <pcl/features/normal_3d_omp.h>
 #include <pcl/filters/filter.h>
 #include <pcl/features/principal_curvatures.h>
+#include <pcl/features/rsd.h>
 
 #include "Debug.hpp"
 
@@ -129,18 +130,46 @@ int main (int argc, char** argv)
                                                      100, 0.01);
     debug.show("Normals");
 
+    // RSD estimation object
+    pcl::PointCloud<pcl::PrincipalRadiiRSD>::Ptr descriptors(new pcl::PointCloud<pcl::PrincipalRadiiRSD>());
+    pcl::RSDEstimation<pcl::PointXYZRGB, pcl::Normal, pcl::PrincipalRadiiRSD> rsd;
+    rsd.setInputCloud(source_cloud);
+    rsd.setInputNormals(filtered_normals);
+    rsd.setSearchMethod(tree);
+    // Search radius, to look for neighbors. Note: the value given here has to be
+    // larger than the radius used to estimate the normals.
+    rsd.setRadiusSearch(0.05);
+    // Plane radius. Any radius larger than this is considered infinite (a plane).
+    rsd.setPlaneRadius(1);
+    // Do we want to save the full distance-angle histograms?
+    rsd.setSaveHistograms(false);
+
+    rsd.compute(*descriptors);
+
+    //-- Save to mat file
+    std::ofstream rsd_file("rsd_wrinkle.m");
+    for (int i = 0; i < source_cloud->points.size(); i++)
+    {
+        rsd_file << source_cloud->points[i].x << " "
+                 << source_cloud->points[i].y << " "
+                 << source_cloud->points[i].z << " "
+                 << descriptors->points[i].r_min << " "
+                 << descriptors->points[i].r_max << "\n";
+    }
+    rsd_file.close();
+
     //-- Principal curvatures
-    pcl::PointCloud<pcl::PrincipalCurvatures>::Ptr principal_curvatures(new pcl::PointCloud<pcl::PrincipalCurvatures>);
+//    pcl::PointCloud<pcl::PrincipalCurvatures>::Ptr principal_curvatures(new pcl::PointCloud<pcl::PrincipalCurvatures>);
 
-    pcl::PrincipalCurvaturesEstimation<pcl::PointXYZRGB, pcl::Normal, pcl::PrincipalCurvatures> principal_curvatures_estimation;
-    principal_curvatures_estimation.setInputCloud(source_cloud);
-    principal_curvatures_estimation.setInputNormals(cloud_normals);
-    principal_curvatures_estimation.setSearchMethod(tree);
-    principal_curvatures_estimation.setRadiusSearch(0.1);
-    principal_curvatures_estimation.compute(*principal_curvatures);
+//    pcl::PrincipalCurvaturesEstimation<pcl::PointXYZRGB, pcl::Normal, pcl::PrincipalCurvatures> principal_curvatures_estimation;
+//    principal_curvatures_estimation.setInputCloud(source_cloud);
+//    principal_curvatures_estimation.setInputNormals(cloud_normals);
+//    principal_curvatures_estimation.setSearchMethod(tree);
+//    principal_curvatures_estimation.setRadiusSearch(0.1);
+//    principal_curvatures_estimation.compute(*principal_curvatures);
 
-    debug.setEnabled(true);
-    debug.getRawViewer()->addPointCloudPrincipalCurvatures<pcl::PointXYZRGB, pcl::Normal>(source_cloud, cloud_normals, principal_curvatures);
-    debug.show("Principal Curvatures");
+//    debug.setEnabled(true);
+//    debug.getRawViewer()->addPointCloudPrincipalCurvatures<pcl::PointXYZRGB, pcl::Normal>(source_cloud, cloud_normals, principal_curvatures);
+//    debug.show("Principal Curvatures");
     return 0;
 }
