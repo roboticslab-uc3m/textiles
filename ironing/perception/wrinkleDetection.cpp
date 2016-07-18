@@ -117,6 +117,7 @@ int main (int argc, char** argv)
     normalEstimator.setInputCloud(source_cloud);
     normalEstimator.setSearchMethod(tree);
     normalEstimator.setRadiusSearch(normal_threshold);
+    normalEstimator.setViewPoint(0,0,1000);
     normalEstimator.compute(*cloud_normals);
     std::cout << "Found: " << cloud_normals->size() << " normals." << std::endl;
     pcl::PointCloud<pcl::Normal>::Ptr filtered_normals(new pcl::PointCloud<pcl::Normal>);
@@ -138,9 +139,9 @@ int main (int argc, char** argv)
     rsd.setSearchMethod(tree);
     // Search radius, to look for neighbors. Note: the value given here has to be
     // larger than the radius used to estimate the normals.
-    rsd.setRadiusSearch(0.05);
+    rsd.setRadiusSearch(0.03);
     // Plane radius. Any radius larger than this is considered infinite (a plane).
-    rsd.setPlaneRadius(1);
+    rsd.setPlaneRadius(0.1);
     // Do we want to save the full distance-angle histograms?
     rsd.setSaveHistograms(false);
 
