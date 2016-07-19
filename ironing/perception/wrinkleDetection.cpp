@@ -17,8 +17,8 @@
 #include <pcl/features/normal_3d.h>
 #include <pcl/features/normal_3d_omp.h>
 #include <pcl/filters/filter.h>
-#include <pcl/features/principal_curvatures.h>
 #include <pcl/features/rsd.h>
+
 
 #include "Debug.hpp"
 
@@ -125,7 +125,7 @@ int main (int argc, char** argv)
     pcl::removeNaNNormalsFromPointCloud(*cloud_normals, *filtered_normals, new_ordering);
     std::cout << "After NaN removal: " << filtered_normals->size() << " normals." << std::endl;
 
-    debug.setEnabled(true);
+    debug.setEnabled(false);
     debug.plotPointCloud<pcl::PointXYZRGB>(source_cloud, Debug::COLOR_ORIGINAL);
     debug.plotNormals<pcl::PointXYZRGB, pcl::Normal>(source_cloud, cloud_normals, Debug::COLOR_ORIGINAL,
                                                      100, 0.01);
@@ -159,18 +159,53 @@ int main (int argc, char** argv)
     }
     rsd_file.close();
 
-    //-- Principal curvatures
-//    pcl::PointCloud<pcl::PrincipalCurvatures>::Ptr principal_curvatures(new pcl::PointCloud<pcl::PrincipalCurvatures>);
+    //-- WILD
+    //---------------------
+    //-- Compute wild descriptor
+    const double threshold = 0.03;
+    std::vector<double> wild(source_cloud->points.size());
 
-//    pcl::PrincipalCurvaturesEstimation<pcl::PointXYZRGB, pcl::Normal, pcl::PrincipalCurvatures> principal_curvatures_estimation;
-//    principal_curvatures_estimation.setInputCloud(source_cloud);
-//    principal_curvatures_estimation.setInputNormals(cloud_normals);
-//    principal_curvatures_estimation.setSearchMethod(tree);
-//    principal_curvatures_estimation.setRadiusSearch(0.1);
-//    principal_curvatures_estimation.compute(*principal_curvatures);
+    #pragma omp parallel for
+    for (int i = 0; i < source_cloud->points.size(); i++)
+    {
+        //-- Create vector from normal of current point
+        Eigen::Vector3f current_normal(cloud_normals->points[i].normal_x,
+                                       cloud_normals->points[i].normal_y,
+                                       cloud_normals->points[i].normal_z);
 
-//    debug.setEnabled(true);
-//    debug.getRawViewer()->addPointCloudPrincipalCurvatures<pcl::PointXYZRGB, pcl::Normal>(source_cloud, cloud_normals, principal_curvatures);
-//    debug.show("Principal Curvatures");
+        //-- Find neighbors within radius
+        std::vector<int> pointIdxRadiusSearch;
+        std::vector<float> pointRadiusSquaredDistance;
+        double current_wild = -Eigen::Infinity; //-- Will this work?
+
+        if (tree->radiusSearch(source_cloud->points[i], threshold, pointIdxRadiusSearch, pointRadiusSquaredDistance) > 0)
+        {
+            for (auto& j: pointIdxRadiusSearch)
+            {
+                //-- Compute descriptor
+                Eigen::Vector3f neighbor_normal(cloud_normals->points[j].normal_x,
+                                                cloud_normals->points[j].normal_y,
+                                                cloud_normals->points[j].normal_z);
+
+                current_wild += current_normal.dot(neighbor_normal);
+            }
+
+            current_wild /= (double)pointIdxRadiusSearch.size();
+        }
+
+        wild[i] =current_wild;
+    }
+
+        //-- Save to mat file
+        std::ofstream wild_file("wild_descriptors.m");
+        for (int i = 0; i < source_cloud->points.size(); i++)
+        {
+            wild_file << source_cloud->points[i].x << " "
+                     << source_cloud->points[i].y << " "
+                     << source_cloud->points[i].z << " "
+                     << wild[i] << "\n";
+        }
+        wild_file.close();
+
     return 0;
 }
