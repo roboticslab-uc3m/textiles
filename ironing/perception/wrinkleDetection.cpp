@@ -18,7 +18,7 @@
 #include <pcl/features/normal_3d_omp.h>
 #include <pcl/filters/filter.h>
 #include <pcl/features/rsd.h>
-
+#include <pcl/features/moment_of_inertia_estimation.h>
 
 #include "Debug.hpp"
 
@@ -28,6 +28,7 @@ void show_usage(char * program_name)
     std::cout << "Usage: " << program_name << " cloud_filename.[pcd|ply]" << std::endl;
     std::cout << "-h:  Show this help." << std::endl;
     std::cout << "--normal-threshold: Set normal threshold value (default: ??)" << std::endl;
+    std::cout << "--rsd: Enable RSD descriptors calculation" << std::endl;
 }
 
 int main (int argc, char** argv)
@@ -38,6 +39,7 @@ int main (int argc, char** argv)
 
     //-- Command-line arguments
     float normal_threshold = 0.02;
+    bool rsd = false;
 
     //-- Show usage
     if (pcl::console::find_switch(argc, argv, "-h") || pcl::console::find_switch(argc, argv, "--help"))
@@ -51,6 +53,11 @@ int main (int argc, char** argv)
     else
     {
         std::cerr << "Normal theshold not specified, using default value..." << std::endl;
+    }
+
+    if (pcl::console::find_switch(argc, argv, "--rsd"))
+    {
+        rsd = true;
     }
 
     //-- Get point cloud file from arguments
@@ -132,32 +139,35 @@ int main (int argc, char** argv)
     debug.show("Normals");
 
     // RSD estimation object
-    pcl::PointCloud<pcl::PrincipalRadiiRSD>::Ptr descriptors(new pcl::PointCloud<pcl::PrincipalRadiiRSD>());
-    pcl::RSDEstimation<pcl::PointXYZRGB, pcl::Normal, pcl::PrincipalRadiiRSD> rsd;
-    rsd.setInputCloud(source_cloud);
-    rsd.setInputNormals(filtered_normals);
-    rsd.setSearchMethod(tree);
-    // Search radius, to look for neighbors. Note: the value given here has to be
-    // larger than the radius used to estimate the normals.
-    rsd.setRadiusSearch(0.03);
-    // Plane radius. Any radius larger than this is considered infinite (a plane).
-    rsd.setPlaneRadius(0.1);
-    // Do we want to save the full distance-angle histograms?
-    rsd.setSaveHistograms(false);
-
-    rsd.compute(*descriptors);
-
-    //-- Save to mat file
-    std::ofstream rsd_file("rsd_wrinkle.m");
-    for (int i = 0; i < source_cloud->points.size(); i++)
+    if (rsd)
     {
-        rsd_file << source_cloud->points[i].x << " "
-                 << source_cloud->points[i].y << " "
-                 << source_cloud->points[i].z << " "
-                 << descriptors->points[i].r_min << " "
-                 << descriptors->points[i].r_max << "\n";
+        pcl::PointCloud<pcl::PrincipalRadiiRSD>::Ptr descriptors(new pcl::PointCloud<pcl::PrincipalRadiiRSD>());
+        pcl::RSDEstimation<pcl::PointXYZRGB, pcl::Normal, pcl::PrincipalRadiiRSD> rsd;
+        rsd.setInputCloud(source_cloud);
+        rsd.setInputNormals(filtered_normals);
+        rsd.setSearchMethod(tree);
+        // Search radius, to look for neighbors. Note: the value given here has to be
+        // larger than the radius used to estimate the normals.
+        rsd.setRadiusSearch(0.03);
+        // Plane radius. Any radius larger than this is considered infinite (a plane).
+        rsd.setPlaneRadius(0.1);
+        // Do we want to save the full distance-angle histograms?
+        rsd.setSaveHistograms(false);
+
+        rsd.compute(*descriptors);
+
+        //-- Save to mat file
+        std::ofstream rsd_file("rsd_wrinkle.m");
+        for (int i = 0; i < source_cloud->points.size(); i++)
+        {
+            rsd_file << source_cloud->points[i].x << " "
+                     << source_cloud->points[i].y << " "
+                     << source_cloud->points[i].z << " "
+                     << descriptors->points[i].r_min << " "
+                     << descriptors->points[i].r_max << "\n";
+        }
+        rsd_file.close();
     }
-    rsd_file.close();
 
     //-- WILD
     //---------------------
@@ -196,16 +206,76 @@ int main (int argc, char** argv)
         wild[i] =current_wild;
     }
 
-        //-- Save to mat file
-        std::ofstream wild_file("wild_descriptors.m");
-        for (int i = 0; i < source_cloud->points.size(); i++)
-        {
-            wild_file << source_cloud->points[i].x << " "
-                     << source_cloud->points[i].y << " "
-                     << source_cloud->points[i].z << " "
-                     << wild[i] << "\n";
-        }
-        wild_file.close();
+    //-- Save to mat file
+    std::ofstream wild_file("wild_descriptors.m");
+    for (int i = 0; i < source_cloud->points.size(); i++)
+    {
+        wild_file << source_cloud->points[i].x << " "
+                 << source_cloud->points[i].y << " "
+                 << source_cloud->points[i].z << " "
+                 << wild[i] << "\n";
+    }
+    wild_file.close();
+
+
+    //-- Create 2D output image
+    //-- Find bounding box of input point_cloud
+    pcl::MomentOfInertiaEstimation<pcl::PointXYZRGB> feature_extractor;
+    pcl::PointXYZRGB min_point_AABB, max_point_AABB;
+    pcl::PointXYZRGB min_point_OBB,  max_point_OBB;
+    pcl::PointXYZRGB position_OBB;
+    Eigen::Matrix3f rotational_matrix_OBB;
+
+    feature_extractor.setInputCloud(source_cloud);
+    feature_extractor.compute();
+    feature_extractor.getAABB(min_point_AABB, max_point_AABB);
+    feature_extractor.getOBB(min_point_OBB, max_point_OBB, position_OBB, rotational_matrix_OBB);
+
+    //-- Calculate aspect ratio and bin size
+    /* Note: if not using std::abs, floating abs function seems to be
+     * not supported :-/ */
+    float AABB_width = std::abs(max_point_AABB.x - min_point_AABB.x);
+    float AABB_height = std::abs(max_point_AABB.y - min_point_AABB.y);
+    float aspect_ratio = AABB_width / AABB_height;
+
+    int width, height;
+    if (aspect_ratio >= 1)
+    {
+        width = resolution;
+        height = resolution/aspect_ratio;
+    }
+    else
+    {
+        height = resolution;
+        width = resolution*aspect_ratio;
+    }
+
+    float bin_size_x = AABB_width/(float)width;
+    float bin_size_y = AABB_height/(float)height;
+
+    //-- Fill bins with z values
+
+    this->depth_image = Eigen::MatrixXf::Zero(height, width);
+
+    for (int i = 0; i < processed_cloud->points.size(); i++)
+    {
+        if (isnan(processed_cloud->points[i].x) || isnan(processed_cloud->points[i].y ))
+            continue;
+
+        int index_x = (processed_cloud->points[i].x-min_point_AABB.x) / bin_size_x;
+        int index_y = (max_point_AABB.y - processed_cloud->points[i].y) / bin_size_y;
+
+        if (index_x >= width) index_x = width-1;
+        if (index_y >= height) index_y = height-1;
+
+        std::cout << "Point " << i << "/" << processed_cloud->points.size()
+                  <<" (" << processed_cloud->points[i].x << ", " << processed_cloud->points[i].y << ", "<< processed_cloud->points[i].z
+                  << ") in bin (" << index_x << ", " << index_y << ")" << std::endl;
+
+        float old_z = depth_image(index_y, index_x);
+        if (processed_cloud->points[i].z > old_z)
+            depth_image(index_y, index_x) = processed_cloud->points[i].z;
+    }
 
     return 0;
 }
