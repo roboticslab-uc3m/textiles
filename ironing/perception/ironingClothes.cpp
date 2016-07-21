@@ -25,6 +25,7 @@
 #include <pcl/search/kdtree.h>
 #include <pcl/segmentation/region_growing_rgb.h>
 #include <pcl/point_types_conversion.h>
+#include <pcl/features/moment_of_inertia_estimation.h>
 
 #include "Debug.hpp"
 
@@ -368,8 +369,39 @@ int main (int argc, char** argv)
     debug.plotPointCloud<pcl::PointXYZRGB>(largest_color_cluster, Debug::COLOR_GREEN);
     debug.show("Filtered garment cloud");
 
+    //-- Centering the point cloud before saving it
+    //-----------------------------------------------------------------------------------
+    //-- Find bounding box
+    pcl::MomentOfInertiaEstimation<pcl::PointXYZRGB> feature_extractor;
+    pcl::PointXYZRGB min_point_AABB, max_point_AABB;
+    pcl::PointXYZRGB min_point_OBB,  max_point_OBB;
+    pcl::PointXYZRGB position_OBB;
+    Eigen::Matrix3f rotational_matrix_OBB;
+
+    feature_extractor.setInputCloud(largest_color_cluster);
+    feature_extractor.compute();
+    feature_extractor.getAABB(min_point_AABB, max_point_AABB);
+    feature_extractor.getOBB(min_point_OBB, max_point_OBB, position_OBB, rotational_matrix_OBB);
+
+    //-- Translating to center
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr centered_garment_cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+    Eigen::Affine3f garment_translation_transform = Eigen::Affine3f::Identity();
+    garment_translation_transform.translation() << -position_OBB.x, -position_OBB.y, -position_OBB.z;
+    pcl::transformPointCloud(*largest_color_cluster, *centered_garment_cloud, garment_translation_transform);
+
+    //-- Orient using the principal axes of the bounding box
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr oriented_garment_cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+    Eigen::Vector3f principal_axis_x(max_point_OBB.x - min_point_OBB.x, 0, 0);
+    Eigen::Quaternionf garment_rotation_quaternion = Eigen::Quaternionf().setFromTwoVectors(principal_axis_x, Eigen::Vector3f::UnitX());
+    pcl::transformPointCloud(*centered_garment_cloud, *oriented_garment_cloud, Eigen::Vector3f(0,0,0), garment_rotation_quaternion);
+
+    debug.setEnabled(true);
+    debug.plotPointCloud<pcl::PointXYZRGB>(oriented_garment_cloud, Debug::COLOR_GREEN);
+    debug.plotBoundingBox(min_point_OBB, max_point_OBB, position_OBB, rotational_matrix_OBB, Debug::COLOR_YELLOW);
+    debug.show("Oriented garment patch");
+
     //-- Save point cloud in file to process it in Python
-    pcl::io::savePCDFileBinary(argv[filenames[0]]+std::string("-output.pcd"), *largest_color_cluster);
+    pcl::io::savePCDFileBinary(argv[filenames[0]]+std::string("-output.pcd"), *oriented_garment_cloud);
 
     return 0;
 }
