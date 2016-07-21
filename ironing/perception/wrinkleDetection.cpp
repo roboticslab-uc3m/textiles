@@ -36,6 +36,8 @@ int main (int argc, char** argv)
     //---------------------------------------------------------------------------------------------------
     //-- Initialization stuff
     //---------------------------------------------------------------------------------------------------
+    //-- Fixed arguments (to be command-line arguments)
+    std::string output_image = "depth_image.m";
 
     //-- Command-line arguments
     float normal_threshold = 0.02;
@@ -219,63 +221,56 @@ int main (int argc, char** argv)
 
 
     //-- Create 2D output image
-    //-- Find bounding box of input point_cloud
+    //-------------------------------------------------------------------------------------------
+    float average_point_distance=0.005; //-- Parameter to determine output image resolution
+
+    //-- Find bounding box of input point_cloud (already centered)
     pcl::MomentOfInertiaEstimation<pcl::PointXYZRGB> feature_extractor;
     pcl::PointXYZRGB min_point_AABB, max_point_AABB;
-    pcl::PointXYZRGB min_point_OBB,  max_point_OBB;
-    pcl::PointXYZRGB position_OBB;
-    Eigen::Matrix3f rotational_matrix_OBB;
 
     feature_extractor.setInputCloud(source_cloud);
     feature_extractor.compute();
     feature_extractor.getAABB(min_point_AABB, max_point_AABB);
-    feature_extractor.getOBB(min_point_OBB, max_point_OBB, position_OBB, rotational_matrix_OBB);
 
-    //-- Calculate aspect ratio and bin size
+    //-- Calculate image resolution
     /* Note: if not using std::abs, floating abs function seems to be
      * not supported :-/ */
     float AABB_width = std::abs(max_point_AABB.x - min_point_AABB.x);
     float AABB_height = std::abs(max_point_AABB.y - min_point_AABB.y);
-    float aspect_ratio = AABB_width / AABB_height;
 
-    int width, height;
-    if (aspect_ratio >= 1)
-    {
-        width = resolution;
-        height = resolution/aspect_ratio;
-    }
-    else
-    {
-        height = resolution;
-        width = resolution*aspect_ratio;
-    }
-
-    float bin_size_x = AABB_width/(float)width;
-    float bin_size_y = AABB_height/(float)height;
+    int width = std::ceil(AABB_width / average_point_distance);
+    int height = std::ceil(AABB_height / average_point_distance);
+    std::cout << "Creating 2D image with resolution: " << width << "x" << height << "px" << std::endl;
 
     //-- Fill bins with z values
 
-    this->depth_image = Eigen::MatrixXf::Zero(height, width);
+    Eigen::MatrixXf image = Eigen::MatrixXf::Zero(height, width);
 
-    for (int i = 0; i < processed_cloud->points.size(); i++)
+    #pragma omp parallel for
+    for (int i = 0; i < source_cloud->points.size(); i++)
     {
-        if (isnan(processed_cloud->points[i].x) || isnan(processed_cloud->points[i].y ))
+        if (isnan(source_cloud->points[i].x) || isnan(source_cloud->points[i].y ))
             continue;
 
-        int index_x = (processed_cloud->points[i].x-min_point_AABB.x) / bin_size_x;
-        int index_y = (max_point_AABB.y - processed_cloud->points[i].y) / bin_size_y;
+        int index_x = (source_cloud->points[i].x-min_point_AABB.x) / average_point_distance;
+        int index_y = (max_point_AABB.y - source_cloud->points[i].y) / average_point_distance;
 
         if (index_x >= width) index_x = width-1;
         if (index_y >= height) index_y = height-1;
 
-        std::cout << "Point " << i << "/" << processed_cloud->points.size()
-                  <<" (" << processed_cloud->points[i].x << ", " << processed_cloud->points[i].y << ", "<< processed_cloud->points[i].z
-                  << ") in bin (" << index_x << ", " << index_y << ")" << std::endl;
-
-        float old_z = depth_image(index_y, index_x);
-        if (processed_cloud->points[i].z > old_z)
-            depth_image(index_y, index_x) = processed_cloud->points[i].z;
+        float old_z;
+        #pragma omp critical
+        {
+        old_z = image(index_y, index_x);
+        if (source_cloud->points[i].z > old_z)
+            image(index_y, index_x) = source_cloud->points[i].z;
+        }
     }
+
+    //-- Temporal fix to get image (through file)
+    std::ofstream file(output_image.c_str());
+    file << image;
+    file.close();
 
     return 0;
 }
