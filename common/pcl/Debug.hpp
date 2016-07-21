@@ -31,8 +31,13 @@ class Debug
         bool plotNormals(typename pcl::PointCloud<PointT>::Ptr& cloud,
                          typename pcl::PointCloud<PointNT>::Ptr& normals,
                          const DebugColor& color, int density = 100, float scale = 0.02);
+
         bool plotPlane(pcl::ModelCoefficients plane_coefficients, const DebugColor& color);
         bool plotPlane(double A, double B, double C, double D, const DebugColor& color);
+
+        template<typename PointT>
+        bool plotBoundingBox(PointT min_point, PointT max_point, PointT position,
+                             Eigen::Matrix3f rotational_matrix, const DebugColor& color, bool solid = false);
 
         bool show(std::string tag = "");
 
@@ -100,6 +105,68 @@ bool Debug::plotPointCloud(typename pcl::PointCloud<PointT>::Ptr& point_cloud,
     current_viewer->addPointCloud(point_cloud, color_handler, uuid_str);
     current_viewer->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE,
                                                      point_size, uuid_str);
+
+    if (auto_show)
+        return show("auto");
+
+    return true;
+}
+
+template<typename PointT>
+bool Debug::plotBoundingBox(PointT min_point, PointT max_point, PointT center,
+                            Eigen::Matrix3f rotational_matrix, const Debug::DebugColor &color, bool solid)
+{
+    if (current_viewer == nullptr)
+        if (!init_viewer())
+            return false;
+
+    //-- Craft uuid string for current uuid
+    std::string uuid_str = std::to_string(uuid_counter);
+    uuid_counter++;
+
+    //-- Create points to calculate lines
+    Eigen::Vector3f position (center.x, center.y, center.z);
+    Eigen::Vector3f p1 (min_point.x, min_point.y, min_point.z);
+    Eigen::Vector3f p2 (min_point.x, min_point.y, max_point.z);
+    Eigen::Vector3f p3 (max_point.x, min_point.y, max_point.z);
+    Eigen::Vector3f p4 (max_point.x, min_point.y, min_point.z);
+    Eigen::Vector3f p5 (min_point.x, max_point.y, min_point.z);
+    Eigen::Vector3f p6 (min_point.x, max_point.y, max_point.z);
+    Eigen::Vector3f p7 (max_point.x, max_point.y, max_point.z);
+    Eigen::Vector3f p8 (max_point.x, max_point.y, min_point.z);
+
+    p1 = rotational_matrix * p1 + position;
+    p2 = rotational_matrix * p2 + position;
+    p3 = rotational_matrix * p3 + position;
+    p4 = rotational_matrix * p4 + position;
+    p5 = rotational_matrix * p5 + position;
+    p6 = rotational_matrix * p6 + position;
+    p7 = rotational_matrix * p7 + position;
+    p8 = rotational_matrix * p8 + position;
+
+    //-- Go back to pcl data types
+    pcl::PointXYZ pt1 (p1 (0), p1 (1), p1 (2));
+    pcl::PointXYZ pt2 (p2 (0), p2 (1), p2 (2));
+    pcl::PointXYZ pt3 (p3 (0), p3 (1), p3 (2));
+    pcl::PointXYZ pt4 (p4 (0), p4 (1), p4 (2));
+    pcl::PointXYZ pt5 (p5 (0), p5 (1), p5 (2));
+    pcl::PointXYZ pt6 (p6 (0), p6 (1), p6 (2));
+    pcl::PointXYZ pt7 (p7 (0), p7 (1), p7 (2));
+    pcl::PointXYZ pt8 (p8 (0), p8 (1), p8 (2));
+
+    //-- Draw stuff
+    current_viewer->addLine (pt1, pt2, 1.0, 0.0, 0.0, "1 edge "+uuid_str);
+    current_viewer->addLine (pt1, pt4, 1.0, 0.0, 0.0, "2 edge "+uuid_str);
+    current_viewer->addLine (pt1, pt5, 1.0, 0.0, 0.0, "3 edge "+uuid_str);
+    current_viewer->addLine (pt5, pt6, 1.0, 0.0, 0.0, "4 edge "+uuid_str);
+    current_viewer->addLine (pt5, pt8, 1.0, 0.0, 0.0, "5 edge "+uuid_str);
+    current_viewer->addLine (pt2, pt6, 1.0, 0.0, 0.0, "6 edge "+uuid_str);
+    current_viewer->addLine (pt6, pt7, 1.0, 0.0, 0.0, "7 edge "+uuid_str);
+    current_viewer->addLine (pt7, pt8, 1.0, 0.0, 0.0, "8 edge "+uuid_str);
+    current_viewer->addLine (pt2, pt3, 1.0, 0.0, 0.0, "9 edge "+uuid_str);
+    current_viewer->addLine (pt4, pt8, 1.0, 0.0, 0.0, "10 edge "+uuid_str);
+    current_viewer->addLine (pt3, pt4, 1.0, 0.0, 0.0, "11 edge "+uuid_str);
+    current_viewer->addLine (pt3, pt7, 1.0, 0.0, 0.0, "12 edge "+uuid_str);
 
     if (auto_show)
         return show("auto");
