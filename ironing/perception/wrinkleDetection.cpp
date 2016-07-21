@@ -37,7 +37,7 @@ int main (int argc, char** argv)
     //-- Initialization stuff
     //---------------------------------------------------------------------------------------------------
     //-- Fixed arguments (to be command-line arguments)
-    std::string output_image = "depth_image.m";
+    std::string output_image = "wild_image.m";
 
     //-- Command-line arguments
     float normal_threshold = 0.02;
@@ -258,12 +258,21 @@ int main (int argc, char** argv)
         if (index_x >= width) index_x = width-1;
         if (index_y >= height) index_y = height-1;
 
+        /* //-- This code is for ZBuffer depth map output image
         float old_z;
         #pragma omp critical
         {
         old_z = image(index_y, index_x);
         if (source_cloud->points[i].z > old_z)
             image(index_y, index_x) = source_cloud->points[i].z;
+        }*/
+
+        float old_wild;
+        #pragma omp critical
+        {
+        old_wild = image(index_y, index_x);
+        if (wild[i] > old_wild)
+            image(index_y, index_x) = wild[i];
         }
     }
 
