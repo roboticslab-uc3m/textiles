@@ -37,7 +37,7 @@ int main (int argc, char** argv)
     //-- Initialization stuff
     //---------------------------------------------------------------------------------------------------
     //-- Fixed arguments (to be command-line arguments)
-    std::string output_image = "wild_image.m";
+    std::string output_image = "wild_mean_image.m";
 
     //-- Command-line arguments
     float normal_threshold = 0.02;
@@ -245,6 +245,7 @@ int main (int argc, char** argv)
     //-- Fill bins with z values
 
     Eigen::MatrixXf image = Eigen::MatrixXf::Zero(height, width);
+    Eigen::MatrixXf element_count = Eigen::MatrixXf::Zero(height, width);
 
     #pragma omp parallel for
     for (int i = 0; i < source_cloud->points.size(); i++)
@@ -267,13 +268,30 @@ int main (int argc, char** argv)
             image(index_y, index_x) = source_cloud->points[i].z;
         }*/
 
+        /* //-- This code is for wild output image (highest value is stored)
         float old_wild;
         #pragma omp critical
         {
         old_wild = image(index_y, index_x);
         if (wild[i] > old_wild)
             image(index_y, index_x) = wild[i];
+        }*/
+
+        float old_mean;
+        int n_current_bin;
+        #pragma omp critical
+        {
+        old_mean = image(index_y, index_x);
+        n_current_bin = element_count(index_y, index_x) +1;
+
+        //-- Compute new value
+        float mean = old_mean + (wild[i] - old_mean) / (float)n_current_bin;
+
+        //-- Store back values
+        image(index_y, index_x) = mean;
+        element_count(index_y, index_x) = n_current_bin;
         }
+
     }
 
     //-- Temporal fix to get image (through file)

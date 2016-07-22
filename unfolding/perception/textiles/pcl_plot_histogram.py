@@ -17,7 +17,7 @@ if __name__ == '__main__':
     if not image_filenames:
         print "usage: pcl_plot_histogram [histogram_file.m]"
         #image_filenames = ["../pcl/build/histogram_image.m"]
-        image_filenames = ["/home/def/Repositories/textiles/build/ironing/perception/wild_image.m",
+        image_filenames = ["/home/def/Repositories/textiles/build/ironing/perception/wild_mean_image.m",
                            "/home/def/Repositories/textiles/data/view_colored/histogram_pants3.m",
                            "/home/def/Repositories/textiles/data/view_colored/histogram_pants2.m"]
 
