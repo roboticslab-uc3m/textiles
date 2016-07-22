@@ -38,6 +38,7 @@ int main (int argc, char** argv)
     //---------------------------------------------------------------------------------------------------
     //-- Fixed arguments (to be command-line arguments)
     std::string output_image = "wild_mean_image.m";
+    std::string output_mask = "image_mask.m";
 
     //-- Command-line arguments
     float normal_threshold = 0.02;
@@ -245,6 +246,7 @@ int main (int argc, char** argv)
     //-- Fill bins with z values
 
     Eigen::MatrixXf image = Eigen::MatrixXf::Zero(height, width);
+    Eigen::MatrixXd mask = Eigen::MatrixXd::Zero(height, width);
     Eigen::MatrixXf element_count = Eigen::MatrixXf::Zero(height, width);
 
     #pragma omp parallel for
@@ -290,6 +292,9 @@ int main (int argc, char** argv)
         //-- Store back values
         image(index_y, index_x) = mean;
         element_count(index_y, index_x) = n_current_bin;
+
+        //-- Mask
+        mask(index_y, index_x) = 1;
         }
 
     }
@@ -298,6 +303,12 @@ int main (int argc, char** argv)
     std::ofstream file(output_image.c_str());
     file << image;
     file.close();
+
+
+    //-- Temporal fix to get mask (through file)
+    std::ofstream mask_file(output_mask.c_str());
+    mask_file << mask;
+    mask_file.close();
 
     return 0;
 }
