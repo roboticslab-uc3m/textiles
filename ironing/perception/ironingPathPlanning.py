@@ -115,38 +115,51 @@ if __name__ == '__main__':
     (rows,cols) = np.nonzero(wrinkle_skeleton)
 
     # Initialize empty list of co-ordinates
-    skel_coords = []
+    trajectory = {}
+    extreme_points = []
 
-    # For each non-zero pixel...
-    for x, y in zip(cols,rows):
-
-        # Extract an 8-connected neighbourhood
-        (col_neigh,row_neigh) = np.meshgrid(np.array([x-1,x,x+1]), np.array([y-1,y,y+1]))
-
-        # Cast to int to index into image
-        col_neigh = col_neigh.astype('int')
-        row_neigh = row_neigh.astype('int')
-
-        # Convert into a single 1D array and check for non-zero locations
-        pix_neighbourhood = wrinkle_skeleton[row_neigh,col_neigh].ravel() != 0
-
-        # If the number of non-zero locations equals 2, add this to
-        # our list of co-ordinates
-        if np.sum(pix_neighbourhood) == 2:
-            skel_coords.append((x,y))
-
-    # Display the image and plot endpoints
-    plt.imshow(normalized_image, interpolation='nearest', cmap=plt.cm.RdGy)
-    # Plot points
-    for x, y in skel_coords :
-        plt.plot(x, y, 'bo', alpha=0.7)
-    plt.show()
+    # My own method to retrieve the trajectory as a graph:
+    for src_x, src_y in zip(cols,rows):
+        for dst_x, dst_y in zip(cols, rows):
+            if src_x == dst_x and src_y == dst_y:
+                continue
+            if np.sqrt((src_x-dst_x)**2+(src_y-dst_y)**2) < 2:
+                trajectory.setdefault((src_x, src_y), []).append((dst_x, dst_y))
+        if len(trajectory.get((src_x, src_y), [])) == 1:
+            extreme_points.append((src_x, src_y))
+    print trajectory
 
     # Compute start and end points
     start = None
     end = None
     distances = []
-    for x, y in skel_coords:
+    for x, y in extreme_points:
         dist_to_contour = max([np.sqrt((x-i)**2 +(y-j)**2) for i, j in points])
         distances.append(dist_to_contour)
-    print distances
+
+    if distances[0] >= distances[1]:
+        start, end = extreme_points
+    else:
+        end, start = extreme_points
+
+    # Compute trajectory as a list of points
+    src_node = start
+    trajectory_points = []
+    while True:
+        trajectory_points.append(src_node)
+        if src_node == end:
+            break
+        for destination in trajectory[src_node]:
+            if destination not in trajectory_points:
+                src_node = destination
+                continue
+
+    # Display the image and plot endpoints
+    plt.imshow(normalized_image, interpolation='nearest', cmap=plt.cm.RdGy)
+    # Plot lines
+    for (start_x, start_y), (end_x, end_y) in zip(trajectory_points, trajectory_points[1:]+trajectory_points[0:1]):
+        plt.plot( (start_x, end_x), (start_y, end_y), 'r-', linewidth=2.0, alpha=0.7 )
+    # Plot points
+    plt.plot(start[0], start[1], 'bo', alpha=0.7)
+    plt.plot(end[0], end[1], 'go', alpha=0.7)
+    plt.show()
