@@ -31,6 +31,14 @@ void show_usage(char * program_name)
     std::cout << "--rsd: Enable RSD descriptors calculation" << std::endl;
 }
 
+template<typename PointT>
+void record_point(std::string output_file, PointT point)
+{
+    std::ofstream file(output_file.c_str());
+    file << point.x << " " << point.y << " " << point.z;
+    file.close();
+}
+
 int main (int argc, char** argv)
 {
     //---------------------------------------------------------------------------------------------------
@@ -232,6 +240,9 @@ int main (int argc, char** argv)
     feature_extractor.setInputCloud(source_cloud);
     feature_extractor.compute();
     feature_extractor.getAABB(min_point_AABB, max_point_AABB);
+
+    //-- Save 2D image origin point
+    record_point("origin.txt", min_point_AABB);
 
     //-- Calculate image resolution
     /* Note: if not using std::abs, floating abs function seems to be

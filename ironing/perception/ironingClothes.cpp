@@ -39,6 +39,16 @@ void show_usage(char * program_name)
     std::cout << "--hsv-v-threshold: threshold for value channel on hsv (default: ??)" << std::endl;
 }
 
+void record_transformation(std::string output_file, Eigen::Affine3f translation_transform, Eigen::Quaternionf rotation_quaternion)
+{
+    std::ofstream file(output_file.c_str());
+    file << "Translation:" << std::endl;
+    file << translation_transform.matrix() << std::endl << std::endl;
+    file << "Rotation:" << std::endl;
+    file << rotation_quaternion.toRotationMatrix() << std::endl;
+    file.close();
+}
+
 int main (int argc, char** argv)
 {
     //---------------------------------------------------------------------------------------------------
@@ -298,6 +308,9 @@ int main (int argc, char** argv)
     Eigen::Quaternionf rotation_quaternion = Eigen::Quaternionf().setFromTwoVectors(normal_vector, Eigen::Vector3f::UnitZ());
     pcl::transformPointCloud(*centered_cloud, *oriented_cloud, Eigen::Vector3f(0,0,0), rotation_quaternion);
 
+    //-- Save to file
+    record_transformation(argv[filenames[0]]+std::string("-transform1.txt"), translation_transform, rotation_quaternion);
+
     debug.setEnabled(false);
     debug.plotPointCloud<pcl::PointXYZRGB>(oriented_cloud, Debug::COLOR_GREEN);
     debug.show("Oriented");
@@ -395,7 +408,11 @@ int main (int argc, char** argv)
     Eigen::Quaternionf garment_rotation_quaternion = Eigen::Quaternionf().setFromTwoVectors(principal_axis_x, Eigen::Vector3f::UnitX());
     pcl::transformPointCloud(*centered_garment_cloud, *oriented_garment_cloud, Eigen::Vector3f(0,0,0), garment_rotation_quaternion);
 
-    debug.setEnabled(true);
+    //-- Save to file
+    record_transformation(argv[filenames[0]]+std::string("-transform2.txt"), garment_translation_transform, garment_rotation_quaternion);
+
+
+    debug.setEnabled(false);
     debug.plotPointCloud<pcl::PointXYZRGB>(oriented_garment_cloud, Debug::COLOR_GREEN);
     debug.plotBoundingBox(min_point_OBB, max_point_OBB, position_OBB, rotational_matrix_OBB, Debug::COLOR_YELLOW);
     debug.show("Oriented garment patch");
