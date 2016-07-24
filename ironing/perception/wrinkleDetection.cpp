@@ -45,8 +45,9 @@ int main (int argc, char** argv)
     //-- Initialization stuff
     //---------------------------------------------------------------------------------------------------
     //-- Fixed arguments (to be command-line arguments)
-    std::string output_image = "wild_mean_image.m";
-    std::string output_mask = "image_mask.m";
+    std::string output_image = "-depth_image.m";
+    std::string output_wild = "-wild_image.m";
+    std::string output_mask = "-image_mask.m";
 
     //-- Command-line arguments
     float normal_threshold = 0.02;
@@ -218,15 +219,15 @@ int main (int argc, char** argv)
     }
 
     //-- Save to mat file
-    std::ofstream wild_file("wild_descriptors.m");
-    for (int i = 0; i < source_cloud->points.size(); i++)
-    {
-        wild_file << source_cloud->points[i].x << " "
-                 << source_cloud->points[i].y << " "
-                 << source_cloud->points[i].z << " "
-                 << wild[i] << "\n";
-    }
-    wild_file.close();
+//    std::ofstream wild_file("wild_descriptors.m");
+//    for (int i = 0; i < source_cloud->points.size(); i++)
+//    {
+//        wild_file << source_cloud->points[i].x << " "
+//                 << source_cloud->points[i].y << " "
+//                 << source_cloud->points[i].z << " "
+//                 << wild[i] << "\n";
+//    }
+//    wild_file.close();
 
 
     //-- Create 2D output image
@@ -242,7 +243,7 @@ int main (int argc, char** argv)
     feature_extractor.getAABB(min_point_AABB, max_point_AABB);
 
     //-- Save 2D image origin point
-    record_point("origin.txt", min_point_AABB);
+    record_point(argv[filenames[0]]+std::string("-origin.txt"), min_point_AABB);
 
     //-- Calculate image resolution
     /* Note: if not using std::abs, floating abs function seems to be
@@ -257,6 +258,7 @@ int main (int argc, char** argv)
     //-- Fill bins with z values
 
     Eigen::MatrixXf image = Eigen::MatrixXf::Zero(height, width);
+    Eigen::MatrixXf depth = Eigen::MatrixXf::Zero(height, width);
     Eigen::MatrixXd mask = Eigen::MatrixXd::Zero(height, width);
     Eigen::MatrixXf element_count = Eigen::MatrixXf::Zero(height, width);
 
@@ -272,14 +274,14 @@ int main (int argc, char** argv)
         if (index_x >= width) index_x = width-1;
         if (index_y >= height) index_y = height-1;
 
-        /* //-- This code is for ZBuffer depth map output image
+        //-- This code is for ZBuffer depth map output image
         float old_z;
         #pragma omp critical
         {
-        old_z = image(index_y, index_x);
+        old_z = depth(index_y, index_x);
         if (source_cloud->points[i].z > old_z)
-            image(index_y, index_x) = source_cloud->points[i].z;
-        }*/
+            depth(index_y, index_x) = source_cloud->points[i].z;
+        }
 
         /* //-- This code is for wild output image (highest value is stored)
         float old_wild;
@@ -310,14 +312,18 @@ int main (int argc, char** argv)
 
     }
 
-    //-- Temporal fix to get image (through file)
-    std::ofstream file(output_image.c_str());
-    file << image;
+    //-- Temporal fix to get depth image (through file)
+    std::ofstream file((argv[filenames[0]]+output_image).c_str());
+    file << depth;
     file.close();
 
+    //-- Temporal fix to get image (through file)
+    std::ofstream wild_file((argv[filenames[0]]+output_wild).c_str());
+    wild_file << image;
+    wild_file.close();
 
     //-- Temporal fix to get mask (through file)
-    std::ofstream mask_file(output_mask.c_str());
+    std::ofstream mask_file((argv[filenames[0]]+output_mask).c_str());
     mask_file << mask;
     mask_file.close();
 
