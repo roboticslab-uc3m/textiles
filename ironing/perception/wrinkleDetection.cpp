@@ -243,7 +243,7 @@ int main (int argc, char** argv)
     feature_extractor.getAABB(min_point_AABB, max_point_AABB);
 
     //-- Save 2D image origin point
-    record_point(argv[filenames[0]]+std::string("-origin.txt"), min_point_AABB);
+    record_point(argv[filenames[0]]+std::string("-origin.txt"), max_point_AABB);
 
     //-- Calculate image resolution
     /* Note: if not using std::abs, floating abs function seems to be

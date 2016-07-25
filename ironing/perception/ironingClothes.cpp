@@ -167,7 +167,7 @@ int main (int argc, char** argv)
     debug.setAutoShow(false);
     debug.setEnabled(false);
 
-    debug.setEnabled(false);
+    debug.setEnabled(true);
     debug.plotPointCloud<pcl::PointXYZRGB>(source_cloud_color, Debug::COLOR_ORIGINAL);
     debug.show("Original with color");
 
@@ -285,7 +285,7 @@ int main (int argc, char** argv)
         std::cout << "Found closest plane with h=" << min_height << std::endl;
 
         //-- Debug stuff
-        debug.setEnabled(false);
+        debug.setEnabled(true);
         debug.plotPlane(*garment_plane, Debug::COLOR_BLUE);
         debug.plotPointCloud<pcl::PointXYZ>(source_cloud, Debug::COLOR_RED);
         debug.show("Garment plane");
@@ -311,7 +311,7 @@ int main (int argc, char** argv)
     //-- Save to file
     record_transformation(argv[filenames[0]]+std::string("-transform1.txt"), translation_transform, rotation_quaternion);
 
-    debug.setEnabled(false);
+    debug.setEnabled(true);
     debug.plotPointCloud<pcl::PointXYZRGB>(oriented_cloud, Debug::COLOR_GREEN);
     debug.show("Oriented");
 
@@ -325,7 +325,7 @@ int main (int argc, char** argv)
     passthrough_filter.setFilterLimitsNegative(false);
     passthrough_filter.filter(*garment_table_cloud);
 
-    debug.setEnabled(false);
+    debug.setEnabled(true);
     debug.plotPointCloud<pcl::PointXYZRGB>(garment_table_cloud, Debug::COLOR_GREEN);
     debug.show("Table cloud (filtered)");
 
@@ -343,7 +343,7 @@ int main (int argc, char** argv)
             filtered_garment_cloud->push_back(garment_table_cloud->points[i]);
     }
 
-    debug.setEnabled(false);
+    debug.setEnabled(true);
     debug.plotPointCloud<pcl::PointXYZRGB>(filtered_garment_cloud, Debug::COLOR_GREEN);
     debug.show("Garment cloud");
 
@@ -378,7 +378,7 @@ int main (int argc, char** argv)
       }
     }
 
-    debug.setEnabled(false);
+    debug.setEnabled(true);
     debug.plotPointCloud<pcl::PointXYZRGB>(largest_color_cluster, Debug::COLOR_GREEN);
     debug.show("Filtered garment cloud");
 
@@ -405,14 +405,14 @@ int main (int argc, char** argv)
     //-- Orient using the principal axes of the bounding box
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr oriented_garment_cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
     Eigen::Vector3f principal_axis_x(max_point_OBB.x - min_point_OBB.x, 0, 0);
-    Eigen::Quaternionf garment_rotation_quaternion = Eigen::Quaternionf().setFromTwoVectors(principal_axis_x, Eigen::Vector3f::UnitX());
+    Eigen::Quaternionf garment_rotation_quaternion = Eigen::Quaternionf().setFromTwoVectors(principal_axis_x, Eigen::Vector3f::UnitX()); //-- This transformation is wrong (I guess)
     pcl::transformPointCloud(*centered_garment_cloud, *oriented_garment_cloud, Eigen::Vector3f(0,0,0), garment_rotation_quaternion);
 
     //-- Save to file
     record_transformation(argv[filenames[0]]+std::string("-transform2.txt"), garment_translation_transform, garment_rotation_quaternion);
 
 
-    debug.setEnabled(false);
+    debug.setEnabled(true);
     debug.plotPointCloud<pcl::PointXYZRGB>(oriented_garment_cloud, Debug::COLOR_GREEN);
     debug.plotBoundingBox(min_point_OBB, max_point_OBB, position_OBB, rotational_matrix_OBB, Debug::COLOR_YELLOW);
     debug.show("Oriented garment patch");

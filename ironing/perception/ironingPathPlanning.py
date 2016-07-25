@@ -7,15 +7,15 @@ import sys
 import numpy as np
 import matplotlib.pyplot as plt
 from skimage.filters.rank import median
-from skimage.morphology import disk
+from skimage.morphology import binary_erosion, disk
 from skimage.morphology import medial_axis, skeletonize
 from skimage import img_as_ubyte
 import cv2
 from skimage.filters import frangi, hessian
 
 #image_filename = "/home/def/Research/jResearch/2016-06-23-textiles-ironing/hoodie1/colored_mesh_1.ply-output.pcd-depth_image.m"
-image_filename = "/home/def/Research/jResearch/2016-06-23-textiles-ironing/hoodie2/colored_mesh_1.ply-output.pcd-wild_image.m"
-mask_filename = "/home/def/Research/jResearch/2016-06-23-textiles-ironing/hoodie2/colored_mesh_1.ply-output.pcd-image_mask.m"
+image_filename = "/home/def/Research/jresearch/2016-07-25-textiles-ironing/hoodie1/colored_mesh_1.ply-output.pcd-wild_image.m"
+mask_filename = "/home/def/Research/jresearch/2016-07-25-textiles-ironing/hoodie1/colored_mesh_1.ply-output.pcd-image_mask.m"
 use_frangi = False
 
 __author__ = 'def'
@@ -25,7 +25,7 @@ if __name__ == '__main__':
     # Load data from files
     image = np.loadtxt(image_filename)
     mask = np.loadtxt(mask_filename)
-    mask = img_as_ubyte(mask)
+    mask = img_as_ubyte(binary_erosion(mask), disk(7))
 
     # Normalize (?)
     minimum = 0.9 #np.min(image[np.nonzero(image)])
@@ -80,7 +80,7 @@ if __name__ == '__main__':
         binary_wrinkles = img_as_ubyte(np.where(img_as_ubyte(norm_wrinkles) > threshold_wrinkles, 255, 0))
 
     else:
-        binary_wrinkles = img_as_ubyte(np.where(np.logical_and(normalized_image > 0.10,
+        binary_wrinkles = img_as_ubyte(np.where(np.logical_and(normalized_image > 0.90,
                                                                normalized_image < 0.95), 255, 0))
     # else:
     #     from skimage.segmentation import felzenszwalb, slic, quickshift
@@ -193,6 +193,7 @@ if __name__ == '__main__':
             if destination not in trajectory_points:
                 src_node = destination
                 continue
+    print trajectory_points
 
     # Display the image and plot endpoints
     plt.imshow(normalized_image, interpolation='nearest', cmap=plt.cm.RdGy)
