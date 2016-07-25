@@ -26,15 +26,13 @@
 
 #include "IroningMover.hpp"
 
-using namespace yarp::os;
-
 YARP_DECLARE_PLUGINS(TeoYarp)
 
 int main(int argc, char **argv) {
 
     YARP_REGISTER_PLUGINS(TeoYarp);
 
-    ResourceFinder rf;
+    yarp::os::ResourceFinder rf;
     rf.setVerbose(true);
     rf.setDefaultContext("mover");
     rf.setDefaultConfigFile("mover.ini");
@@ -48,7 +46,7 @@ int main(int argc, char **argv) {
     printf("Run \"%s --help\" for options.\n",argv[0]);
     printf("%s checking for yarp network... ",argv[0]);
     fflush(stdout);
-    Network yarp;
+    yarp::os::Network yarp;
     if (!yarp.checkNetwork()) {
         fprintf(stderr,"[fail]\n%s found no yarp network (try running \"yarpserver &\"), bye!\n",argv[0]);
         return 1;
