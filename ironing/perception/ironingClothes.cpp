@@ -25,6 +25,7 @@
 #include <pcl/search/kdtree.h>
 #include <pcl/segmentation/region_growing_rgb.h>
 #include <pcl/point_types_conversion.h>
+#include <pcl/features/moment_of_inertia_estimation.h>
 
 #include "Debug.hpp"
 
@@ -36,6 +37,15 @@ void show_usage(char * program_name)
     std::cout << "--ransac-threshold: Set ransac threshold value (default: 0.02)" << std::endl;
     std::cout << "--hsv-s-threshold: threshold for saturation channel on hsv (default: ??)" << std::endl;
     std::cout << "--hsv-v-threshold: threshold for value channel on hsv (default: ??)" << std::endl;
+}
+
+void record_transformation(std::string output_file, Eigen::Affine3f translation_transform, Eigen::Quaternionf rotation_quaternion)
+{
+    std::ofstream file(output_file.c_str());
+    Eigen::Transform<float, 3, Eigen::Affine> t(rotation_quaternion * translation_transform);
+    file << "# Transformation Matrix:" << std::endl;
+    file << t.matrix() << std::endl;
+    file.close();
 }
 
 int main (int argc, char** argv)
@@ -156,7 +166,7 @@ int main (int argc, char** argv)
     debug.setAutoShow(false);
     debug.setEnabled(false);
 
-    debug.setEnabled(false);
+    debug.setEnabled(true);
     debug.plotPointCloud<pcl::PointXYZRGB>(source_cloud_color, Debug::COLOR_ORIGINAL);
     debug.show("Original with color");
 
@@ -274,7 +284,7 @@ int main (int argc, char** argv)
         std::cout << "Found closest plane with h=" << min_height << std::endl;
 
         //-- Debug stuff
-        debug.setEnabled(false);
+        debug.setEnabled(true);
         debug.plotPlane(*garment_plane, Debug::COLOR_BLUE);
         debug.plotPointCloud<pcl::PointXYZ>(source_cloud, Debug::COLOR_RED);
         debug.show("Garment plane");
@@ -283,10 +293,10 @@ int main (int argc, char** argv)
     //-- Reorient cloud to origin (with color point cloud)
     //-----------------------------------------------------------------------------------
     //-- Translating to center
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr centered_cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+    //pcl::PointCloud<pcl::PointXYZRGB>::Ptr centered_cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
     Eigen::Affine3f translation_transform = Eigen::Affine3f::Identity();
     translation_transform.translation() << -garment_projected_center.x, -garment_projected_center.y, -garment_projected_center.z;
-    pcl::transformPointCloud(*source_cloud_color, *centered_cloud, translation_transform);
+    //pcl::transformPointCloud(*source_cloud_color, *centered_cloud, translation_transform);
 
     //-- Orient using the plane normal
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr oriented_cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
@@ -295,9 +305,14 @@ int main (int argc, char** argv)
     if (normal_vector.dot(Eigen::Vector3f::UnitZ()) >= 0 && normal_vector.dot(Eigen::Vector3f::UnitY()) >= 0)
         normal_vector = -normal_vector;
     Eigen::Quaternionf rotation_quaternion = Eigen::Quaternionf().setFromTwoVectors(normal_vector, Eigen::Vector3f::UnitZ());
-    pcl::transformPointCloud(*centered_cloud, *oriented_cloud, Eigen::Vector3f(0,0,0), rotation_quaternion);
+    //pcl::transformPointCloud(*centered_cloud, *oriented_cloud, Eigen::Vector3f(0,0,0), rotation_quaternion);
+    Eigen::Transform<float, 3, Eigen::Affine> t(rotation_quaternion * translation_transform);
+    pcl::transformPointCloud(*source_cloud_color, *oriented_cloud, t);
 
-    debug.setEnabled(false);
+    //-- Save to file
+    record_transformation(argv[filenames[0]]+std::string("-transform1.txt"), translation_transform, rotation_quaternion);
+
+    debug.setEnabled(true);
     debug.plotPointCloud<pcl::PointXYZRGB>(oriented_cloud, Debug::COLOR_GREEN);
     debug.show("Oriented");
 
@@ -311,7 +326,7 @@ int main (int argc, char** argv)
     passthrough_filter.setFilterLimitsNegative(false);
     passthrough_filter.filter(*garment_table_cloud);
 
-    debug.setEnabled(false);
+    debug.setEnabled(true);
     debug.plotPointCloud<pcl::PointXYZRGB>(garment_table_cloud, Debug::COLOR_GREEN);
     debug.show("Table cloud (filtered)");
 
@@ -329,7 +344,7 @@ int main (int argc, char** argv)
             filtered_garment_cloud->push_back(garment_table_cloud->points[i]);
     }
 
-    debug.setEnabled(false);
+    debug.setEnabled(true);
     debug.plotPointCloud<pcl::PointXYZRGB>(filtered_garment_cloud, Debug::COLOR_GREEN);
     debug.show("Garment cloud");
 
@@ -364,12 +379,50 @@ int main (int argc, char** argv)
       }
     }
 
-    debug.setEnabled(false);
+    debug.setEnabled(true);
     debug.plotPointCloud<pcl::PointXYZRGB>(largest_color_cluster, Debug::COLOR_GREEN);
     debug.show("Filtered garment cloud");
 
+    //-- Centering the point cloud before saving it
+    //-----------------------------------------------------------------------------------
+    //-- Find bounding box
+    pcl::MomentOfInertiaEstimation<pcl::PointXYZRGB> feature_extractor;
+    pcl::PointXYZRGB min_point_AABB, max_point_AABB;
+    pcl::PointXYZRGB min_point_OBB,  max_point_OBB;
+    pcl::PointXYZRGB position_OBB;
+    Eigen::Matrix3f rotational_matrix_OBB;
+
+    feature_extractor.setInputCloud(largest_color_cluster);
+    feature_extractor.compute();
+    feature_extractor.getAABB(min_point_AABB, max_point_AABB);
+    feature_extractor.getOBB(min_point_OBB, max_point_OBB, position_OBB, rotational_matrix_OBB);
+
+    //-- Translating to center
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr centered_garment_cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+    Eigen::Affine3f garment_translation_transform = Eigen::Affine3f::Identity();
+    garment_translation_transform.translation() << -position_OBB.x, -position_OBB.y, -position_OBB.z;
+    pcl::transformPointCloud(*largest_color_cluster, *centered_garment_cloud, garment_translation_transform);
+
+    //-- Orient using the principal axes of the bounding box
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr oriented_garment_cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+    Eigen::Vector3f principal_axis_x(max_point_OBB.x - min_point_OBB.x, 0, 0);
+    Eigen::Quaternionf garment_rotation_quaternion = Eigen::Quaternionf().setFromTwoVectors(principal_axis_x, Eigen::Vector3f::UnitX()); //-- This transformation is wrong (I guess)
+    Eigen::Transform<float, 3, Eigen::Affine> t2 = Eigen::Transform<float, 3, Eigen::Affine>::Identity();
+    t2.rotate(rotational_matrix_OBB.inverse());
+    //pcl::transformPointCloud(*centered_garment_cloud, *oriented_garment_cloud, Eigen::Vector3f(0,0,0), garment_rotation_quaternion);
+    pcl::transformPointCloud(*centered_garment_cloud, *oriented_garment_cloud, t2);
+
+    //-- Save to file
+    record_transformation(argv[filenames[0]]+std::string("-transform2.txt"), garment_translation_transform, Eigen::Quaternionf(t2.rotation()));
+
+
+    debug.setEnabled(true);
+    debug.plotPointCloud<pcl::PointXYZRGB>(oriented_garment_cloud, Debug::COLOR_GREEN);
+    debug.plotBoundingBox(min_point_OBB, max_point_OBB, position_OBB, rotational_matrix_OBB, Debug::COLOR_YELLOW);
+    debug.show("Oriented garment patch");
+
     //-- Save point cloud in file to process it in Python
-    pcl::io::savePCDFileBinary(argv[filenames[0]]+std::string("-output.pcd"), *largest_color_cluster);
+    pcl::io::savePCDFileBinary(argv[filenames[0]]+std::string("-output.pcd"), *oriented_garment_cloud);
 
     return 0;
 }
