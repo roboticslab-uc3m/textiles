@@ -12,7 +12,7 @@ bool IroningMover::configure(yarp::os::ResourceFinder &rf) {
     cartesianControl = rf.check("cartesianControl",yarp::os::Value(DEFAULT_CARTESIAN_CONTROL),"full name of arm to be used").asString();
     robot = rf.check("robot",yarp::os::Value(DEFAULT_ROBOT),"name of /robot to be used").asString();
     targetForce = rf.check("targetForce",yarp::os::Value(DEFAULT_TARGET_FORCE),"target force").asDouble();
-    std::string strategy = rf.check("strategy",yarp::os::Value(DEFAULT_STRATEGY),"strategy").asString();
+    strategy = rf.check("strategy",yarp::os::Value(DEFAULT_STRATEGY),"strategy").asString();
 
     printf("--------------------------------------------------------------\n");
     if (rf.check("help")) {
@@ -21,7 +21,7 @@ bool IroningMover::configure(yarp::os::ResourceFinder &rf) {
         printf("\t--cartesianControl: %s [%s]\n",cartesianControl.c_str(),DEFAULT_CARTESIAN_CONTROL);
         printf("\t--robot: %s [%s]\n",robot.c_str(),DEFAULT_ROBOT);
         printf("\t--targetForce: %f [%f]\n",targetForce,DEFAULT_TARGET_FORCE);
-        printf("\t--strategy: %s [%s] (position, velocity, velocityForce)\n",strategy.c_str(),DEFAULT_STRATEGY);
+        printf("\t--strategy: %s [%s] (position, velocity, velocityForce, velocityForceTraj)\n",strategy.c_str(),DEFAULT_STRATEGY);
         ::exit(0);
     }
 
@@ -37,6 +37,8 @@ bool IroningMover::configure(yarp::os::ResourceFinder &rf) {
         return strategyVelocity();
     else if (strategy == "velocityForce")
         return strategyVelocityForce();
+    else if (strategy == "velocityForceTraj")
+        return strategyVelocityForceTraj();
     else
     {
         CD_ERROR("Unknown strategy. Init program with the --help parameter to see possible --strategy.\n");
@@ -148,16 +150,19 @@ bool IroningMover::openPortsAndDevices(yarp::os::ResourceFinder &rf)
     }
     CD_SUCCESS("Connected to FT sensor.\n");
 
-    //-- Connect to vision traj to read values.
-    visionPort.open("/ironingMover/traj:i");
-    CD_DEBUG("Wait to connect to vision traj.");
-    while( visionPort.getInputCount() < 1 )
+    //-- Connect to traj to read values.
+    if("velocityForceTraj" == strategy)
     {
-        CD_DEBUG_NO_HEADER(".");
-        fflush(stdout);
-        yarp::os::Time::delay(0.5);
+        visionPort.open("/ironingMover/traj:i");
+        CD_DEBUG("Wait to connect to traj.");
+        while( visionPort.getInputCount() < 1 )
+        {
+            CD_DEBUG_NO_HEADER(".");
+            fflush(stdout);
+            yarp::os::Time::delay(0.5);
+        }
+        CD_SUCCESS("\nConnected to  traj.\n");
     }
-    CD_SUCCESS("\nConnected to  traj vision.\n");
 
     yarp::os::Time::delay(1);
 
@@ -407,6 +412,88 @@ bool IroningMover::strategyVelocity()
 /************************************************************************/
 
 bool IroningMover::strategyVelocityForce()
+{
+    int state;
+    std::vector<double> x;
+    iCartesianControl->stat(state,x);
+    iCartesianControl->movj(x);
+
+    CD_DEBUG("***************DOWN*****************\n");
+    std::vector<double> xdot(6,0.0);
+    xdot[0] = 0;
+    xdot[1] = 0;
+    xdot[2] = -0.03;
+    bool okMove = iCartesianControl->movv(xdot);
+    if( okMove ) {
+        CD_DEBUG("Begin move arm down.\n");
+    } else {
+        CD_WARNING("Failed to begin move arm down.\n");
+    }
+
+    double force = 0;
+    while( force > targetForce )
+    {
+        yarp::os::Bottle b;
+        rightArmFTSensorPort.read(b);
+        force = b.get(2).asDouble();
+        CD_DEBUG("Moving arm down, %f\n",b.get(2).asDouble());
+    }
+
+    CD_DEBUG("***************ADVANCE*****************\n");
+    xdot[0] = 0;
+    xdot[1] = +0.015;
+    xdot[2] = 0; //-- Change this to make some noise (e.g. +-0.002, even -0.01 with 0.1 gain)!
+
+    for(int i=0;i<50;i++)
+    {
+        bool okMove2 = iCartesianControl->movv(xdot);
+
+        yarp::os::Time::delay(0.5);
+        yarp::os::Bottle b;
+
+        rightArmFTSensorPort.read(b);
+
+        double fe = b.get(2).asDouble()-targetForce;
+        xdot[2] -= 0.05 * fe;  // 0.05 conservative but good, 0.1 works, but 0.5 too much.
+
+        if( okMove2 ) {
+            CD_DEBUG("[i:%d of 50] Moved arm advance, f:%f fd:%f fe:%f vz:%f\n",i,b.get(2).asDouble(),targetForce,fe,xdot[2]);
+        } else {
+            CD_WARNING("[i:%d of 50] Failed to move arm advance, f:%f fd:%f fe:%f vz:%f\n",i,b.get(2).asDouble(),targetForce,fe,xdot[2]);
+        }
+    }
+
+    CD_DEBUG("***************UP*****************\n");
+    xdot[0] = 0;
+    xdot[1] = 0;
+    xdot[2] = +0.03;
+
+    bool okMove3 = iCartesianControl->movv(xdot);
+    if( okMove3 ) {
+        CD_DEBUG("Begin move arm up.\n");
+    } else {
+        CD_WARNING("Failed to begin move arm up.\n");
+    }
+
+    for(int i=0;i<7;i++)
+    {
+        yarp::os::Time::delay(0.5);
+        yarp::os::Bottle b;
+
+        rightArmFTSensorPort.read(b);
+
+        CD_DEBUG("[i:%d of 7] Moved arm up, %f\n",i,b.get(2).asDouble());
+    }
+    iCartesianControl->stopControl();
+
+    CD_DEBUG("***************DONE*****************\n");
+
+    return true;
+}
+
+/************************************************************************/
+
+bool IroningMover::strategyVelocityForceTraj()
 {
     int state;
     std::vector<double> x;

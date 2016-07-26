@@ -54,11 +54,21 @@ class IroningMover : public yarp::os::RFModule
          *  - Up:  Moves up (positive of root Z) at 30 mm/s using movv, done after 7 iterations with 0.5 s delays. */
         bool strategyVelocityForce();
 
+        /** Strategy: Velocity Force Traj.
+         *  - Down: Moves down (negative of root Z) at 30 mm/s using movv, until targetForce check in each iteration with no delay.
+         *  - Advance: Advances (positive of root Y) at 15 mm/s using movv, modifying root Z component proportional to force error
+         *    at each iteration with 0.5 s delays, done after 50 iterations.
+         *  - Up:  Moves up (positive of root Z) at 30 mm/s using movv, done after 7 iterations with 0.5 s delays. */
+        bool strategyVelocityForceTraj();
+
         /** Target force, used in all strategies for now. */
         double targetForce;
 
         /** Robot port prefix, such as /teo or /teoSim. */
         std::string robot;
+
+        /** Used strategy. */
+        std::string strategy;
 
         /** Open Ports and Devices */
         bool openPortsAndDevices(yarp::os::ResourceFinder &rf);
