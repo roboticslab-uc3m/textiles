@@ -407,10 +407,13 @@ int main (int argc, char** argv)
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr oriented_garment_cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
     Eigen::Vector3f principal_axis_x(max_point_OBB.x - min_point_OBB.x, 0, 0);
     Eigen::Quaternionf garment_rotation_quaternion = Eigen::Quaternionf().setFromTwoVectors(principal_axis_x, Eigen::Vector3f::UnitX()); //-- This transformation is wrong (I guess)
-    pcl::transformPointCloud(*centered_garment_cloud, *oriented_garment_cloud, Eigen::Vector3f(0,0,0), garment_rotation_quaternion);
+    Eigen::Transform<float, 3, Eigen::Affine> t2 = Eigen::Transform<float, 3, Eigen::Affine>::Identity();
+    t2.rotate(rotational_matrix_OBB.inverse());
+    //pcl::transformPointCloud(*centered_garment_cloud, *oriented_garment_cloud, Eigen::Vector3f(0,0,0), garment_rotation_quaternion);
+    pcl::transformPointCloud(*centered_garment_cloud, *oriented_garment_cloud, t2);
 
     //-- Save to file
-    record_transformation(argv[filenames[0]]+std::string("-transform2.txt"), garment_translation_transform, garment_rotation_quaternion);
+    record_transformation(argv[filenames[0]]+std::string("-transform2.txt"), garment_translation_transform, Eigen::Quaternionf(t2.rotation()));
 
 
     debug.setEnabled(true);
