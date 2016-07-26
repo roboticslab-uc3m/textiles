@@ -42,10 +42,9 @@ void show_usage(char * program_name)
 void record_transformation(std::string output_file, Eigen::Affine3f translation_transform, Eigen::Quaternionf rotation_quaternion)
 {
     std::ofstream file(output_file.c_str());
-    file << "Translation:" << std::endl;
-    file << translation_transform.matrix() << std::endl << std::endl;
-    file << "Rotation:" << std::endl;
-    file << rotation_quaternion.toRotationMatrix() << std::endl;
+    Eigen::Transform<float, 3, Eigen::Affine> t(rotation_quaternion * translation_transform);
+    file << "# Transformation Matrix:" << std::endl;
+    file << t.matrix() << std::endl;
     file.close();
 }
 
@@ -294,10 +293,10 @@ int main (int argc, char** argv)
     //-- Reorient cloud to origin (with color point cloud)
     //-----------------------------------------------------------------------------------
     //-- Translating to center
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr centered_cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+    //pcl::PointCloud<pcl::PointXYZRGB>::Ptr centered_cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
     Eigen::Affine3f translation_transform = Eigen::Affine3f::Identity();
     translation_transform.translation() << -garment_projected_center.x, -garment_projected_center.y, -garment_projected_center.z;
-    pcl::transformPointCloud(*source_cloud_color, *centered_cloud, translation_transform);
+    //pcl::transformPointCloud(*source_cloud_color, *centered_cloud, translation_transform);
 
     //-- Orient using the plane normal
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr oriented_cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
@@ -306,7 +305,9 @@ int main (int argc, char** argv)
     if (normal_vector.dot(Eigen::Vector3f::UnitZ()) >= 0 && normal_vector.dot(Eigen::Vector3f::UnitY()) >= 0)
         normal_vector = -normal_vector;
     Eigen::Quaternionf rotation_quaternion = Eigen::Quaternionf().setFromTwoVectors(normal_vector, Eigen::Vector3f::UnitZ());
-    pcl::transformPointCloud(*centered_cloud, *oriented_cloud, Eigen::Vector3f(0,0,0), rotation_quaternion);
+    //pcl::transformPointCloud(*centered_cloud, *oriented_cloud, Eigen::Vector3f(0,0,0), rotation_quaternion);
+    Eigen::Transform<float, 3, Eigen::Affine> t(rotation_quaternion * translation_transform);
+    pcl::transformPointCloud(*source_cloud_color, *oriented_cloud, t);
 
     //-- Save to file
     record_transformation(argv[filenames[0]]+std::string("-transform1.txt"), translation_transform, rotation_quaternion);
