@@ -72,6 +72,9 @@ class IroningMover : public yarp::os::RFModule
         /** Port to read from force sensor */
         yarp::os::Port rightArmFTSensorPort;
 
+        /** Port to read from vision */
+        yarp::os::Port visionPort;
+
         /** Cartesian Control Name */
         std::string cartesianControl;
         /** Cartesian Control Device */

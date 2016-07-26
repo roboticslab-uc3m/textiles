@@ -138,13 +138,26 @@ bool IroningMover::openPortsAndDevices(yarp::os::ResourceFinder &rf)
     }
 
     //-- Connect to FT sensor device to read values.
-    rightArmFTSensorPort.open("/mover/force:i");
-    if( ! yarp::os::Network::connect("/jr3ch3:o","/mover/force:i") )
+    rightArmFTSensorPort.open("/ironingMover/force:i");
+    CD_DEBUG("Wait to connect to FT sensor.");
+    while( rightArmFTSensorPort.getInputCount() < 1 )
     {
-        CD_ERROR("Failed to connect to force.\n");
-        return false;
+        CD_DEBUG_NO_HEADER(".");
+        fflush(stdout);
+        yarp::os::Time::delay(0.5);
     }
-    CD_SUCCESS("Connected to force.\n");
+    CD_SUCCESS("Connected to FT sensor.\n");
+
+    //-- Connect to vision traj to read values.
+    visionPort.open("/ironingMover/traj:i");
+    CD_DEBUG("Wait to connect to vision traj.");
+    while( visionPort.getInputCount() < 1 )
+    {
+        CD_DEBUG_NO_HEADER(".");
+        fflush(stdout);
+        yarp::os::Time::delay(0.5);
+    }
+    CD_SUCCESS("\nConnected to  traj vision.\n");
 
     yarp::os::Time::delay(1);
 
