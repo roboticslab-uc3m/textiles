@@ -537,27 +537,46 @@ bool IroningMover::strategyVelocityForceTraj()
         CD_DEBUG("Moving arm down, %f\n",b.get(2).asDouble());
     }
 
-    CD_DEBUG("***************ADVANCE*****************\n");
+    CD_DEBUG("***************FOLLOW TRAJECTORY*****************\n");
     xdot[0] = 0;
-    xdot[1] = +0.015;
+    xdot[1] = 0;
     xdot[2] = 0; //-- Change this to make some noise (e.g. +-0.002, even -0.01 with 0.1 gain)!
 
-    for(int i=0;i<50;i++)
+    const double trajectoryVelocity = 0.03;
+
+    int pointIterator = 1;
+    while(pointIterator < trajectory.size())
     {
+        yarp::os::Bottle* point = trajectory.get(pointIterator).asList();
+        iCartesianControl->stat(state,x);
+
+        double xe = point->get(0).asDouble() - x[0];
+        double ye = point->get(1).asDouble() - x[1];
+
+        if( (xe  < 0.0005) && (ye < 0.0005) )
+        {
+            pointIterator++;
+            continue;
+        }
+
+        double angle = atan2( ye, xe );
+
+        xdot[0] = trajectoryVelocity * cos(angle);
+        xdot[1] = trajectoryVelocity * sin(angle);
+
+        yarp::os::Bottle b;
+        rightArmFTSensorPort.read(b);
+        double fe = b.get(2).asDouble()-targetForce;
+        xdot[2] -= 0.01 * fe;  // 0.05 conservative but good with delay=0.5, 0.1 works, but 0.5 too much.
+
         bool okMove2 = iCartesianControl->movv(xdot);
 
-        yarp::os::Time::delay(0.5);
-        yarp::os::Bottle b;
-
-        rightArmFTSensorPort.read(b);
-
-        double fe = b.get(2).asDouble()-targetForce;
-        xdot[2] -= 0.05 * fe;  // 0.05 conservative but good, 0.1 works, but 0.5 too much.
+        yarp::os::Time::delay(0.1);
 
         if( okMove2 ) {
-            CD_DEBUG("[i:%d of 50] Moved arm advance, f:%f fd:%f fe:%f vz:%f\n",i,b.get(2).asDouble(),targetForce,fe,xdot[2]);
+            CD_DEBUG_NO_HEADER("[%d of %d] fe:%f x: %f y: %f vz:%f xe:%f ye:%f\n",pointIterator,trajectory.size(),fe,x[0],x[1],xdot[2],xe,ye);
         } else {
-            CD_WARNING("[i:%d of 50] Failed to move arm advance, f:%f fd:%f fe:%f vz:%f\n",i,b.get(2).asDouble(),targetForce,fe,xdot[2]);
+            CD_WARNING("[%d of %d] Failed to move arm, fe:%f vz:%f xe:%f ye:%f\n",pointIterator,trajectory.size(),fe,xdot[2],xe,ye);
         }
     }
 
