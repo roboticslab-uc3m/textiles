@@ -153,9 +153,9 @@ bool IroningMover::openPortsAndDevices(yarp::os::ResourceFinder &rf)
     //-- Connect to traj to read values.
     if("velocityForceTraj" == strategy)
     {
-        visionPort.open("/ironingMover/traj:i");
+        trajPort.open("/ironingMover/traj:i");
         CD_DEBUG("Wait to connect to traj.");
-        while( visionPort.getInputCount() < 1 )
+        while( trajPort.getInputCount() < 1 )
         {
             CD_DEBUG_NO_HEADER(".");
             fflush(stdout);
@@ -499,6 +499,9 @@ bool IroningMover::strategyVelocityForceTraj()
     std::vector<double> x;
     iCartesianControl->stat(state,x);
     iCartesianControl->movj(x);
+
+    yarp::os::Bottle b;
+    trajPort.read(b);
 
     CD_DEBUG("***************DOWN*****************\n");
     std::vector<double> xdot(6,0.0);
