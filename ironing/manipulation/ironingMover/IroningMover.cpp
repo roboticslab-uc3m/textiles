@@ -499,20 +499,21 @@ bool IroningMover::strategyVelocityForceTraj()
     std::vector<double> x;
     iCartesianControl->stat(state,x);
     iCartesianControl->movj(x);
-
     CD_DEBUG("* at: %f,%f\n",x[0],x[1]);
+
     yarp::os::Bottle trajectory;
     trajPort.read(trajectory);
+
+    CD_DEBUG("*****MOVE ARM OVER TRAJECTORY POINT0****************\n");
     yarp::os::Bottle* point0 = trajectory.get(0).asList();
     x[0] = point0->get(0).asDouble();
     x[1] = point0->get(1).asDouble();
-    CD_DEBUG("* go to: %f,%f\n",x[0],x[1]);
-    CD_DEBUG("*****HOVER OVER FIRST TRAJECTORY POINT****************\n");
+    CD_DEBUG("* going to: %f,%f\n",x[0],x[1]);
     bool okHover = iCartesianControl->movj(x);
     if( okHover ) {
-        CD_DEBUG("Moved arm hover.\n");
+        CD_DEBUG("Moved arm over point0.\n");
     } else {
-        CD_WARNING("Failed to move arm hover.\n");
+        CD_WARNING("Failed to move arm over point0.\n");
     }
 
     CD_DEBUG("***************DOWN*****************\n");
