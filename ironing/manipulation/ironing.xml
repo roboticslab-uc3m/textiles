@@ -19,8 +19,8 @@
     </connection>
 
     <connection>
-        <from>/</from>
-        <to>/ironingMover/vision:i</to>
+        <from>/traj:o</from>
+        <to>/ironingMover/traj:i</to>
     </connection>
 
 </application>
