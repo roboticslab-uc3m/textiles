@@ -1,0 +1,17 @@
+<application>
+<name>ironing App</name>
+
+    <module>
+        <name>launchTeoYarp</name>
+        <parameters>--from /usr/local/share/teo/contexts/kinematics/rightArmKinematics-pan45-tilt30.ini --device BasicCartesianControl --angleRepr axisAngle --robot remote_controlboard --local /BasicCartesianControl/teo/rightArm --remote /teo/rightArm</parameters>
+        <node>localhost</node>
+    </module>
+
+    <module>
+        <name>ironingMover</name>
+        <parameters>--robot /teo --targetForce -5.0 --strategy position</parameters>
+        <node>localhost</node>
+    </module>
+
+</application>
+
