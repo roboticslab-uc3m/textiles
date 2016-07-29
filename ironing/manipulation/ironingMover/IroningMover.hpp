@@ -62,6 +62,8 @@ class IroningMover : public yarp::os::RFModule
          *  - Up:  Moves up (positive of root Z) at 30 mm/s using movv, done after 7 iterations with 0.5 s delays. */
         bool strategyVelocityForceTraj();
 
+        bool strategyHybrid();
+
         /** Target force, used in all strategies for now. */
         double targetForce;
 
