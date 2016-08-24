@@ -13,5 +13,15 @@
         <node>localhost</node>
     </module>
 
+    <connection>
+        <from>/jr3ch3:o</from>
+        <to>/ironingMover/force:i</to>
+    </connection>
+
+    <connection>
+        <from>/traj:o</from>
+        <to>/ironingMover/traj:i</to>
+    </connection>
+
 </application>
 
