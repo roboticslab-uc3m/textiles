@@ -1,0 +1,33 @@
+<application>
+<name>ironingSim App</name>
+
+    <module>
+        <name>teoSim</name>
+        <parameters>--env /home/yo/repos/textiles/ironing/manipulation/ironingSim/ironingSim.env.xml</parameters>
+        <node>localhost</node>
+    </module>
+
+    <module>
+        <name>launchTeoYarp</name>
+        <parameters>--from /usr/local/share/teo/contexts/kinematics/rightArmKinematics-pan45-tilt30.ini --device BasicCartesianControl --angleRepr axisAngle --robot remote_controlboard --local /BasicCartesianControl/teoSim/rightArm --remote /teoSim/rightArm</parameters>
+        <node>localhost</node>
+    </module>
+
+    <module>
+        <name>ironingMover</name>
+        <parameters>--robot /teoSim --targetForce -0.001 --strategy velocityForce</parameters>
+        <node>localhost</node>
+    </module>
+
+    <connection>
+        <from>/jr3ch3:o</from>
+        <to>/ironingMover/force:i</to>
+    </connection>
+
+    <connection>
+        <from>/traj:o</from>
+        <to>/ironingMover/traj:i</to>
+    </connection>
+
+</application>
+
