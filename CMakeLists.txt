@@ -29,4 +29,5 @@ set(TEXTILES_LIBRARIES CACHE INTERNAL "appended libraries" FORCE)
 # Subdirectories
 add_subdirectory(common)
 add_subdirectory(unfolding)
+add_subdirectory(unfolding-industrial)
 add_subdirectory(ironing)
