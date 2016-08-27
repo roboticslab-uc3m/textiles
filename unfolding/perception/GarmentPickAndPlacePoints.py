@@ -1,10 +1,11 @@
-from operator import itemgetter
 import itertools
 import math
+from operator import itemgetter
+
 import cv2
 
-import Superpixels
-import LineTools
+from common.perception import LineTools, Superpixels
+
 
 class GarmentPickAndPlacePoints:
 
@@ -21,7 +22,7 @@ class GarmentPickAndPlacePoints:
         # Get paths to traverse:
         candidate_paths = list(itertools.product(highest_points, polygon_midpoints))
         valid_paths = list(filter(lambda x: len(LineTools.seg_intersection_polygon(x, polygon_segments)) <= 1,
-                             candidate_paths))
+                                  candidate_paths))
 
         return valid_paths
 

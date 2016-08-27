@@ -6,11 +6,11 @@ import os
 from multiprocessing import Pool
 from tqdm import tqdm
 
-from GarmentSegmentation import GarmentSegmentation
-from GarmentDepthMapClustering import GarmentDepthMapClustering
-from GarmentPickAndPlacePoints import GarmentPickAndPlacePoints
-import GarmentPlot
-from utils import load_data
+from unfolding.perception.GarmentSegmentation import GarmentSegmentation
+from unfolding.perception.GarmentDepthMapClustering import GarmentDepthMapClustering
+from unfolding.perception.GarmentPickAndPlacePoints import GarmentPickAndPlacePoints
+import unfolding.perception.GarmentPlot
+from unfolding.perception.GarmentUtils import load_data
 
 
 def compute_stages(args):
@@ -28,13 +28,13 @@ def compute_stages(args):
     # Garment Segmentation Stage
     mask = GarmentSegmentation.background_substraction(image_src)
     approximated_polygon = GarmentSegmentation.compute_approximated_polygon(mask)
-    GarmentPlot.plot_segmentation_stage(image_src, mask, approximated_polygon,
-                                        to_file=out_prefix + '-segmentation.pdf')
+    unfolding.perception.GarmentPlot.plot_segmentation_stage(image_src, mask, approximated_polygon,
+                                                             to_file=out_prefix + '-segmentation.pdf')
 
     # Garment Depth Map Clustering Stage
     preprocessed_depth_image = GarmentDepthMapClustering.preprocess(depth_image, mask)
     labeled_image = GarmentDepthMapClustering.cluster_similar_regions(preprocessed_depth_image)
-    GarmentPlot.plot_clustering_stage(image_src, labeled_image, to_file=out_prefix + '-clustering.pdf')
+    unfolding.perception.GarmentPlot.plot_clustering_stage(image_src, labeled_image, to_file=out_prefix + '-clustering.pdf')
     # Garment Pick and Place Points Stage
     try:
         unfold_paths = GarmentPickAndPlacePoints.calculate_unfold_paths(labeled_image, approximated_polygon)
@@ -49,9 +49,9 @@ def compute_stages(args):
     for value in bumpiness:
         f.write(str(value)+'\n')
     f.close()
-    GarmentPlot.plot_pick_and_place_stage(image_src, labeled_image, approximated_polygon, unfold_paths,
-                                          pick_point, place_point, to_file=out_prefix + '-pnp.pdf')
-    GarmentPlot.plot_pick_and_place_points(image_src, pick_point, place_point, to_file=out_prefix + '-direction.pdf')
+    unfolding.perception.GarmentPlot.plot_pick_and_place_stage(image_src, labeled_image, approximated_polygon, unfold_paths,
+                                                               pick_point, place_point, to_file=out_prefix + '-pnp.pdf')
+    unfolding.perception.GarmentPlot.plot_pick_and_place_points(image_src, pick_point, place_point, to_file=out_prefix + '-direction.pdf')
 
     return True
 

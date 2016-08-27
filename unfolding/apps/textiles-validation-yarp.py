@@ -1,9 +1,10 @@
-import yarp
-from yarp_cameras import get_cameras
-from GarmentSegmentation import GarmentSegmentation
-from GarmentDepthMapClustering import GarmentDepthMapClustering
-from GarmentPickAndPlacePoints import GarmentPickAndPlacePoints
 import numpy as np
+import yarp
+
+from common.perception.yarp_cameras import get_cameras
+from unfolding.perception.GarmentDepthMapClustering import GarmentDepthMapClustering
+from unfolding.perception.GarmentPickAndPlacePoints import GarmentPickAndPlacePoints
+from unfolding.perception.GarmentSegmentation import GarmentSegmentation
 
 if __name__ == '__main__':
     with get_cameras("/OpenNI2/imageFrame:o", (640, 480),
