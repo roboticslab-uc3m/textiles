@@ -10,15 +10,15 @@ This folder contains the sources for all the robotic garment unfolding applicati
 # Repository
 Structure of the folder:
 * **/unfolding**
- * **/apps** - Final applications for robot unfolding.
- * **/doc** - Documentation files.
- * **/perception** - Sources related to garment perception for unfolding.
-   * **/grabber** - Code for extracting 2D and 3D garment data using [yarp](http://www.yarp.it/) and an ASUS XTION Live Pro RGB-D sensor.
-   * **/pcl** - Textile perception algorithms using 3D data and the Point Cloud Library.
-   * **/textiles** - Textile perception algorithms using 2.5D data and 2D computer vision in Python.
+   * **/apps** - Final applications for robot unfolding.
+   * **/doc** - Documentation files.
+   * **/perception** - Sources related to garment perception for unfolding.
+     * **/grabber** - Code for extracting 2D and 3D garment data using [yarp](http://www.yarp.it/) and an ASUS XTION Live Pro RGB-D sensor.
+     * **/pcl** - Textile perception algorithms using 3D data and the Point Cloud Library.
+     * **/textiles** - Textile perception algorithms using 2.5D data and 2D computer vision in Python.
 
- * **/manipulation** - Sources related to garment manipulation for unfolding.
-  * **/mover** - Textile manipulation algorithms.
+   * **/manipulation** - Sources related to garment manipulation for unfolding.
+     * **/mover** - Textile manipulation algorithms.
 
 
 
