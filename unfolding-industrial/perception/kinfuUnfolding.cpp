@@ -27,6 +27,10 @@
 #include <pcl/segmentation/extract_clusters.h>
 //-- Bounding box
 #include <pcl/features/moment_of_inertia_estimation.h>
+//-- Point projection
+#include <pcl/filters/project_inliers.h>
+//-- Transformations
+#include <pcl/common/transforms.h>
 
 //-- Textiles headers
 #include "Debug.hpp"
@@ -120,10 +124,6 @@ int main (int argc, char** argv)
     debug.setEnabled(true);
     debug.plotPointCloud<pcl::PointXYZRGB>(source_cloud, Debug::COLOR_ORIGINAL);
     debug.show("Original with color");
-
-    //-------------------------------
-    //-- Table plane segmentation
-    //-------------------------------
 
     //-- Downsample the dataset prior to plane detection (using a leaf size of 1cm)
     //-----------------------------------------------------------------------------------
@@ -231,6 +231,45 @@ int main (int argc, char** argv)
     debug.setEnabled(true);
     debug.plotPointCloud<pcl::PointXYZRGB>(largest_cluster, Debug::COLOR_ORIGINAL);
     debug.plotBoundingBox(min_point_OBB, max_point_OBB, position_OBB, rotational_matrix_OBB, Debug::COLOR_GREEN);
-    debug.show("Filtered garment cloud");
+    debug.show("Oriented bounding cloud");
 
+    //-- Project bounding box center point on table plane
+    //------------------------------------------------------------------------------------
+    //-- Project center point onto given plane:
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr center_to_be_projected_cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+    center_to_be_projected_cloud->points.push_back(position_OBB);
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr center_projected_cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+
+    pcl::ProjectInliers<pcl::PointXYZRGB> project_inliners;
+    project_inliners.setModelType(pcl::SACMODEL_PLANE);
+    project_inliners.setInputCloud(center_to_be_projected_cloud);
+    project_inliners.setModelCoefficients(table_plane_coefficients);
+    project_inliners.filter(*center_projected_cloud);
+    pcl::PointXYZRGB projected_center = center_projected_cloud->points[0];
+
+    //-- Center and orient it at the origin
+    //------------------------------------------------------------------------------------
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr oriented_cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+
+    //-- Compute translation to center
+    Eigen::Affine3f translation_transform = Eigen::Affine3f::Identity();
+    translation_transform.translation() << -projected_center.x, -projected_center.y, -projected_center.z;
+
+    //-- Compute rotation using the the plane normal
+    Eigen::Vector3f normal_vector(table_plane_coefficients->values[0], table_plane_coefficients->values[1], table_plane_coefficients->values[2]);
+    //-- Check normal vector orientation
+    if (normal_vector.dot(Eigen::Vector3f::UnitZ()) >= 0)
+        normal_vector = -normal_vector;
+    Eigen::Quaternionf rotation_quaternion = Eigen::Quaternionf().setFromTwoVectors(normal_vector, Eigen::Vector3f::UnitZ());
+    Eigen::Transform<float, 3, Eigen::Affine> T(rotation_quaternion * translation_transform);
+    //T.rotate(rotational_matrix_OBB.inverse());
+
+    //-- Transform cloud
+    pcl::transformPointCloud(*largest_cluster, *oriented_cloud, T);
+
+    debug.setEnabled(true);
+    debug.plotPointCloud<pcl::PointXYZRGB>(oriented_cloud, Debug::COLOR_ORIGINAL);
+    debug.plotBoundingBox(min_point_OBB, max_point_OBB, position_OBB, rotational_matrix_OBB, Debug::COLOR_YELLOW);
+    debug.getRawViewer()->addLine (pcl::PointXYZ(0,0,0), projected_center, 1.0, 0.0, 0.0, "line");
+    debug.show("Oriented garment patch");
 }
