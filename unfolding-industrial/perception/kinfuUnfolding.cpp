@@ -7,6 +7,7 @@
  */
 
 #include <iostream>
+#include <fstream>
 
 //-- PCL basics & io
 #include <pcl/console/parse.h>
@@ -31,6 +32,9 @@
 #include <pcl/filters/project_inliers.h>
 //-- Transformations
 #include <pcl/common/transforms.h>
+//-- Octree
+#include <pcl/octree/octree.h>
+#include <pcl/octree/octree_search.h>
 
 //-- Textiles headers
 #include "Debug.hpp"
@@ -228,7 +232,7 @@ int main (int argc, char** argv)
     feature_extractor.getAABB(min_point_AABB, max_point_AABB);
     feature_extractor.getOBB(min_point_OBB, max_point_OBB, position_OBB, rotational_matrix_OBB);
 
-    debug.setEnabled(true);
+    debug.setEnabled(false);
     debug.plotPointCloud<pcl::PointXYZRGB>(largest_cluster, Debug::COLOR_ORIGINAL);
     debug.plotBoundingBox(min_point_OBB, max_point_OBB, position_OBB, rotational_matrix_OBB, Debug::COLOR_GREEN);
     debug.show("Oriented bounding cloud");
@@ -255,21 +259,103 @@ int main (int argc, char** argv)
     Eigen::Affine3f translation_transform = Eigen::Affine3f::Identity();
     translation_transform.translation() << -projected_center.x, -projected_center.y, -projected_center.z;
 
-    //-- Compute rotation using the the plane normal
-    Eigen::Vector3f normal_vector(table_plane_coefficients->values[0], table_plane_coefficients->values[1], table_plane_coefficients->values[2]);
-    //-- Check normal vector orientation
-    if (normal_vector.dot(Eigen::Vector3f::UnitZ()) >= 0)
-        normal_vector = -normal_vector;
-    Eigen::Quaternionf rotation_quaternion = Eigen::Quaternionf().setFromTwoVectors(normal_vector, Eigen::Vector3f::UnitZ());
-    Eigen::Transform<float, 3, Eigen::Affine> T(rotation_quaternion * translation_transform);
-    //T.rotate(rotational_matrix_OBB.inverse());
+    //-- Compute rotation to orient the cloud upwards (in Z)
+    Eigen::Quaternionf rotation_quaternion = Eigen::Quaternionf(Eigen::AngleAxisf(M_PI, Eigen::Vector3f::UnitX()));
 
     //-- Transform cloud
-    pcl::transformPointCloud(*largest_cluster, *oriented_cloud, T);
+    Eigen::Transform<float, 3, Eigen::Affine> T(rotation_quaternion*rotational_matrix_OBB.inverse()*translation_transform);
+    pcl::transformPointCloud(*source_cloud, *oriented_cloud, T);
 
     debug.setEnabled(true);
     debug.plotPointCloud<pcl::PointXYZRGB>(oriented_cloud, Debug::COLOR_ORIGINAL);
+    debug.plotPointCloud<pcl::PointXYZRGB>(largest_cluster, Debug::COLOR_ORIGINAL);
     debug.plotBoundingBox(min_point_OBB, max_point_OBB, position_OBB, rotational_matrix_OBB, Debug::COLOR_YELLOW);
+    debug.plotBoundingBox(min_point_OBB, max_point_OBB, pcl::PointXYZRGB(0,0,0), Eigen::Matrix3f::Identity(), Debug::COLOR_BLUE);
     debug.getRawViewer()->addLine (pcl::PointXYZ(0,0,0), projected_center, 1.0, 0.0, 0.0, "line");
     debug.show("Oriented garment patch");
+
+    //---------------------------------------------------------------------------------------------------------
+    //-- RBGD data extraction from point cloud
+    //---------------------------------------------------------------------------------------------------------
+    //-- Required parameters
+    float average_point_distance=0.005; //-- Parameter to determine output image resolution
+
+    //-- Calculate image resolution
+    /* Note: if not using std::abs, floating abs function seems to be
+     * not supported :-/ */
+    float OBB_width = std::abs(max_point_OBB.x - min_point_OBB.x);
+    float OBB_height = std::abs(max_point_OBB.y - min_point_OBB.y);
+
+    int width = std::ceil(OBB_width / average_point_distance);
+    int height = std::ceil(OBB_height / average_point_distance);
+    std::cout << "Creating 2D image with resolution: " << width << "x" << height << "px" << std::endl;
+
+    //-- Matrices to store image data
+    Eigen::MatrixXd red = Eigen::MatrixXd::Zero(height, width);
+    Eigen::MatrixXd green = Eigen::MatrixXd::Zero(height, width);
+    Eigen::MatrixXd blue = Eigen::MatrixXd::Zero(height, width);
+    Eigen::MatrixXf depth = Eigen::MatrixXf::Zero(height, width);
+
+    //-- Filter for points within limits:
+    pcl::octree::OctreePointCloudSearch<pcl::PointXYZRGB> octree(128.0f); //-- Resolution of the src point cloud ~1mm
+    std::vector<int> points_within_bounding_box;
+    Eigen::Vector3f min_bb(min_point_OBB.x, min_point_OBB.y, min_point_OBB.z);
+    Eigen::Vector3f max_bb(max_point_OBB.x, max_point_OBB.y, 1);
+    octree.setInputCloud(oriented_cloud);
+    octree.addPointsFromInputCloud();
+    octree.boxSearch(min_bb, max_bb, points_within_bounding_box);
+
+    //-- Loop through those points to get RGBD data
+    //#pragma omp parallel for
+    for (auto& i : points_within_bounding_box)
+    {
+        if (isnan(oriented_cloud->points[i].x) || isnan(oriented_cloud->points[i].y ))
+            continue;
+
+        int index_x = (oriented_cloud->points[i].x-min_point_AABB.x) / average_point_distance;
+        int index_y = (max_point_AABB.y - source_cloud->points[i].y) / average_point_distance;
+
+        if (index_x >= width) index_x = width-1;
+        if (index_y >= height) index_y = height-1;
+
+        //-- ZBuffer depth map output image
+        float old_z;
+        //#pragma omp critical
+        {
+            old_z = depth(index_y, index_x);
+            if (oriented_cloud->points[i].z > old_z)
+            {
+                depth(index_y, index_x) = oriented_cloud->points[i].z;
+                red(index_y, index_x) = oriented_cloud->points[i].r;
+                green(index_y, index_x) = oriented_cloud->points[i].g;
+                blue(index_y, index_x) = oriented_cloud->points[i].b;
+
+                //-- Mask (not supported by now)
+                //mask(index_y, index_x) = 1;
+            }
+        }
+    }
+
+//    //-- Temporal fix to get depth image (through file)
+//    std::string filename = std::string(argv[filenames[0]])+std::string("-depth.txt");
+//    std::ofstream file(filename.c_str());
+//    file << depth;
+//    file.close();
+
+//    //-- Temporal fix to get red channel image (through file)
+//    std::ofstream red_file((argv[filenames[0]]+std::string("-red.txt")).c_str());
+//    red_file << red;
+//    red_file.close();
+
+//    //-- Temporal fix to get green channel image (through file)
+//    std::ofstream green_file((argv[filenames[0]]+std::string("-green.txt")).c_str());
+//    green_file << red;
+//    green_file.close();
+
+//    //-- Temporal fix to get blue channel image (through file)
+//    std::ofstream blue_file((argv[filenames[0]]+std::string("-blue.txt")).c_str());
+//    blue_file << blue;
+//    blue_file.close();
+
+    return 0;
 }
