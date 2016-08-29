@@ -51,6 +51,24 @@ void show_usage(char * program_name)
     std::cout << "--ransac-threshold: Set ransac threshold value (default: 0.02)" << std::endl;
 }
 
+void record_transformation(std::string output_file, Eigen::Transform<float, 3, Eigen::Affine> t)
+{
+    std::ofstream file(output_file.c_str());
+    file << "# Transformation Matrix:" << std::endl;
+    file << t.matrix() << std::endl;
+    file.close();
+}
+
+
+template<typename PointT>
+void record_point(std::string output_file, PointT point)
+{
+    std::ofstream file(output_file.c_str());
+    file << point.x << " " << point.y << " " << point.z;
+    file.close();
+}
+
+
 int main (int argc, char** argv)
 {
     //---------------------------------------------------------------------------------------------------
@@ -234,6 +252,10 @@ int main (int argc, char** argv)
     feature_extractor.compute();
     feature_extractor.getOBB(min_point_OBB, max_point_OBB, position_OBB, rotational_matrix_OBB);
 
+
+    //-- Save 2D image origin point
+    record_point(argv[filenames[0]]+std::string("-origin.txt"), pcl::PointXYZ(min_point_OBB.x, max_point_OBB.y, 0));
+
     debug.setEnabled(false);
     debug.plotPointCloud<pcl::PointXYZRGB>(largest_cluster, Debug::COLOR_ORIGINAL);
     debug.plotBoundingBox(min_point_OBB, max_point_OBB, position_OBB, rotational_matrix_OBB, Debug::COLOR_GREEN);
@@ -267,6 +289,9 @@ int main (int argc, char** argv)
     //-- Transform cloud
     Eigen::Transform<float, 3, Eigen::Affine> T(rotation_quaternion*rotational_matrix_OBB.inverse()*translation_transform);
     pcl::transformPointCloud(*source_cloud, *oriented_cloud, T);
+
+    //-- Save to file
+    record_transformation(argv[filenames[0]]+std::string("-transform.txt"), T);
 
     debug.setEnabled(true);
     debug.plotPointCloud<pcl::PointXYZRGB>(oriented_cloud, Debug::COLOR_ORIGINAL);
