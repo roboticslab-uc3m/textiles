@@ -36,6 +36,10 @@
 #include <pcl/octree/octree.h>
 #include <pcl/octree/octree_search.h>
 
+//--OpenCV
+#include <opencv2/opencv.hpp>
+#include <opencv2/core/eigen.hpp>
+
 //-- Textiles headers
 #include "Debug.hpp"
 
@@ -222,14 +226,12 @@ int main (int argc, char** argv)
     //-- Find bounding box:
     //-----------------------------------------------------------------------------------
     pcl::MomentOfInertiaEstimation<pcl::PointXYZRGB> feature_extractor;
-    pcl::PointXYZRGB min_point_AABB, max_point_AABB;
     pcl::PointXYZRGB min_point_OBB,  max_point_OBB;
     pcl::PointXYZRGB position_OBB;
     Eigen::Matrix3f rotational_matrix_OBB;
 
     feature_extractor.setInputCloud(largest_cluster);
     feature_extractor.compute();
-    feature_extractor.getAABB(min_point_AABB, max_point_AABB);
     feature_extractor.getOBB(min_point_OBB, max_point_OBB, position_OBB, rotational_matrix_OBB);
 
     debug.setEnabled(false);
@@ -279,6 +281,7 @@ int main (int argc, char** argv)
     //---------------------------------------------------------------------------------------------------------
     //-- Required parameters
     float average_point_distance=0.005; //-- Parameter to determine output image resolution
+    float lowest_height_limit = min_point_OBB.z;
 
     //-- Calculate image resolution
     /* Note: if not using std::abs, floating abs function seems to be
@@ -294,26 +297,28 @@ int main (int argc, char** argv)
     Eigen::MatrixXd red = Eigen::MatrixXd::Zero(height, width);
     Eigen::MatrixXd green = Eigen::MatrixXd::Zero(height, width);
     Eigen::MatrixXd blue = Eigen::MatrixXd::Zero(height, width);
-    Eigen::MatrixXf depth = Eigen::MatrixXf::Zero(height, width);
+    Eigen::MatrixXf depth = Eigen::MatrixXf::Constant(height, width, lowest_height_limit);
 
     //-- Filter for points within limits:
-    pcl::octree::OctreePointCloudSearch<pcl::PointXYZRGB> octree(128.0f); //-- Resolution of the src point cloud ~1mm
+    pcl::octree::OctreePointCloudSearch<pcl::PointXYZRGB> octree(0.001); //-- Resolution of the src point cloud ~1mm
     std::vector<int> points_within_bounding_box;
-    Eigen::Vector3f min_bb(min_point_OBB.x, min_point_OBB.y, min_point_OBB.z);
+    Eigen::Vector3f min_bb(min_point_OBB.x, min_point_OBB.y, lowest_height_limit);
     Eigen::Vector3f max_bb(max_point_OBB.x, max_point_OBB.y, 1);
-    octree.setInputCloud(oriented_cloud);
+    octree.setInputCloud(oriented_cloud->makeShared());
     octree.addPointsFromInputCloud();
     octree.boxSearch(min_bb, max_bb, points_within_bounding_box);
 
     //-- Loop through those points to get RGBD data
     //#pragma omp parallel for
-    for (auto& i : points_within_bounding_box)
+    for (int j = 0; j < points_within_bounding_box.size(); j++)
     {
+        int i = points_within_bounding_box[j];
+
         if (isnan(oriented_cloud->points[i].x) || isnan(oriented_cloud->points[i].y ))
             continue;
 
-        int index_x = (oriented_cloud->points[i].x-min_point_AABB.x) / average_point_distance;
-        int index_y = (max_point_AABB.y - source_cloud->points[i].y) / average_point_distance;
+        int index_x = (oriented_cloud->points[i].x-min_point_OBB.x) / average_point_distance;
+        int index_y = (max_point_OBB.y - oriented_cloud->points[i].y) / average_point_distance;
 
         if (index_x >= width) index_x = width-1;
         if (index_y >= height) index_y = height-1;
@@ -336,26 +341,40 @@ int main (int argc, char** argv)
         }
     }
 
-//    //-- Temporal fix to get depth image (through file)
-//    std::string filename = std::string(argv[filenames[0]])+std::string("-depth.txt");
-//    std::ofstream file(filename.c_str());
-//    file << depth;
-//    file.close();
+    //-- Temporal fix to get depth image (through file)
+    std::ofstream file((argv[filenames[0]]+std::string("-depth.txt")).c_str());
+    file << depth;
+    file.close();
 
-//    //-- Temporal fix to get red channel image (through file)
-//    std::ofstream red_file((argv[filenames[0]]+std::string("-red.txt")).c_str());
-//    red_file << red;
-//    red_file.close();
+    //-- Temporal fix to get red channel image (through file)
+    std::ofstream red_file((argv[filenames[0]]+std::string("-red.txt")).c_str());
+    red_file << red;
+    red_file.close();
 
-//    //-- Temporal fix to get green channel image (through file)
-//    std::ofstream green_file((argv[filenames[0]]+std::string("-green.txt")).c_str());
-//    green_file << red;
-//    green_file.close();
+    //-- Temporal fix to get green channel image (through file)
+    std::ofstream green_file((argv[filenames[0]]+std::string("-green.txt")).c_str());
+    green_file << green;
+    green_file.close();
 
-//    //-- Temporal fix to get blue channel image (through file)
-//    std::ofstream blue_file((argv[filenames[0]]+std::string("-blue.txt")).c_str());
-//    blue_file << blue;
-//    blue_file.close();
+    //-- Temporal fix to get blue channel image (through file)
+    std::ofstream blue_file((argv[filenames[0]]+std::string("-blue.txt")).c_str());
+    blue_file << blue;
+    blue_file.close();
+
+    //-- Eigen to OpenCV to save RGB image as image (Quick and dirty)
+    //------------------------------------------------------------------------------
+    cv::Mat image(height, width, CV_8UC3);
+    uint8_t* image_ptr = (uint8_t*)image.data;
+
+    for (int i = 0; i < height; i++)
+        for (int j = 0; j < width; j++)
+        {
+            image_ptr[i*image.cols*3 + j*3 + 0] = blue(i, j); // B
+            image_ptr[i*image.cols*3 + j*3 + 1] = green(i, j);// G
+            image_ptr[i*image.cols*3 + j*3 + 2] = red(i, j);  // R
+        }
+
+    cv::imwrite(argv[filenames[0]]+std::string("-RGB.png"), image);
 
     return 0;
 }
