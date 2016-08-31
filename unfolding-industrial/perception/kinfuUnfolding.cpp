@@ -201,7 +201,7 @@ int main (int argc, char** argv)
     extract_indices.setNegative(true);
     extract_indices.filter(*not_table_points);
 
-    debug.setEnabled(false);
+    debug.setEnabled(true);
     debug.plotPointCloud<pcl::PointXYZRGB>(not_table_points, Debug::COLOR_ORIGINAL);
     debug.show("Not table points");
 
@@ -212,7 +212,7 @@ int main (int argc, char** argv)
 
     std::vector<pcl::PointIndices> cluster_indices;
     pcl::EuclideanClusterExtraction<pcl::PointXYZRGB> euclidean_custering;
-    euclidean_custering.setClusterTolerance(0.01);
+    euclidean_custering.setClusterTolerance(0.015);
     euclidean_custering.setMinClusterSize(100);
     euclidean_custering.setSearchMethod(tree);
     euclidean_custering.setInputCloud(not_table_points);
@@ -278,6 +278,7 @@ int main (int argc, char** argv)
     //-- Center and orient it at the origin
     //------------------------------------------------------------------------------------
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr oriented_cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr oriented_garment(new pcl::PointCloud<pcl::PointXYZRGB>);
 
     //-- Compute translation to center
     Eigen::Affine3f translation_transform = Eigen::Affine3f::Identity();
@@ -289,12 +290,13 @@ int main (int argc, char** argv)
     //-- Transform cloud
     Eigen::Transform<float, 3, Eigen::Affine> T(rotation_quaternion*rotational_matrix_OBB.inverse()*translation_transform);
     pcl::transformPointCloud(*source_cloud, *oriented_cloud, T);
+    pcl::transformPointCloud(*largest_cluster, *oriented_garment, T);
 
     //-- Save to file
     record_transformation(argv[filenames[0]]+std::string("-transform.txt"), T);
 
     debug.setEnabled(true);
-    debug.plotPointCloud<pcl::PointXYZRGB>(oriented_cloud, Debug::COLOR_ORIGINAL);
+    debug.plotPointCloud<pcl::PointXYZRGB>(oriented_garment, Debug::COLOR_ORIGINAL);
     debug.plotPointCloud<pcl::PointXYZRGB>(largest_cluster, Debug::COLOR_ORIGINAL);
     debug.plotBoundingBox(min_point_OBB, max_point_OBB, position_OBB, rotational_matrix_OBB, Debug::COLOR_YELLOW);
     debug.plotBoundingBox(min_point_OBB, max_point_OBB, pcl::PointXYZRGB(0,0,0), Eigen::Matrix3f::Identity(), Debug::COLOR_BLUE);
@@ -334,7 +336,7 @@ int main (int argc, char** argv)
     octree.boxSearch(min_bb, max_bb, points_within_bounding_box);
 
     //-- Loop through those points to get RGBD data
-    //#pragma omp parallel for
+    #pragma omp parallel for
     for (int j = 0; j < points_within_bounding_box.size(); j++)
     {
         int i = points_within_bounding_box[j];
@@ -350,7 +352,7 @@ int main (int argc, char** argv)
 
         //-- ZBuffer depth map output image
         float old_z;
-        //#pragma omp critical
+        #pragma omp critical
         {
             old_z = depth(index_y, index_x);
             if (oriented_cloud->points[i].z > old_z)
@@ -359,12 +361,10 @@ int main (int argc, char** argv)
                 red(index_y, index_x) = oriented_cloud->points[i].r;
                 green(index_y, index_x) = oriented_cloud->points[i].g;
                 blue(index_y, index_x) = oriented_cloud->points[i].b;
-
-                //-- Mask (not supported by now)
-                //mask(index_y, index_x) = 1;
             }
         }
     }
+
 
     //-- Temporal fix to get depth image (through file)
     std::ofstream file((argv[filenames[0]]+std::string("-depth.txt")).c_str());
@@ -400,6 +400,41 @@ int main (int argc, char** argv)
         }
 
     cv::imwrite(argv[filenames[0]]+std::string("-RGB.png"), image);
+
+
+    //-- Obtain a mask from garment data
+    //------------------------------------------------------------------------------
+    //-- Mask with segmented garment data
+    Eigen::MatrixXd mask = Eigen::MatrixXd::Zero(height, width);
+    #pragma omp parallel for
+    for (int i = 0; i < oriented_garment->points.size(); i++)
+    {
+        if (isnan(oriented_garment->points[i].x) || isnan(oriented_garment->points[i].y ))
+            continue;
+
+        int index_x = (oriented_garment->points[i].x-min_point_OBB.x) / average_point_distance;
+        int index_y = (max_point_OBB.y - oriented_garment->points[i].y) / average_point_distance;
+
+        if (index_x >= width) index_x = width-1;
+        if (index_y >= height) index_y = height-1;
+
+        #pragma omp critical
+        {
+            //-- Mask
+            mask(index_y, index_x) = 255;
+        }
+    }
+
+
+    //-- Eigen to OpenCV to save RGB image as image (Quick and dirty)
+    cv::Mat mask_image(height, width, CV_8UC1);
+    uint8_t* mask_image_ptr = (uint8_t*)mask_image.data;
+
+    for (int i = 0; i < height; i++)
+        for (int j = 0; j < width; j++)
+            mask_image_ptr[i*mask_image.cols + j] = mask(i, j);
+
+    cv::imwrite(argv[filenames[0]]+std::string("-mask.png"), mask_image);
 
     return 0;
 }
