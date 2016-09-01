@@ -66,7 +66,7 @@ class TrajectoryTransform:
         # Compute inverse transformation
         H_cam_board = np.dot(np.linalg.inv(self.H_kinfu_cam), np.linalg.inv(self.H_board_kinfu))
         H_board_image = np.dot(np.linalg.inv(self.H_garment_board), np.linalg.inv(self.H_image_garment))
-        H_cam_image = np.dot(np.linalg.inv(self.H_board_kinfu), H_board_image)
+        H_cam_image = np.dot(H_cam_board, H_board_image)
 
         # Apply transformation to all points
         return [ np.dot(H_cam_image, point) for point in trajectory_image ]
@@ -106,6 +106,7 @@ if __name__ == '__main__':
     #trajectory_image_px = [(0,0), (0, 69), (113, 0), (113,69),(48, 47), (49, 48), (49, 49), (49, 50), (49, 51), (50, 52), (51, 53), (52, 54), (53, 55), (54, 56), (55, 57), (55, 58), (56, 59), (56, 60), (56, 61), (56, 62), (56, 63), (57, 64), (58, 64), (59, 64)]
     trajectory_image_px = [(74, 18), (73, 18), (72, 17), (71, 17), (70, 17), (69, 16), (68, 15), (68, 14), (67, 13), (67, 12), (67, 11), (66, 10), (65, 9), (65, 8), (65, 7), (66, 6), (66, 5), (66, 4), (66, 3), (67, 2), (68, 2), (69, 2)]
     trajectory_cam = t(trajectory_image_px)
+    print  [ (float(x), float(y), float(z)) for x, y, z, w in trajectory_cam]
     trajectory_debug = t.debug(trajectory_image_px)
 
     points_to_file(trajectory_debug, output_file)
@@ -113,6 +114,6 @@ if __name__ == '__main__':
     trajectory_root = t.relative_to_robot_root(trajectory_image_px)
     print trajectory_root
 
-    send_trajectory_over_yarp("/read", trajectory_root)
+    # send_trajectory_over_yarp("/read", trajectory_root)
 
 
