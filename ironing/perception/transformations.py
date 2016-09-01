@@ -1,5 +1,8 @@
 import numpy as np
 
+from common.perception.Utils import points_to_file
+
+
 class TrajectoryTransform:
     def __init__(self):
         self.H_image_garment = None
@@ -63,7 +66,7 @@ class TrajectoryTransform:
         # Compute inverse transformation
         H_cam_board = np.dot(np.linalg.inv(self.H_kinfu_cam), np.linalg.inv(self.H_board_kinfu))
         H_board_image = np.dot(np.linalg.inv(self.H_garment_board), np.linalg.inv(self.H_image_garment))
-        H_cam_image = np.dot(np.linalg.inv(self.H_board_kinfu), H_board_image)
+        H_cam_image = np.dot(H_cam_board, H_board_image)
 
         # Apply transformation to all points
         return [ np.dot(H_cam_image, point) for point in trajectory_image ]
@@ -72,25 +75,6 @@ class TrajectoryTransform:
         points = self.__call__(trajectory_image_px)
         return [np.dot(self.H_root_cam, point) for point in points]
 
-def points_to_file(points, output_file):
-    with open(output_file, 'w') as f:
-        # Write pcd header
-        f.write(
-        """# PCD v.7 - Point Cloud Data file format
-    VERSION .7
-    FIELDS x y z
-    SIZE 4 4 4
-    TYPE F F F
-    COUNT 1 1 1
-    WIDTH {0:d}
-    HEIGHT 1
-    VIEWPOINT 0 0 0 1 0 0 0
-    POINTS {0:d}
-    DATA ascii
-    """.format(len(points)))
-
-        for point in points:
-            f.write("{} {} {}\n".format(point[0][0], point[1][0], point[2][0]))
 
 H_image_garment_file = "/home/def/Research/jresearch/2016-07-25-textiles-ironing/hoodie1/colored_mesh_1.ply-output.pcd-origin.txt"
 H_garment_board_file = "/home/def/Research/jresearch/2016-07-25-textiles-ironing/hoodie1/colored_mesh_1.ply-transform2.txt"
@@ -122,6 +106,7 @@ if __name__ == '__main__':
     #trajectory_image_px = [(0,0), (0, 69), (113, 0), (113,69),(48, 47), (49, 48), (49, 49), (49, 50), (49, 51), (50, 52), (51, 53), (52, 54), (53, 55), (54, 56), (55, 57), (55, 58), (56, 59), (56, 60), (56, 61), (56, 62), (56, 63), (57, 64), (58, 64), (59, 64)]
     trajectory_image_px = [(74, 18), (73, 18), (72, 17), (71, 17), (70, 17), (69, 16), (68, 15), (68, 14), (67, 13), (67, 12), (67, 11), (66, 10), (65, 9), (65, 8), (65, 7), (66, 6), (66, 5), (66, 4), (66, 3), (67, 2), (68, 2), (69, 2)]
     trajectory_cam = t(trajectory_image_px)
+    print  [ (float(x), float(y), float(z)) for x, y, z, w in trajectory_cam]
     trajectory_debug = t.debug(trajectory_image_px)
 
     points_to_file(trajectory_debug, output_file)
@@ -129,6 +114,6 @@ if __name__ == '__main__':
     trajectory_root = t.relative_to_robot_root(trajectory_image_px)
     print trajectory_root
 
-    send_trajectory_over_yarp("/read", trajectory_root)
+    # send_trajectory_over_yarp("/read", trajectory_root)
 
 

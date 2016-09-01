@@ -52,6 +52,7 @@ class GarmentPickAndPlacePoints:
 
         # Pick point is furthest from contour point
         pick_point = max(intersection, key=lambda x: math.hypot(contour_point[0]-x[0], contour_point[1]-x[1]))
+        pick_point = (float(pick_point[0]), float(pick_point[1]))
 
         # Place point is reflection using contour point:
         place_point = (2*contour_point[0] - pick_point[0], 2*contour_point[1] - pick_point[1])
