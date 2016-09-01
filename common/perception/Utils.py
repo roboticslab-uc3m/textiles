@@ -16,4 +16,9 @@ def points_to_file(points, output_file):
     """.format(len(points)))
 
         for point in points:
-            f.write("{} {} {}\n".format(point[0][0], point[1][0], point[2][0]))
+            try:
+                # Try this for numpy points
+                f.write("{} {} {}\n".format(point[0][0], point[1][0], point[2][0]))
+            except TypeError:
+                # Otherwise point is a tuple
+                f.write("{} {} {}\n".format(point[0], point[1], point[2]))
