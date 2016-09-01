@@ -2,11 +2,14 @@ __author__ = "def"
 
 import cv2
 import numpy as np
+import os
 
+# Local (textiles) imports
 from unfolding.perception.GarmentSegmentation import GarmentSegmentation
 from unfolding.perception.GarmentDepthMapClustering import GarmentDepthMapClustering
 from unfolding.perception.GarmentPickAndPlacePoints import GarmentPickAndPlacePoints
 from unfolding.perception import GarmentPlot
+from common.perception.Transformer import Transformer
 
 path_input_mesh = "/home/def/Research/jresearch/2016-05-06-textiles-draft/pants1/textured_mesh.ply"
 #path_input_mesh = "/home/def/Research/jresearch/2016-04-20-textiles-draft/hoodie3/textured_mesh.ply"
@@ -57,3 +60,28 @@ if __name__ == "__main__":
     # GarmentPlot.plot_pick_and_place_points(image_src, pick_point, place_point)
     GarmentPlot.plot_pick_and_place_stage(image_src, labeled_image, approximated_polygon, unfold_paths,
                                                                pick_point, place_point)
+
+    # Convert pick and place points to robot frame
+    change_frame = Transformer()
+
+    # Load configuration data and configure
+    with open(path_input_mesh + "-origin.txt", "r") as f:
+        file_contents = f.readlines()
+        image_origin = [ float(i) for i in file_contents[0].split(' ')]
+    change_frame.add_image_params((image_origin[0], image_origin[1]), 0.005)
+
+    kinfu_wrt_object = np.loadtxt(path_input_mesh+"-transform.txt")
+    change_frame.add_kinfu_wrt_object_transform(kinfu_wrt_object)
+
+    kinfu_params = Transformer.load_kinfu_params_from_file(os.path.join(os.path.split(path_input_mesh)[0],
+                                                                        "0.txt"))
+    change_frame.add_kinfu_params(kinfu_params)
+
+    # Transform points (debug edition)
+    pick_point_abs, place_point_abs = change_frame.debug([pick_point, place_point])
+    print pick_point_abs, place_point_abs
+    from common.perception.Utils import points_to_file
+    points_to_file([pick_point_abs, place_point_abs], os.path.join(os.path.split(path_input_mesh)[0],
+                                                                        "pick_and_place.pcd"))
+
+
