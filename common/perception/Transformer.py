@@ -154,7 +154,7 @@ class Transformer:
                 H_kinfu_cam[1,:3] = [ float(n) for n in file_contents[i+2].split(' ') if n ]
                 H_kinfu_cam[2,:3] = [ float(n) for n in file_contents[i+3].split(' ') if n ]
 
-
+        return H_kinfu_cam
 
 if __name__ == "__main__":
     # Just a little bit of testing to check this class is ok
