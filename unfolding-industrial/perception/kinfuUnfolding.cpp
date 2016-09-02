@@ -42,6 +42,7 @@
 
 //-- Textiles headers
 #include "Debug.hpp"
+#include "RGBImageCreator.hpp"
 
 void show_usage(char * program_name)
 {
@@ -321,9 +322,6 @@ int main (int argc, char** argv)
     std::cout << "Creating 2D image with resolution: " << width << "x" << height << "px" << std::endl;
 
     //-- Matrices to store image data
-    Eigen::MatrixXd red = Eigen::MatrixXd::Zero(height, width);
-    Eigen::MatrixXd green = Eigen::MatrixXd::Zero(height, width);
-    Eigen::MatrixXd blue = Eigen::MatrixXd::Zero(height, width);
     Eigen::MatrixXf depth = Eigen::MatrixXf::Constant(height, width, lowest_height_limit);
 
     //-- Filter for points within limits:
@@ -335,7 +333,7 @@ int main (int argc, char** argv)
     octree.addPointsFromInputCloud();
     octree.boxSearch(min_bb, max_bb, points_within_bounding_box);
 
-    //-- Loop through those points to get RGBD data
+    //-- Loop through those points to get depth data
     #pragma omp parallel for
     for (int j = 0; j < points_within_bounding_box.size(); j++)
     {
@@ -356,12 +354,7 @@ int main (int argc, char** argv)
         {
             old_z = depth(index_y, index_x);
             if (oriented_cloud->points[i].z > old_z)
-            {
                 depth(index_y, index_x) = oriented_cloud->points[i].z;
-                red(index_y, index_x) = oriented_cloud->points[i].r;
-                green(index_y, index_x) = oriented_cloud->points[i].g;
-                blue(index_y, index_x) = oriented_cloud->points[i].b;
-            }
         }
     }
 
@@ -370,6 +363,16 @@ int main (int argc, char** argv)
     std::ofstream file((argv[filenames[0]]+std::string("-depth.txt")).c_str());
     file << depth;
     file.close();
+
+    //-- Get color images
+    RGBImageCreator<pcl::PointXYZRGB> imageCreator;
+    imageCreator.setInputPointCloud(oriented_cloud);
+    imageCreator.setAvgPointDist(average_point_distance);
+    imageCreator.setBoundingBox(min_point_OBB, max_point_OBB);
+    imageCreator.compute();
+    Eigen::MatrixXf red = imageCreator.getChannelAsMatrix(RGBImageCreator<pcl::PointXYZRGB>::CHANNEL_R);
+    Eigen::MatrixXf green = imageCreator.getChannelAsMatrix(RGBImageCreator<pcl::PointXYZRGB>::CHANNEL_G);
+    Eigen::MatrixXf blue = imageCreator.getChannelAsMatrix(RGBImageCreator<pcl::PointXYZRGB>::CHANNEL_B);
 
     //-- Temporal fix to get red channel image (through file)
     std::ofstream red_file((argv[filenames[0]]+std::string("-red.txt")).c_str());
