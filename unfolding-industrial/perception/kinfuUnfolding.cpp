@@ -42,7 +42,7 @@
 
 //-- Textiles headers
 #include "Debug.hpp"
-#include "RGBImageCreator.hpp"
+#include "RGBDImageCreator.hpp"
 
 void show_usage(char * program_name)
 {
@@ -321,58 +321,54 @@ int main (int argc, char** argv)
     int height = std::ceil(OBB_height / average_point_distance);
     std::cout << "Creating 2D image with resolution: " << width << "x" << height << "px" << std::endl;
 
-    //-- Matrices to store image data
-    Eigen::MatrixXf depth = Eigen::MatrixXf::Constant(height, width, lowest_height_limit);
+//    //-- Matrices to store image data
+//    Eigen::MatrixXf depth = Eigen::MatrixXf::Constant(height, width, lowest_height_limit);
 
-    //-- Filter for points within limits:
-    pcl::octree::OctreePointCloudSearch<pcl::PointXYZRGB> octree(0.001); //-- Resolution of the src point cloud ~1mm
-    std::vector<int> points_within_bounding_box;
-    Eigen::Vector3f min_bb(min_point_OBB.x, min_point_OBB.y, lowest_height_limit);
-    Eigen::Vector3f max_bb(max_point_OBB.x, max_point_OBB.y, 1);
-    octree.setInputCloud(oriented_cloud->makeShared());
-    octree.addPointsFromInputCloud();
-    octree.boxSearch(min_bb, max_bb, points_within_bounding_box);
+//    //-- Filter for points within limits:
+//    pcl::octree::OctreePointCloudSearch<pcl::PointXYZRGB> octree(0.001); //-- Resolution of the src point cloud ~1mm
+//    std::vector<int> points_within_bounding_box;
+//    Eigen::Vector3f min_bb(min_point_OBB.x, min_point_OBB.y, lowest_height_limit);
+//    Eigen::Vector3f max_bb(max_point_OBB.x, max_point_OBB.y, 1);
+//    octree.setInputCloud(oriented_cloud->makeShared());
+//    octree.addPointsFromInputCloud();
+//    octree.boxSearch(min_bb, max_bb, points_within_bounding_box);
 
-    //-- Loop through those points to get depth data
-    #pragma omp parallel for
-    for (int j = 0; j < points_within_bounding_box.size(); j++)
-    {
-        int i = points_within_bounding_box[j];
+//    //-- Loop through those points to get depth data
+//    #pragma omp parallel for
+//    for (int j = 0; j < points_within_bounding_box.size(); j++)
+//    {
+//        int i = points_within_bounding_box[j];
 
-        if (isnan(oriented_cloud->points[i].x) || isnan(oriented_cloud->points[i].y ))
-            continue;
+//        if (isnan(oriented_cloud->points[i].x) || isnan(oriented_cloud->points[i].y ))
+//            continue;
 
-        int index_x = (oriented_cloud->points[i].x-min_point_OBB.x) / average_point_distance;
-        int index_y = (max_point_OBB.y - oriented_cloud->points[i].y) / average_point_distance;
+//        int index_x = (oriented_cloud->points[i].x-min_point_OBB.x) / average_point_distance;
+//        int index_y = (max_point_OBB.y - oriented_cloud->points[i].y) / average_point_distance;
 
-        if (index_x >= width) index_x = width-1;
-        if (index_y >= height) index_y = height-1;
+//        if (index_x >= width) index_x = width-1;
+//        if (index_y >= height) index_y = height-1;
 
-        //-- ZBuffer depth map output image
-        float old_z;
-        #pragma omp critical
-        {
-            old_z = depth(index_y, index_x);
-            if (oriented_cloud->points[i].z > old_z)
-                depth(index_y, index_x) = oriented_cloud->points[i].z;
-        }
-    }
+//        //-- ZBuffer depth map output image
+//        float old_z;
+//        #pragma omp critical
+//        {
+//            old_z = depth(index_y, index_x);
+//            if (oriented_cloud->points[i].z > old_z)
+//                depth(index_y, index_x) = oriented_cloud->points[i].z;
+//        }
+//    }
 
 
-    //-- Temporal fix to get depth image (through file)
-    std::ofstream file((argv[filenames[0]]+std::string("-depth.txt")).c_str());
-    file << depth;
-    file.close();
 
     //-- Get color images
-    RGBImageCreator<pcl::PointXYZRGB> imageCreator;
+    RGBDImageCreator<pcl::PointXYZRGB> imageCreator;
     imageCreator.setInputPointCloud(oriented_cloud);
     imageCreator.setAvgPointDist(average_point_distance);
     imageCreator.setBoundingBox(min_point_OBB, max_point_OBB);
     imageCreator.compute();
-    Eigen::MatrixXf red = imageCreator.getChannelAsMatrix(RGBImageCreator<pcl::PointXYZRGB>::CHANNEL_R);
-    Eigen::MatrixXf green = imageCreator.getChannelAsMatrix(RGBImageCreator<pcl::PointXYZRGB>::CHANNEL_G);
-    Eigen::MatrixXf blue = imageCreator.getChannelAsMatrix(RGBImageCreator<pcl::PointXYZRGB>::CHANNEL_B);
+    Eigen::MatrixXf red = imageCreator.getChannelAsMatrix(RGBDImageCreator<pcl::PointXYZRGB>::CHANNEL_R);
+    Eigen::MatrixXf green = imageCreator.getChannelAsMatrix(RGBDImageCreator<pcl::PointXYZRGB>::CHANNEL_G);
+    Eigen::MatrixXf blue = imageCreator.getChannelAsMatrix(RGBDImageCreator<pcl::PointXYZRGB>::CHANNEL_B);
 
     //-- Temporal fix to get red channel image (through file)
     std::ofstream red_file((argv[filenames[0]]+std::string("-red.txt")).c_str());
@@ -388,6 +384,14 @@ int main (int argc, char** argv)
     std::ofstream blue_file((argv[filenames[0]]+std::string("-blue.txt")).c_str());
     blue_file << blue;
     blue_file.close();
+
+    Eigen::MatrixXf depth = imageCreator.getDepthImageAsMatrix();
+
+    //-- Temporal fix to get depth image (through file)
+    std::ofstream file((argv[filenames[0]]+std::string("-depth.txt")).c_str());
+    file << depth;
+    file.close();
+
 
     //-- Eigen to OpenCV to save RGB image as image (Quick and dirty)
     //------------------------------------------------------------------------------

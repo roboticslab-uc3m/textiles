@@ -1,5 +1,5 @@
-#ifndef ZBUFFERDEPTHIMAGECREATOR_H
-#define ZBUFFERDEPTHIMAGECREATOR_H
+#ifndef __RGBDImageCreator_HPP__
+#define __RGBDImageCreator_HPP__
 
 #include <pcl/point_cloud.h>
 #include <pcl/filters/filter.h>
@@ -9,12 +9,12 @@
 #include <cmath>
 
 template<typename PointT>
-class RGBImageCreator
+class RGBDImageCreator
 {
     typedef typename pcl::PointCloud<PointT>::ConstPtr PointCloudConstPtr;
 
     public:
-        RGBImageCreator() {
+        RGBDImageCreator() {
             user_defined_bb = false;
         }
 
@@ -36,6 +36,8 @@ class RGBImageCreator
             else
                 return b_image;
         }
+
+        Eigen::MatrixXf getDepthImageAsMatrix() { return depth_image; }
 
         bool compute()
         {
@@ -93,7 +95,7 @@ class RGBImageCreator
             this->r_image = Eigen::MatrixXf::Zero(height, width);
             this->g_image = Eigen::MatrixXf::Zero(height, width);
             this->b_image = Eigen::MatrixXf::Zero(height, width);
-            Eigen::MatrixXf depth = Eigen::MatrixXf::Constant(height, width, lowest_height_limit);
+            this->depth_image = Eigen::MatrixXf::Constant(height, width, lowest_height_limit);
 
             //-- Loop through those points to get RGBD data
             #pragma omp parallel for
@@ -112,10 +114,10 @@ class RGBImageCreator
                 float old_z;
                 #pragma omp critical
                 {
-                    old_z = depth(index_y, index_x);
+                    old_z = this->depth_image(index_y, index_x);
                     if (filtered_cloud->points[i].z > old_z)
                     {
-                        depth(index_y, index_x) = filtered_cloud->points[i].z;
+                        this->depth_image(index_y, index_x) = filtered_cloud->points[i].z;
                         this->r_image(index_y, index_x) = filtered_cloud->points[i].r;
                         this->g_image(index_y, index_x) = filtered_cloud->points[i].g;
                         this->b_image(index_y, index_x) = filtered_cloud->points[i].b;
@@ -137,8 +139,9 @@ class RGBImageCreator
         PointT min_point_bb, max_point_bb;
         //-- Output images
         Eigen::MatrixXf r_image, g_image, b_image;
+        Eigen::MatrixXf depth_image;
 };
 
 
 
-#endif // ZBUFFERDEPTHIMAGECREATOR_H
+#endif // __RGBDImageCreator_HPP__
