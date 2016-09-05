@@ -311,56 +311,6 @@ int main (int argc, char** argv)
     //---------------------------------------------------------------------------------------------------------
     //-- Required parameters
     float average_point_distance=0.005; //-- Parameter to determine output image resolution
-    float lowest_height_limit = min_point_OBB.z;
-
-    //-- Calculate image resolution
-    /* Note: if not using std::abs, floating abs function seems to be
-     * not supported :-/ */
-    float OBB_width = std::abs(max_point_OBB.x - min_point_OBB.x);
-    float OBB_height = std::abs(max_point_OBB.y - min_point_OBB.y);
-
-    int width = std::ceil(OBB_width / average_point_distance);
-    int height = std::ceil(OBB_height / average_point_distance);
-    std::cout << "Creating 2D image with resolution: " << width << "x" << height << "px" << std::endl;
-
-//    //-- Matrices to store image data
-//    Eigen::MatrixXf depth = Eigen::MatrixXf::Constant(height, width, lowest_height_limit);
-
-//    //-- Filter for points within limits:
-//    pcl::octree::OctreePointCloudSearch<pcl::PointXYZRGB> octree(0.001); //-- Resolution of the src point cloud ~1mm
-//    std::vector<int> points_within_bounding_box;
-//    Eigen::Vector3f min_bb(min_point_OBB.x, min_point_OBB.y, lowest_height_limit);
-//    Eigen::Vector3f max_bb(max_point_OBB.x, max_point_OBB.y, 1);
-//    octree.setInputCloud(oriented_cloud->makeShared());
-//    octree.addPointsFromInputCloud();
-//    octree.boxSearch(min_bb, max_bb, points_within_bounding_box);
-
-//    //-- Loop through those points to get depth data
-//    #pragma omp parallel for
-//    for (int j = 0; j < points_within_bounding_box.size(); j++)
-//    {
-//        int i = points_within_bounding_box[j];
-
-//        if (isnan(oriented_cloud->points[i].x) || isnan(oriented_cloud->points[i].y ))
-//            continue;
-
-//        int index_x = (oriented_cloud->points[i].x-min_point_OBB.x) / average_point_distance;
-//        int index_y = (max_point_OBB.y - oriented_cloud->points[i].y) / average_point_distance;
-
-//        if (index_x >= width) index_x = width-1;
-//        if (index_y >= height) index_y = height-1;
-
-//        //-- ZBuffer depth map output image
-//        float old_z;
-//        #pragma omp critical
-//        {
-//            old_z = depth(index_y, index_x);
-//            if (oriented_cloud->points[i].z > old_z)
-//                depth(index_y, index_x) = oriented_cloud->points[i].z;
-//        }
-//    }
-
-
 
     //-- Get color images
     RGBDImageCreator<pcl::PointXYZRGB> imageCreator;
@@ -403,6 +353,8 @@ int main (int argc, char** argv)
 
     //-- Eigen to OpenCV to save RGB image as image (Quick and dirty)
     //------------------------------------------------------------------------------
+    int width = blue.cols();
+    int height = blue.rows();
     cv::Mat image(height, width, CV_8UC3);
     uint8_t* image_ptr = (uint8_t*)image.data;
 
