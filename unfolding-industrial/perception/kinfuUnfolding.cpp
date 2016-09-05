@@ -44,6 +44,7 @@
 #include "Debug.hpp"
 #include "RGBDImageCreator.hpp"
 #include "MaskImageCreator.hpp"
+#include "DepthImageCreator.hpp"
 
 void show_usage(char * program_name)
 {
@@ -386,7 +387,13 @@ int main (int argc, char** argv)
     blue_file << blue;
     blue_file.close();
 
-    Eigen::MatrixXf depth = imageCreator.getDepthImageAsMatrix();
+    //-- Get depth image
+    DepthImageCreator<pcl::PointXYZRGB> depthImageCreator;
+    depthImageCreator.setInputPointCloud(oriented_cloud);
+    depthImageCreator.setAvgPointDist(average_point_distance);
+    depthImageCreator.setBoundingBox(min_point_OBB, max_point_OBB);
+    depthImageCreator.compute();
+    Eigen::MatrixXf depth = depthImageCreator.getDepthImageAsMatrix();
 
     //-- Temporal fix to get depth image (through file)
     std::ofstream file((argv[filenames[0]]+std::string("-depth.txt")).c_str());

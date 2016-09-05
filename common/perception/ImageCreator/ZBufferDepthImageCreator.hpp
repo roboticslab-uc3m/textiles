@@ -1,6 +1,12 @@
 #ifndef ZBUFFERDEPTHIMAGECREATOR_H
 #define ZBUFFERDEPTHIMAGECREATOR_H
 
+/* WARNING: this class has been deprecated. The current way to obtain a depth image with zbuffer from a point cloud
+ * is to use a DepthImageCreator
+ *
+*/
+
+
 #include <pcl/point_cloud.h>
 #include <pcl/filters/filter.h>
 #include <pcl/features/moment_of_inertia_estimation.h>
