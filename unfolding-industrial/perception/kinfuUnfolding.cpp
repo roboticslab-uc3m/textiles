@@ -43,6 +43,7 @@
 //-- Textiles headers
 #include "Debug.hpp"
 #include "RGBDImageCreator.hpp"
+#include "MaskImageCreator.hpp"
 
 void show_usage(char * program_name)
 {
@@ -412,26 +413,11 @@ int main (int argc, char** argv)
     //-- Obtain a mask from garment data
     //------------------------------------------------------------------------------
     //-- Mask with segmented garment data
-    Eigen::MatrixXd mask = Eigen::MatrixXd::Zero(height, width);
-    #pragma omp parallel for
-    for (int i = 0; i < oriented_garment->points.size(); i++)
-    {
-        if (isnan(oriented_garment->points[i].x) || isnan(oriented_garment->points[i].y ))
-            continue;
-
-        int index_x = (oriented_garment->points[i].x-min_point_OBB.x) / average_point_distance;
-        int index_y = (max_point_OBB.y - oriented_garment->points[i].y) / average_point_distance;
-
-        if (index_x >= width) index_x = width-1;
-        if (index_y >= height) index_y = height-1;
-
-        #pragma omp critical
-        {
-            //-- Mask
-            mask(index_y, index_x) = 255;
-        }
-    }
-
+    MaskImageCreator<pcl::PointXYZRGB> maskImageCreator;
+    maskImageCreator.setInputPointCloud(oriented_garment);
+    maskImageCreator.setAvgPointDist(average_point_distance);
+    maskImageCreator.compute();
+    Eigen::MatrixXd mask = maskImageCreator.getMaskAsMatrix();
 
     //-- Eigen to OpenCV to save RGB image as image (Quick and dirty)
     cv::Mat mask_image(height, width, CV_8UC1);
