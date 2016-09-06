@@ -36,13 +36,8 @@
 #include <pcl/octree/octree.h>
 #include <pcl/octree/octree_search.h>
 
-//--OpenCV
-#include <opencv2/opencv.hpp>
-#include <opencv2/core/eigen.hpp>
-
 //-- Textiles headers
 #include "Debug.hpp"
-#include "RGBDImageCreator.hpp"
 #include "MaskImageCreator.hpp"
 #include "DepthImageCreator.hpp"
 #include "ImageUtils.hpp"
@@ -116,8 +111,8 @@ int main (int argc, char** argv)
         file_is_pcd = true;
     }
 
-    //-- Load point cloud data (with color)
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr source_cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+    //-- Load point cloud data
+    pcl::PointCloud<pcl::PointXYZ>::Ptr source_cloud(new pcl::PointCloud<pcl::PointXYZ>);
 
     if (file_is_pcd)
     {
@@ -152,13 +147,13 @@ int main (int argc, char** argv)
     //-- Program does actual work from here
     //--------------------------------------------------------------------------------------------------------
     debug.setEnabled(true);
-    debug.plotPointCloud<pcl::PointXYZRGB>(source_cloud, Debug::COLOR_ORIGINAL);
+    debug.plotPointCloud<pcl::PointXYZ>(source_cloud, Debug::COLOR_CYAN);
     debug.show("Original with color");
 
     //-- Downsample the dataset prior to plane detection (using a leaf size of 1cm)
     //-----------------------------------------------------------------------------------
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_downsampled(new pcl::PointCloud<pcl::PointXYZRGB>);
-    pcl::VoxelGrid<pcl::PointXYZRGB> voxel_grid;
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_downsampled(new pcl::PointCloud<pcl::PointXYZ>);
+    pcl::VoxelGrid<pcl::PointXYZ> voxel_grid;
     voxel_grid.setInputCloud(source_cloud);
     voxel_grid.setLeafSize(0.01f, 0.01f, 0.01f);
     voxel_grid.filter(*cloud_downsampled);
@@ -169,7 +164,7 @@ int main (int argc, char** argv)
     //------------------------------------------------------------------------------------
     pcl::ModelCoefficients::Ptr table_plane_coefficients(new pcl::ModelCoefficients);
     pcl::PointIndices::Ptr table_plane_points(new pcl::PointIndices);
-    pcl::SACSegmentation<pcl::PointXYZRGB> ransac_segmentation;
+    pcl::SACSegmentation<pcl::PointXYZ> ransac_segmentation;
     ransac_segmentation.setOptimizeCoefficients(true);
     ransac_segmentation.setModelType(pcl::SACMODEL_PLANE);
     ransac_segmentation.setMethodType(pcl::SAC_RANSAC);
@@ -192,41 +187,41 @@ int main (int argc, char** argv)
     }
 
     debug.setEnabled(false);
-    debug.plotPointCloud<pcl::PointXYZRGB>(source_cloud, Debug::COLOR_ORIGINAL);
+    debug.plotPointCloud<pcl::PointXYZ>(source_cloud, Debug::COLOR_CYAN);
     debug.plotPlane(*table_plane_coefficients, Debug::COLOR_BLUE);
     debug.show("Table plane");
 
     //-- Find points that do not belong to the plane
     //----------------------------------------------------------------------------------
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr not_table_points (new pcl::PointCloud<pcl::PointXYZRGB>);
-    pcl::ExtractIndices<pcl::PointXYZRGB> extract_indices;
+    pcl::PointCloud<pcl::PointXYZ>::Ptr not_table_points (new pcl::PointCloud<pcl::PointXYZ>);
+    pcl::ExtractIndices<pcl::PointXYZ> extract_indices;
     extract_indices.setInputCloud(cloud_downsampled);
     extract_indices.setIndices(table_plane_points);
     extract_indices.setNegative(true);
     extract_indices.filter(*not_table_points);
 
     debug.setEnabled(true);
-    debug.plotPointCloud<pcl::PointXYZRGB>(not_table_points, Debug::COLOR_ORIGINAL);
+    debug.plotPointCloud<pcl::PointXYZ>(not_table_points, Debug::COLOR_CYAN);
     debug.show("Not table points");
 
     //-- Compute largest cluster (the garment)
     //-----------------------------------------------------------------------------------
-    pcl::search::KdTree<pcl::PointXYZRGB>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZRGB>);
+    pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>);
     tree->setInputCloud(not_table_points);
 
     std::vector<pcl::PointIndices> cluster_indices;
-    pcl::EuclideanClusterExtraction<pcl::PointXYZRGB> euclidean_custering;
+    pcl::EuclideanClusterExtraction<pcl::PointXYZ> euclidean_custering;
     euclidean_custering.setClusterTolerance(0.015);
     euclidean_custering.setMinClusterSize(100);
     euclidean_custering.setSearchMethod(tree);
     euclidean_custering.setInputCloud(not_table_points);
     euclidean_custering.extract(cluster_indices);
 
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr largest_cluster(new pcl::PointCloud<pcl::PointXYZRGB>);
+    pcl::PointCloud<pcl::PointXYZ>::Ptr largest_cluster(new pcl::PointCloud<pcl::PointXYZ>);
     int largest_cluster_size = 0;
     for (auto it = cluster_indices.begin (); it != cluster_indices.end (); ++it)
     {
-      pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_cluster (new pcl::PointCloud<pcl::PointXYZRGB>);
+      pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_cluster (new pcl::PointCloud<pcl::PointXYZ>);
       for (auto pit = it->indices.begin (); pit != it->indices.end (); ++pit)
         cloud_cluster->points.push_back(not_table_points->points[*pit]);
       cloud_cluster->width = cloud_cluster->points.size ();
@@ -242,14 +237,14 @@ int main (int argc, char** argv)
     }
 
     debug.setEnabled(false);
-    debug.plotPointCloud<pcl::PointXYZRGB>(largest_cluster, Debug::COLOR_ORIGINAL);
+    debug.plotPointCloud<pcl::PointXYZ>(largest_cluster, Debug::COLOR_CYAN);
     debug.show("Filtered garment cloud");
 
     //-- Find bounding box:
     //-----------------------------------------------------------------------------------
-    pcl::MomentOfInertiaEstimation<pcl::PointXYZRGB> feature_extractor;
-    pcl::PointXYZRGB min_point_OBB,  max_point_OBB;
-    pcl::PointXYZRGB position_OBB;
+    pcl::MomentOfInertiaEstimation<pcl::PointXYZ> feature_extractor;
+    pcl::PointXYZ min_point_OBB,  max_point_OBB;
+    pcl::PointXYZ position_OBB;
     Eigen::Matrix3f rotational_matrix_OBB;
 
     feature_extractor.setInputCloud(largest_cluster);
@@ -261,28 +256,28 @@ int main (int argc, char** argv)
     record_point(argv[filenames[0]]+std::string("-origin.txt"), pcl::PointXYZ(min_point_OBB.x, max_point_OBB.y, 0));
 
     debug.setEnabled(false);
-    debug.plotPointCloud<pcl::PointXYZRGB>(largest_cluster, Debug::COLOR_ORIGINAL);
+    debug.plotPointCloud<pcl::PointXYZ>(largest_cluster, Debug::COLOR_CYAN);
     debug.plotBoundingBox(min_point_OBB, max_point_OBB, position_OBB, rotational_matrix_OBB, Debug::COLOR_GREEN);
     debug.show("Oriented bounding cloud");
 
     //-- Project bounding box center point on table plane
     //------------------------------------------------------------------------------------
     //-- Project center point onto given plane:
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr center_to_be_projected_cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+    pcl::PointCloud<pcl::PointXYZ>::Ptr center_to_be_projected_cloud(new pcl::PointCloud<pcl::PointXYZ>);
     center_to_be_projected_cloud->points.push_back(position_OBB);
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr center_projected_cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+    pcl::PointCloud<pcl::PointXYZ>::Ptr center_projected_cloud(new pcl::PointCloud<pcl::PointXYZ>);
 
-    pcl::ProjectInliers<pcl::PointXYZRGB> project_inliners;
+    pcl::ProjectInliers<pcl::PointXYZ> project_inliners;
     project_inliners.setModelType(pcl::SACMODEL_PLANE);
     project_inliners.setInputCloud(center_to_be_projected_cloud);
     project_inliners.setModelCoefficients(table_plane_coefficients);
     project_inliners.filter(*center_projected_cloud);
-    pcl::PointXYZRGB projected_center = center_projected_cloud->points[0];
+    pcl::PointXYZ projected_center = center_projected_cloud->points[0];
 
     //-- Center and orient it at the origin
     //------------------------------------------------------------------------------------
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr oriented_cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr oriented_garment(new pcl::PointCloud<pcl::PointXYZRGB>);
+    pcl::PointCloud<pcl::PointXYZ>::Ptr oriented_cloud(new pcl::PointCloud<pcl::PointXYZ>);
+    pcl::PointCloud<pcl::PointXYZ>::Ptr oriented_garment(new pcl::PointCloud<pcl::PointXYZ>);
 
     //-- Compute translation to center
     Eigen::Affine3f translation_transform = Eigen::Affine3f::Identity();
@@ -300,47 +295,21 @@ int main (int argc, char** argv)
     record_transformation(argv[filenames[0]]+std::string("-transform.txt"), T);
 
     debug.setEnabled(true);
-    debug.plotPointCloud<pcl::PointXYZRGB>(oriented_garment, Debug::COLOR_ORIGINAL);
-    debug.plotPointCloud<pcl::PointXYZRGB>(largest_cluster, Debug::COLOR_ORIGINAL);
+    debug.plotPointCloud<pcl::PointXYZ>(oriented_garment, Debug::COLOR_CYAN);
+    debug.plotPointCloud<pcl::PointXYZ>(largest_cluster, Debug::COLOR_CYAN);
     debug.plotBoundingBox(min_point_OBB, max_point_OBB, position_OBB, rotational_matrix_OBB, Debug::COLOR_YELLOW);
-    debug.plotBoundingBox(min_point_OBB, max_point_OBB, pcl::PointXYZRGB(0,0,0), Eigen::Matrix3f::Identity(), Debug::COLOR_BLUE);
+    debug.plotBoundingBox(min_point_OBB, max_point_OBB, pcl::PointXYZ(0,0,0), Eigen::Matrix3f::Identity(), Debug::COLOR_BLUE);
     debug.getRawViewer()->addLine (pcl::PointXYZ(0,0,0), projected_center, 1.0, 0.0, 0.0, "line");
     debug.show("Oriented garment patch");
 
     //---------------------------------------------------------------------------------------------------------
-    //-- RBGD data extraction from point cloud
+    //-- Depth data extraction from point cloud
     //---------------------------------------------------------------------------------------------------------
     //-- Required parameters
     float average_point_distance=0.005; //-- Parameter to determine output image resolution
 
-    //-- Get color images
-    RGBDImageCreator<pcl::PointXYZRGB> imageCreator;
-    imageCreator.setInputPointCloud(oriented_cloud);
-    imageCreator.setAvgPointDist(average_point_distance);
-    imageCreator.setBoundingBox(min_point_OBB, max_point_OBB);
-    imageCreator.compute();
-    Eigen::MatrixXf red = imageCreator.getChannelAsMatrix(RGBDImageCreator<pcl::PointXYZRGB>::CHANNEL_R);
-    Eigen::MatrixXf green = imageCreator.getChannelAsMatrix(RGBDImageCreator<pcl::PointXYZRGB>::CHANNEL_G);
-    Eigen::MatrixXf blue = imageCreator.getChannelAsMatrix(RGBDImageCreator<pcl::PointXYZRGB>::CHANNEL_B);
-    eigen2file(red, green, blue, argv[filenames[0]]+std::string("-RGB.png") );
-
-    //-- Temporal fix to get red channel image (through file)
-    std::ofstream red_file((argv[filenames[0]]+std::string("-red.txt")).c_str());
-    red_file << red;
-    red_file.close();
-
-    //-- Temporal fix to get green channel image (through file)
-    std::ofstream green_file((argv[filenames[0]]+std::string("-green.txt")).c_str());
-    green_file << green;
-    green_file.close();
-
-    //-- Temporal fix to get blue channel image (through file)
-    std::ofstream blue_file((argv[filenames[0]]+std::string("-blue.txt")).c_str());
-    blue_file << blue;
-    blue_file.close();
-
     //-- Get depth image
-    DepthImageCreator<pcl::PointXYZRGB> depthImageCreator;
+    DepthImageCreator<pcl::PointXYZ> depthImageCreator;
     depthImageCreator.setInputPointCloud(oriented_cloud);
     depthImageCreator.setAvgPointDist(average_point_distance);
     depthImageCreator.setBoundingBox(min_point_OBB, max_point_OBB);
@@ -355,7 +324,7 @@ int main (int argc, char** argv)
     //-- Obtain a mask from garment data
     //------------------------------------------------------------------------------
     //-- Mask with segmented garment data
-    MaskImageCreator<pcl::PointXYZRGB> maskImageCreator;
+    MaskImageCreator<pcl::PointXYZ> maskImageCreator;
     maskImageCreator.setInputPointCloud(oriented_garment);
     maskImageCreator.setAvgPointDist(average_point_distance);
     maskImageCreator.compute();
