@@ -45,6 +45,7 @@
 #include "RGBDImageCreator.hpp"
 #include "MaskImageCreator.hpp"
 #include "DepthImageCreator.hpp"
+#include "ImageUtils.hpp"
 
 void show_usage(char * program_name)
 {
@@ -321,6 +322,7 @@ int main (int argc, char** argv)
     Eigen::MatrixXf red = imageCreator.getChannelAsMatrix(RGBDImageCreator<pcl::PointXYZRGB>::CHANNEL_R);
     Eigen::MatrixXf green = imageCreator.getChannelAsMatrix(RGBDImageCreator<pcl::PointXYZRGB>::CHANNEL_G);
     Eigen::MatrixXf blue = imageCreator.getChannelAsMatrix(RGBDImageCreator<pcl::PointXYZRGB>::CHANNEL_B);
+    eigen2file(red, green, blue, argv[filenames[0]]+std::string("-RGB.png") );
 
     //-- Temporal fix to get red channel image (through file)
     std::ofstream red_file((argv[filenames[0]]+std::string("-red.txt")).c_str());
@@ -350,25 +352,6 @@ int main (int argc, char** argv)
     file << depth;
     file.close();
 
-
-    //-- Eigen to OpenCV to save RGB image as image (Quick and dirty)
-    //------------------------------------------------------------------------------
-    int width = blue.cols();
-    int height = blue.rows();
-    cv::Mat image(height, width, CV_8UC3);
-    uint8_t* image_ptr = (uint8_t*)image.data;
-
-    for (int i = 0; i < height; i++)
-        for (int j = 0; j < width; j++)
-        {
-            image_ptr[i*image.cols*3 + j*3 + 0] = blue(i, j); // B
-            image_ptr[i*image.cols*3 + j*3 + 1] = green(i, j);// G
-            image_ptr[i*image.cols*3 + j*3 + 2] = red(i, j);  // R
-        }
-
-    cv::imwrite(argv[filenames[0]]+std::string("-RGB.png"), image);
-
-
     //-- Obtain a mask from garment data
     //------------------------------------------------------------------------------
     //-- Mask with segmented garment data
@@ -377,16 +360,7 @@ int main (int argc, char** argv)
     maskImageCreator.setAvgPointDist(average_point_distance);
     maskImageCreator.compute();
     Eigen::MatrixXd mask = maskImageCreator.getMaskAsMatrix();
-
-    //-- Eigen to OpenCV to save RGB image as image (Quick and dirty)
-    cv::Mat mask_image(height, width, CV_8UC1);
-    uint8_t* mask_image_ptr = (uint8_t*)mask_image.data;
-
-    for (int i = 0; i < height; i++)
-        for (int j = 0; j < width; j++)
-            mask_image_ptr[i*mask_image.cols + j] = mask(i, j);
-
-    cv::imwrite(argv[filenames[0]]+std::string("-mask.png"), mask_image);
+    eigen2file(mask, argv[filenames[0]]+std::string("-mask.png"));
 
     return 0;
 }
