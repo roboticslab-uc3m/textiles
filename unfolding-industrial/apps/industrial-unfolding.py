@@ -10,9 +10,11 @@ from unfolding.perception.GarmentDepthMapClustering import GarmentDepthMapCluste
 from unfolding.perception.GarmentPickAndPlacePoints import GarmentPickAndPlacePoints
 from unfolding.perception import GarmentPlot
 from common.perception.Transformer import Transformer
+from common import math as myMath
 
-path_input_mesh = "/home/def/Research/jresearch/2016-05-06-textiles-draft/pants1/textured_mesh.ply"
+#path_input_mesh = "/home/def/Research/jresearch/2016-05-06-textiles-draft/pants1/textured_mesh.ply"
 #path_input_mesh = "/home/def/Research/jresearch/2016-04-20-textiles-draft/hoodie3/textured_mesh.ply"
+path_input_mesh = "/home/def/Research/jresearch/2016-09-06-textiles-unfolding/calibration3/mesh_1.ply"
 
 def sparse2dense(mask):
     """
@@ -27,9 +29,40 @@ def sparse2dense(mask):
 
     return closing
 
+def cam_wrt_root_from_end_effector(x, y, z):
+    H_root_phy = np.identity(4)
+    H_root_phy[:3, :3] = myMath.rotY(180)
+    H_root_phy[:3, 3] = [x, y, z]
+
+    H_phy_cam = np.identity(4)
+    H_phy_cam[:3, :3] = myMath.rotZ(90)
+
+    return np.dot(H_root_phy, H_phy_cam)
+
 
 if __name__ == "__main__":
-    path_rgb_image = path_input_mesh + "-RGB.png" # Theoretically irrelevant to result, but here for retrocompatibility
+    # Convert pick and place points to robot frame
+    change_frame = Transformer()
+
+    # Load configuration data and configure
+    with open(path_input_mesh + "-origin.txt", "r") as f:
+        file_contents = f.readlines()
+        image_origin = [ float(i) for i in file_contents[0].split(' ')]
+    change_frame.add_image_params((image_origin[0], image_origin[1]), 0.005)
+
+    kinfu_wrt_object = np.loadtxt(path_input_mesh+"-transform.txt")
+    change_frame.add_kinfu_wrt_object_transform(kinfu_wrt_object)
+
+    kinfu_params = Transformer.load_kinfu_params_from_file(os.path.join(os.path.split(path_input_mesh)[0],
+                                                                        "0.txt"))
+    change_frame.add_kinfu_params(kinfu_params)
+    cam_wrt_root = cam_wrt_root_from_end_effector(0.8959-0.029, -0.2863+0.0451, 0.9591)
+    change_frame.add_cam_wrt_root_transform(cam_wrt_root)
+
+    print change_frame.root([(90, 55)])
+
+if False and __name__ == "__main__":
+    #path_rgb_image = path_input_mesh + "-RGB.png" # Theoretically irrelevant to result, but here for retrocompatibility
     path_mask = path_input_mesh + "-mask.png"
     path_depth_image = path_input_mesh + "-depth.txt"
 
