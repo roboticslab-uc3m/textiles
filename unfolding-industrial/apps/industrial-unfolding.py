@@ -59,7 +59,7 @@ if __name__ == "__main__":
 
     print "---"
     from common.perception.Utils import points_to_file
-    test_points_px = [(139, 60), (68,49), (40,113), (122,131)]
+    test_points_px = [(139, 60), (68,49), (40,113), (122,131), (100, 78)]
     points_to_file(change_frame.debug(test_points_px), os.path.join(os.path.split(path_input_mesh)[0], "points.pcd"))
 
     test_points = change_frame.root(test_points_px)
@@ -85,7 +85,7 @@ if __name__ == "__main__":
     plt.scatter([p[0] for p in points], [p[1] for p in points], c='b')
     plt.scatter([p[0] for p in mask_points], [p[1] for p in mask_points], c='r')
     plt.scatter([p[0] for p in test_points], [p[1] for p in test_points], c='y')
-    plt.plot([p[0] for p in test_points], [p[1] for p in points_root], 'g-')
+    plt.plot([p[0] for p in points_root], [p[1] for p in points_root], 'go-')
     plt.show()
 
 if False and __name__ == "__main__":
