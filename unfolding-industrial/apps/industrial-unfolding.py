@@ -11,6 +11,8 @@ from unfolding.perception.GarmentPickAndPlacePoints import GarmentPickAndPlacePo
 from unfolding.perception import GarmentPlot
 from common.perception.Transformer import Transformer
 from common.perception.depth_calibration import H_root_cam, kinfu_wrt_cam
+from common.user_interface import query_yes_no
+import abb
 
 
 #path_input_mesh = "/home/def/Research/jresearch/2016-05-06-textiles-draft/pants1/textured_mesh.ply"
@@ -85,4 +87,17 @@ if __name__ == "__main__":
     points_to_file([pick_point_abs, place_point_abs], os.path.join(os.path.split(path_input_mesh)[0],
                                                                         "pick_and_place.pcd"))
 
+    pick_point_root, place_point_root = change_frame.root([pick_point, place_point])
+    distance = np.sqrt((pick_point_root[0]-place_point_root[1])**2+
+                       (place_point_root[0]-place_point_root[1])**2)
 
+    print "Target points are:\n\tPick: {}\n\tPlace: {}\n\tMax height: {}".format(
+        pick_point_root, place_point_root, distance*0.4)
+    ans = query_yes_no("Perform pick and place operation? (WARNING: this operation might be potentially destructive)",
+                 default="no")
+
+    if ans == 'yes':
+        # Connect to robot
+        robot = abb.Robot('192.168.125.1')
+        robot.pick_and_place(pick_point_root[0], pick_point_root[1],
+                             place_point_root[0], place_point_root[1], distance*0.4)
