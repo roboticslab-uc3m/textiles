@@ -17,7 +17,7 @@ import abb
 
 #path_input_mesh = "/home/def/Research/jresearch/2016-05-06-textiles-draft/pants1/textured_mesh.ply"
 #path_input_mesh = "/home/def/Research/jresearch/2016-04-20-textiles-draft/hoodie3/textured_mesh.ply"
-path_input_mesh = "/home/def/Research/jresearch/2016-09-06-textiles-unfolding/calibration5/mesh_1.ply"
+path_input_mesh = "/home/yo/k3/mesh_1.ply"
 
 def sparse2dense(mask):
     """
@@ -99,5 +99,7 @@ if __name__ == "__main__":
     if ans == 'yes':
         # Connect to robot
         robot = abb.Robot('192.168.125.1')
+        robot.set_units(linear='meters',angular='degrees')
         robot.pick_and_place(pick_point_root[0], pick_point_root[1],
                              place_point_root[0], place_point_root[1], distance*0.4)
+        robot.close()
