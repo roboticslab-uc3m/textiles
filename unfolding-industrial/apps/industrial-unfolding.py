@@ -17,7 +17,7 @@ import abb
 
 #path_input_mesh = "/home/def/Research/jresearch/2016-05-06-textiles-draft/pants1/textured_mesh.ply"
 #path_input_mesh = "/home/def/Research/jresearch/2016-04-20-textiles-draft/hoodie3/textured_mesh.ply"
-path_input_mesh = "/home/yo/k3/mesh_1.ply"
+path_input_mesh = "/home/yo/martes/blackHoodie3/mesh_1.ply"
 
 def sparse2dense(mask):
     """
@@ -34,6 +34,20 @@ def sparse2dense(mask):
 
 
 if __name__ == "__main__":
+    # Connect to robot
+    robot = abb.Robot('192.168.125.1')
+    robot.set_units('meters', 'degrees')
+    ans = query_yes_no("Go to starting point? (WARNING: this operation might be potentially destructive)", default="no")
+    if ans == 'yes':
+        robot.set_tool([[0,0,1.000],[1,0,0,0]])
+        robot.set_cartesian([[1.01784,-0.28281,0.06031],[0.0495452, 0.00703024, 0.998742, 0.00318766]])
+
+    ans = query_yes_no("Perform Scan? (WARNING: this operation might be potentially destructive)", default="no")
+    if ans == 'yes':
+        robot.scan()
+
+    query_yes_no("Start processing?", default="yes")
+
     path_mask = path_input_mesh + "-mask.png"
     path_depth_image = path_input_mesh + "-depth.txt"
 
@@ -88,8 +102,8 @@ if __name__ == "__main__":
                                                                         "pick_and_place.pcd"))
 
     pick_point_root, place_point_root = change_frame.root([pick_point, place_point])
-    distance = np.sqrt((pick_point_root[0]-place_point_root[1])**2+
-                       (place_point_root[0]-place_point_root[1])**2)
+    distance = np.sqrt((pick_point_root[0]-place_point_root[0])**2+
+                       (pick_point_root[1]-place_point_root[1])**2)
 
     print "Target points are:\n\tPick: {}\n\tPlace: {}\n\tMax height: {}".format(
         pick_point_root, place_point_root, distance*0.4)
@@ -97,9 +111,9 @@ if __name__ == "__main__":
                  default="no")
 
     if ans == 'yes':
-        # Connect to robot
-        robot = abb.Robot('192.168.125.1')
+
         robot.set_units(linear='meters',angular='degrees')
         robot.pick_and_place(pick_point_root[0], pick_point_root[1],
                              place_point_root[0], place_point_root[1], distance*0.4)
-        robot.close()
+
+    robot.close()
