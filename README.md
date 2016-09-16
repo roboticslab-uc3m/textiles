@@ -10,7 +10,7 @@ Main repository for the research related to textile perception and manipulation 
 # Repository
 Structure of the repository:
 * **/images**
-* **/ironing** - robotic garment ironing applications developed with [TEO the humanoid robot](https://github.com/roboticslab-uc3m/teo-main) (Under development)
+* **/ironing** - robotic garment ironing applications developed with [TEO the humanoid robot](https://github.com/roboticslab-uc3m/teo-main)
 * **/unfolding** - robotic garment unfolding applications developed with [TEO the humanoid robot](https://github.com/roboticslab-uc3m/teo-main).
 * **/unfolding-industrial** - robotic garment unfolding applications developed with industrial robots. (Under development).
 

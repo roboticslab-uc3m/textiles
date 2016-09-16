@@ -6,7 +6,7 @@ from operator import itemgetter
 from PySide import QtCore, QtGui
 from PySide import QtUiTools
 
-from utils import load_results_data
+from unfolding.perception.GarmentUtils import load_results_data
 
 def load_ui(file_name, where=None):
     """
