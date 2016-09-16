@@ -112,7 +112,7 @@ if __name__ == '__main__':
     points_to_file(trajectory_debug, output_file)
 
     trajectory_root = t.relative_to_robot_root(trajectory_image_px)
-    print trajectory_root
+    print [ (float(x), float(y), float(z)) for x, y, z, w in trajectory_root]
 
     # send_trajectory_over_yarp("/read", trajectory_root)
 
