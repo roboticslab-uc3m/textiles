@@ -6,6 +6,9 @@ from skimage import io
 from skimage import feature
 from skimage import morphology
 import numpy as np
+from sklearn.mixture import GaussianMixture
+import matplotlib as mpl
+import matplotlib.pyplot as plt
 
 """
 Curvature Scan Li
@@ -32,9 +35,33 @@ def shape_index_filter(img, lower_limit, upper_limit, hessian_sigma=1):
     return np.bitwise_and(wrinkles_low, wrinkles_upper)
 
 
+colors = ['navy', 'turquoise', 'darkorange']
+
+def make_ellipses(gmm, ax):
+    for n, color in enumerate(colors):
+        if gmm.covariance_type == 'full':
+            covariances = gmm.covariances_[n][:2, :2]
+        elif gmm.covariance_type == 'tied':
+            covariances = gmm.covariances_[:2, :2]
+        elif gmm.covariance_type == 'diag':
+            covariances = np.diag(gmm.covariances_[n][:2])
+        elif gmm.covariance_type == 'spherical':
+            covariances = np.eye(gmm.means_.shape[1]) * gmm.covariances_[n]
+        v, w = np.linalg.eigh(covariances)
+        u = w[0] / np.linalg.norm(w[0])
+        angle = np.arctan2(u[1], u[0])
+        angle = 180 * angle / np.pi  # convert to degrees
+        v = 2. * np.sqrt(2.) * np.sqrt(v)
+        ell = mpl.patches.Ellipse(gmm.means_[n, :2], v[0], v[1],
+                                  180 + angle, color=color)
+        ell.set_clip_box(ax.bbox)
+        ell.set_alpha(0.5)
+        ax.add_artist(ell)
+
+
 if __name__ == '__main__':
     # Read depth images
-    src = io.imread(os.path.join(image_folder, image_name_pattern.format("03")), as_grey=True)
+    src = io.imread(os.path.join(image_folder, image_name_pattern.format("02")), as_grey=True)
     #src = io.imread("/home/def/Downloads/414685.jpg", as_grey=True)
     #src = io.imread("/home/def/Downloads/wrinkles-out-chiffon_99fe4d4c783282da.jpg", as_grey=True)
     io.imshow(src)
@@ -59,12 +86,36 @@ if __name__ == '__main__':
     ordered_volumes = sorted(volumes, key=itemgetter(1))
     print(ordered_volumes)
     high_bumps = np.zeros_like(wrinkles) # High bumps
-    n_bumps = 0 # Stores the number of high bumps detected
+    high_bumps_labels = []
     for label, volume in ordered_volumes:
         if volume > 10000:
-            high_bumps = np.bitwise_or(high_bumps, np.where(labels==label, labels, 0))
-            n_bumps += 1
+            #high_bumps = np.bitwise_or(high_bumps, np.where(labels==label, labels, 0))
+            high_bumps = np.where(labels == label, roi, high_bumps)
+            high_bumps_labels.append(label)
 
     io.imshow(high_bumps)
     io.show()
+
+    # Note: Principal components are said to be computed, but they are never really used later
+    # in the thesis, so I'm not computing them. If I were, that computation would go here.
+
+    # Fit GMMs to wrinkles
+    data = np.transpose(np.nonzero(high_bumps))
+    n_classes = len(high_bumps_labels)
+
+    clf = GaussianMixture(n_components=n_classes, covariance_type='full')
+    clf.fit(data)
+
+    # display predicted scores by the model as a contour plot
+    x = np.linspace(roi_rect[0][0], roi_rect[1][0])
+    y = np.linspace(roi_rect[0][1], roi_rect[1][1])
+    X, Y = np.meshgrid(x, y)
+    XX = np.array([X.ravel(), Y.ravel()]).T
+    Z = -clf.score_samples(XX)
+    Z = Z.reshape(X.shape)
+
+    CS = plt.contour(X, Y, Z)
+    CB = plt.colorbar(CS, shrink=0.8, extend='both')
+    plt.scatter(data[:, 0], data[:, 1], .8)
+    plt.show()
 
