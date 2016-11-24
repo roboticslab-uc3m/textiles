@@ -40,6 +40,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <time.h>
 #include "libfreenect.h"
 
 #include <pthread.h>
@@ -297,7 +298,9 @@ void keyPressed(unsigned char key, int x, int y)
         {
             printf("Saving current frame...\n");
             pthread_mutex_lock(&gl_backbuf_mutex);
-            saveImageToFile(rgb_back, 640, 480, "out.ppm");
+	    char filename[32];
+	    sprintf(filename, "out-%d.ppm", time(NULL));
+            saveImageToFile(rgb_back, 640, 480, filename);
             pthread_mutex_unlock(&gl_backbuf_mutex);
         }
         else
