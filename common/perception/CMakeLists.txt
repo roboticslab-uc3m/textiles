@@ -2,3 +2,4 @@ set(TEXTILES_INCLUDE_DIRS ${TEXTILES_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR}/I
 
 add_subdirectory(ImageCreator)
 add_subdirectory(ImageUtils)
+add_subdirectory(KinectGrabber)
