@@ -22,7 +22,22 @@ image_folder = "~/Research/jresearch/2016-11-24-replicate-li/"
 image_folder = os.path.abspath(os.path.expanduser(image_folder))
 image_wrinkles_name_pattern = "garment-{:02d}-image-{:02d}.ppm"
 image_reference_name_pattern = "garment-{:02d}-imageref-{:02d}.ppm"
+image_roi_name_patten = "garment-{:02d}-roi.txt"
 
+def load_foi_from_file(filename):
+    """
+    Loads region of interest from a file. The file format is the following:
+    start_x start_y
+    end_x end_y
+    :param filename: Path to the file
+    :return: a region of interest described as two points -> (start_x, start_y), (end_x, end_y)
+    """
+
+    with open(filename, 'r') as f:
+        lines = f.readlines()
+        (start_x, start_y), (end_x, end_y) = [[int(p) for p in line.split(' ')] for line in lines]
+
+    return (start_x, start_y), (end_x, end_y)
 
 if __name__ == '__main__':
     for i in range(1, 5): # For each sample image
@@ -51,7 +66,7 @@ if __name__ == '__main__':
         norm = np.sqrt(np.power(norm_1,2)+np.power(norm_2,2))
 
         # Set ROIs
-        roi_rect = ((140, 100), (430, 240))
+        roi_rect = load_foi_from_file(os.path.join(image_folder, image_roi_name_patten.format(i)))
         #roi_rect = ((84, 10) , (501, 480))
         roi1 = norm_1[roi_rect[0][1]:roi_rect[1][1], roi_rect[0][0]:roi_rect[1][0]]
         roi2 = norm_2[roi_rect[0][1]:roi_rect[1][1], roi_rect[0][0]:roi_rect[1][0]]
