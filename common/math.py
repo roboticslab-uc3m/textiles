@@ -26,3 +26,13 @@ def rotZ(angle):
     return np.array([[ c, -s, 0],
                      [ s,  c, 0],
                      [ 0,  0, 1]])
+
+def normalize_array(array):
+    """
+    Normalize an array to have values between 0 and 1
+    :param array: Input array
+    :return: Normalized array
+    """
+    array -= array.min()
+    array /= array.max()
+    return array
