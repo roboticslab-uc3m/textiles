@@ -18,8 +18,8 @@ Structure of the repository:
 # Publications
 Here you can find listed all publications related to the code hosted in this repository.
 
-<a id="1">[1]</a> David Estévez, Juan G. Victores, Santiago Morante, Carlos Balaguer. Towards Robotic Garment Folding: A Vision Approach for Fold Detection. International Conference on Autonomous Robot Systems and Competitions (ICARSC). 2016. [[URL]](http://icarsc2016.ipb.pt/docs/ProgramaICARSC.pdf)
+<a id="1">[1]</a> David Estevez, Juan G. Victores, Santiago Morante, Carlos Balaguer. Towards Robotic Garment Folding: A Vision Approach for Fold Detection. International Conference on Autonomous Robot Systems and Competitions (ICARSC). 2016. [[URL]](http://icarsc2016.ipb.pt/docs/ProgramaICARSC.pdf)
 
-<a id="2">[2]</a> David Estévez, Juan G. Victores, Carlos Balaguer. Future Trends in Perception and Manipulation for Unfolding and Folding Garments. Open Conference on Future Trends in Robotics (RoboCity 2016). 2016.
+<a id="2">[2]</a> David Estevez, Juan G. Victores, Carlos Balaguer. Future Trends in Perception and Manipulation for Unfolding and Folding Garments. Open Conference on Future Trends in Robotics (RoboCity 2016). 2016.
 
-<a id="3">[3]</a> David Estévez. Towards Robotic Clothes Folding: A Garment-Agnostic Unfolding Algorithm. Master's Thesis. 2016.
+<a id="3">[3]</a> David Estevez. Towards Robotic Clothes Folding: A Garment-Agnostic Unfolding Algorithm. Master's Thesis. 2016.
