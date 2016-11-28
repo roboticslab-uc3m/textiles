@@ -2,8 +2,10 @@
 
 import os
 from skimage import io
+from skimage import img_as_ubyte
 import numpy as np
 import matplotlib.pyplot as plt
+import cv2 # SIFT not in skimage
 import begin
 from common.math import normalize_array
 
@@ -83,12 +85,13 @@ class DiscontinuityScanLi(object):
 
     def compute_SIFT(self):
         # SIFT features
-        # sift = cv2.xfeatures2d.SIFT_create()
-        # kp = sift.detect(gray,None)
-        #
-        # img=cv2.drawKeypoints(gray,kp)
-        # cv2.imwrite('sift_keypoints.jpg',img)
-        pass
+        sift = cv2.xfeatures2d.SIFT_create()
+        kp = sift.detect(img_as_ubyte(normalize_array(self.norm)),None)
+        print(len(kp))
+
+        img = cv2.drawKeypoints(img_as_ubyte(normalize_array(self.norm)),kp, None)
+        cv2.imwrite('sift_keypoints.jpg',img)
+
 
     def plot_input_images(self, colormap=plt.cm.viridis):
         """
@@ -120,6 +123,7 @@ def main(num_images: 'Number of images in image folder' = 0, display_results: 'S
     for i in range(1, num_images+1): # For each sample image
         discontinuity_scanner.load_images(image_folder, image_id=i, use_roi=True)
         discontinuity_scanner.normalize_images()
+        discontinuity_scanner.compute_SIFT()
 
         if display_results:
             discontinuity_scanner.plot_input_images()
