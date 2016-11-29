@@ -7,7 +7,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import cv2 # SIFT not in skimage
 import begin
+import logging
 from common.math import normalize_array
+from common.perception.Features import save_SIFT
 
 """
 Discontinuity Scan Li
@@ -32,7 +34,7 @@ def load_roi_from_file(filename):
 
     with open(filename, 'r') as f:
         lines = f.readlines()
-        (start_x, start_y), (end_x, end_y) = [[int(p) for p in line.split(' ')] for line in lines]
+        (start_x, start_y), (end_x, end_y) = [map(int, line.split(' ')) for line in lines]
 
     return (start_x, start_y), (end_x, end_y)
 
@@ -83,14 +85,29 @@ class DiscontinuityScanLi(object):
         self.norm_2 = self.image_wrinkles_2 / self.image_ref_2
         self.norm = np.sqrt(np.power(self.norm_1,2)+np.power(self.norm_2,2))
 
-    def compute_SIFT(self):
-        # SIFT features
+    def compute_SIFT(self, labels=None):
+        """
+        Computes SIFT features using OpenCV
+        :param labels: if provided, the labeled image is used to label the class_id member of each keypoint
+        """
+        # Compute SIFT features
         sift = cv2.xfeatures2d.SIFT_create()
-        kp = sift.detect(img_as_ubyte(normalize_array(self.norm)),None)
-        print(len(kp))
+        keypoints, descriptots = sift.detectAndCompute(img_as_ubyte(normalize_array(self.norm)),None)
+        logging.debug("Detected {} keypoints".format(len(keypoints)))
 
-        img = cv2.drawKeypoints(img_as_ubyte(normalize_array(self.norm)),kp, None)
-        cv2.imwrite('sift_keypoints.jpg',img)
+        # Debug stuff
+        # img = cv2.drawKeypoints(img_as_ubyte(normalize_array(self.norm)),keypoints, None)
+        # cv2.imwrite('sift_keypoints.jpg',img)
+        # save_SIFT('sift.npz', keypoints, descriptots)
+
+        # Label keypoints
+        if labels:
+            for kp in keypoints:
+                kp.class_id = int(labels[map(int, kp.pt)])
+
+            for kp in keypoints:
+                logging.debug("Keypoint at {}, class {}".format(kp.pt, kp.class_id))
+
 
 
     def plot_input_images(self, colormap=plt.cm.viridis):
@@ -113,16 +130,25 @@ class DiscontinuityScanLi(object):
 
 
 @begin.start(auto_convert=True)
+@begin.logging
 def main(num_images: 'Number of images in image folder' = 0, display_results: 'Show feedback of the process' = False,
-         generate_dataset: 'Generate dataset from input images' = False):
+         generate_dataset: 'Generate dataset from input images' = False, *image_folder):
 
-    image_folder = "~/Research/jResearch/2016-11-24-replicate-li/"
+    image_folder = image_folder[0]
+    logging.info("Loading images from {}".format(image_folder))
     
     discontinuity_scanner = DiscontinuityScanLi()
 
     for i in range(1, num_images+1): # For each sample image
+        logging.info("Processing image {}".format(i))
+
+        logging.debug("\tLoading images...")
         discontinuity_scanner.load_images(image_folder, image_id=i, use_roi=True)
+
+        logging.info("\tNormalizing images...")
         discontinuity_scanner.normalize_images()
+
+        logging.info("\tComputing SIFT features...")
         discontinuity_scanner.compute_SIFT()
 
         if display_results:
@@ -130,6 +156,7 @@ def main(num_images: 'Number of images in image folder' = 0, display_results: 'S
             discontinuity_scanner.plot_normalized_images()
 
         if generate_dataset:
+            logging.info("\tGenerating dataset")
             image_output_name_pattern = "garment-{:02d}-out.png"
             image_folder = os.path.abspath(os.path.expanduser(image_folder))
 
