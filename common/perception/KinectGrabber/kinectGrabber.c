@@ -298,9 +298,16 @@ void keyPressed(unsigned char key, int x, int y)
         {
             printf("Saving current frame...\n");
             pthread_mutex_lock(&gl_backbuf_mutex);
-	    char filename[32];
-	    sprintf(filename, "out-%d.ppm", time(NULL));
-            saveImageToFile(rgb_back, 640, 480, filename);
+
+            //-- Generate file names
+            char filename_rgb[32], filename_depth[32];
+            time_t timestamp = time(NULL);
+            sprintf(filename_rgb, "out-%d.ppm", timestamp);
+            sprintf(filename_depth, "out-depth-%d.ppm", timestamp);
+
+            //-- Save to file
+            saveImageToFile(rgb_back, 640, 480, filename_rgb);
+            saveImageToFile(depth_mid, 640, 480, filename_depth);
             pthread_mutex_unlock(&gl_backbuf_mutex);
         }
         else
