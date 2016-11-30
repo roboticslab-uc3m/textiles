@@ -69,12 +69,15 @@ class DiscontinuityScanLi(object):
         self.image_ref_2 = io.imread(os.path.join(image_folder, self.image_reference_name_pattern.format(image_id, 2)), as_grey=True)
 
         if use_roi:
-            self.roi_rect = load_roi_from_file(os.path.join(image_folder, self.image_roi_name_pattern.format(image_id)))
+            try:
+                self.roi_rect = load_roi_from_file(os.path.join(image_folder, self.image_roi_name_pattern.format(image_id)))
 
-            self.image_wrinkles_1 = crop_roi(self.roi_rect, self.image_wrinkles_1)
-            self.image_wrinkles_2 = crop_roi(self.roi_rect, self.image_wrinkles_2)
-            self.image_ref_1 = crop_roi(self.roi_rect, self.image_ref_1)
-            self.image_ref_2 = crop_roi(self.roi_rect, self.image_ref_2)
+                self.image_wrinkles_1 = crop_roi(self.roi_rect, self.image_wrinkles_1)
+                self.image_wrinkles_2 = crop_roi(self.roi_rect, self.image_wrinkles_2)
+                self.image_ref_1 = crop_roi(self.roi_rect, self.image_ref_1)
+                self.image_ref_2 = crop_roi(self.roi_rect, self.image_ref_2)
+            except FileNotFoundError:
+                logging.warning("Could not load ROI, file does not exist")
 
 
     def normalize_images(self):
@@ -101,9 +104,10 @@ class DiscontinuityScanLi(object):
         # save_SIFT('sift.npz', keypoints, descriptots)
 
         # Label keypoints
-        if labels:
+        if labels != None:
             for kp in keypoints:
-                kp.class_id = int(labels[map(int, kp.pt)])
+                y, x = map(int, kp.pt)
+                kp.class_id = int(labels[x, y])
 
             for kp in keypoints:
                 logging.debug("Keypoint at {}, class {}".format(kp.pt, kp.class_id))
@@ -134,7 +138,8 @@ class DiscontinuityScanLi(object):
 def main(num_images: 'Number of images in image folder' = 0, display_results: 'Show feedback of the process' = False,
          generate_dataset: 'Generate dataset from input images' = False, *image_folder):
 
-    image_folder = image_folder[0]
+    image_folder = map(lambda x: os.path.abspath(os.path.expanduser(x)), image_folder)
+    image_folder = list(image_folder)[0]
     logging.info("Loading images from {}".format(image_folder))
     
     discontinuity_scanner = DiscontinuityScanLi()
@@ -148,9 +153,6 @@ def main(num_images: 'Number of images in image folder' = 0, display_results: 'S
         logging.info("\tNormalizing images...")
         discontinuity_scanner.normalize_images()
 
-        logging.info("\tComputing SIFT features...")
-        discontinuity_scanner.compute_SIFT()
-
         if display_results:
             discontinuity_scanner.plot_input_images()
             discontinuity_scanner.plot_normalized_images()
@@ -158,8 +160,16 @@ def main(num_images: 'Number of images in image folder' = 0, display_results: 'S
         if generate_dataset:
             logging.info("\tGenerating dataset")
             image_output_name_pattern = "garment-{:02d}-out.png"
-            image_folder = os.path.abspath(os.path.expanduser(image_folder))
 
             # Generate dataset for labeling
             colormap = plt.cm.viridis # or gray, inferno, etc
             io.imsave(os.path.join(image_folder, image_output_name_pattern.format(i)), colormap(normalize_array(discontinuity_scanner.norm)))
+
+            return 0
+
+        logging.info("\nLoading labels...")
+        image_labels_name_pattern = "garment-{:02d}-labels-2.png"
+        labels = io.imread(os.path.join(image_folder, image_labels_name_pattern.format(i)), as_grey=True)
+
+        logging.info("\tComputing SIFT features...")
+        discontinuity_scanner.compute_SIFT(labels=np.where(labels > 0.5, 1, 0)) # Temporary fix for gimp creating images with weird values
