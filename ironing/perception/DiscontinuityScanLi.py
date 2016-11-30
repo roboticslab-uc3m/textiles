@@ -50,14 +50,20 @@ class DiscontinuityScanLi(object):
     image_roi_name_pattern = "garment-{:02d}-roi.txt"
 
     def __init__(self):
+        # General images
         self.image_wrinkles_1 = None
         self.image_wrinkles_2 = None
         self.image_ref_1 = None
         self.image_ref_2 = None
+        # Normalized images
         self.norm = None
         self.norm_1 = None
         self.norm_2 = None
+        # Region of interest
         self.roi_rect = None
+        # SIFT descriptors
+        self.keypoints = None
+        self.descriptots = None
 
     def load_images(self, image_folder, image_id=0, use_roi=True):
         image_folder = os.path.abspath(os.path.expanduser(image_folder))
@@ -95,21 +101,20 @@ class DiscontinuityScanLi(object):
         """
         # Compute SIFT features
         sift = cv2.xfeatures2d.SIFT_create()
-        keypoints, descriptots = sift.detectAndCompute(img_as_ubyte(normalize_array(self.norm)),None)
-        logging.debug("Detected {} keypoints".format(len(keypoints)))
+        self.keypoints, self.descriptors = sift.detectAndCompute(img_as_ubyte(normalize_array(self.norm)),None)
+        logging.debug("Detected {} keypoints".format(len(self.keypoints)))
 
         # Debug stuff
         # img = cv2.drawKeypoints(img_as_ubyte(normalize_array(self.norm)),keypoints, None)
         # cv2.imwrite('sift_keypoints.jpg',img)
-        # save_SIFT('sift.npz', keypoints, descriptots)
 
         # Label keypoints
-        if labels != None:
-            for kp in keypoints:
+        if labels is not None:
+            for kp in self.keypoints:
                 y, x = map(int, kp.pt)
                 kp.class_id = int(labels[x, y])
 
-            for kp in keypoints:
+            for kp in self.keypoints:
                 logging.debug("Keypoint at {}, class {}".format(kp.pt, kp.class_id))
 
 
@@ -138,6 +143,11 @@ class DiscontinuityScanLi(object):
 def main(num_images: 'Number of images in image folder' = 0, display_results: 'Show feedback of the process' = False,
          generate_dataset: 'Generate dataset from input images' = False, *image_folder):
 
+    image_output_name_pattern = "garment-{:02d}-out.png"
+    image_labels_name_pattern = "garment-{:02d}-labels.png"
+    sift_features_name_pattern = "garment-{:02d}-sift.npz"
+    sift_features_class_name_pattern = "garment-{:02d}-sift-classes.npz"
+
     image_folder = map(lambda x: os.path.abspath(os.path.expanduser(x)), image_folder)
     image_folder = list(image_folder)[0]
     logging.info("Loading images from {}".format(image_folder))
@@ -159,17 +169,18 @@ def main(num_images: 'Number of images in image folder' = 0, display_results: 'S
 
         if generate_dataset:
             logging.info("\tGenerating dataset")
-            image_output_name_pattern = "garment-{:02d}-out.png"
-
-            # Generate dataset for labeling
             colormap = plt.cm.viridis # or gray, inferno, etc
             io.imsave(os.path.join(image_folder, image_output_name_pattern.format(i)), colormap(normalize_array(discontinuity_scanner.norm)))
 
             return 0
 
         logging.info("\nLoading labels...")
-        image_labels_name_pattern = "garment-{:02d}-labels-2.png"
         labels = io.imread(os.path.join(image_folder, image_labels_name_pattern.format(i)), as_grey=True)
 
         logging.info("\tComputing SIFT features...")
-        discontinuity_scanner.compute_SIFT(labels=np.where(labels > 0.5, 1, 0)) # Temporary fix for gimp creating images with weird values
+        discontinuity_scanner.compute_SIFT(labels=np.where(labels > 0.5, 1, 0)) # Temporary fix for gimp creating images with weird values.
+
+        logging.info("\nSaving SIFT features...")
+        save_SIFT(os.path.join(image_folder, sift_features_name_pattern.format(i)),
+                  discontinuity_scanner.keypoints, discontinuity_scanner.descriptors,
+                  class_id_filename = os.path.join(image_folder, sift_features_class_name_pattern.format(i)))
