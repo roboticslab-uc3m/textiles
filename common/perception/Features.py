@@ -16,10 +16,10 @@ def save_SIFT(filename, keypoints, descriptors, class_id_filename="" ):
         out_array[i, :4] = kp.pt[0], kp.pt[1], kp.size, kp.angle,
         out_array[i, 4:] = des
 
-    np.savez(filename, out_array)
+    np.savez(filename, descriptors=out_array)
 
     if class_id_filename:
         class_ids = [kp.class_id for kp in keypoints]
-        np.savez(class_id_filename, np.array(class_ids))
+        np.savez(class_id_filename, y=np.array(class_ids))
 
 
