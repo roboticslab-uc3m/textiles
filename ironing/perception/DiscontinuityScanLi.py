@@ -138,23 +138,19 @@ class DiscontinuityScanLi(object):
         plt.show()
 
 
-def process_images(num_images, image_folder, display_results=False):
-    logging.info("Loading images from {}".format(image_folder))
-
+def process_images(image_folder, image_id, display_results=False):
+    logging.info("Processing image {}".format(image_id))
     discontinuity_scanner = DiscontinuityScanLi()
 
-    for i in range(1, num_images+1): # For each sample image
-        logging.info("Processing image {}".format(i))
+    logging.debug("\tLoading images...")
+    discontinuity_scanner.load_images(image_folder, image_id=image_id, use_roi=True)
 
-        logging.debug("\tLoading images...")
-        discontinuity_scanner.load_images(image_folder, image_id=i, use_roi=True)
+    logging.info("\tNormalizing images...")
+    discontinuity_scanner.normalize_images()
 
-        logging.info("\tNormalizing images...")
-        discontinuity_scanner.normalize_images()
-
-        if display_results:
-            discontinuity_scanner.plot_input_images()
-            discontinuity_scanner.plot_normalized_images()
+    if display_results:
+        discontinuity_scanner.plot_input_images()
+        discontinuity_scanner.plot_normalized_images()
 
     return discontinuity_scanner
 
@@ -169,10 +165,11 @@ def generate_dataset(num_images: 'Number of images in image folder' = 0, display
     image_output_name_pattern = "garment-{:02d}-out.png"
     image_folder = map(lambda x: os.path.abspath(os.path.expanduser(x)), image_folder)
     image_folder = list(image_folder)[0]
-    discontinuity_scanner = process_images(num_images, image_folder, display_results)
-    logging.info("\tGenerating dataset")
-    colormap = plt.cm.viridis # or gray, inferno, etc
-    for i in range(num_images):
+    logging.info("Loading images from {}".format(image_folder))
+    for i in range(1, num_images+1): # For each sample image
+        discontinuity_scanner = process_images(image_folder, i, display_results)
+        logging.info("\tGenerating dataset")
+        colormap = plt.cm.viridis # or gray, inferno, etc
         io.imsave(os.path.join(image_folder, image_output_name_pattern.format(i)), colormap(normalize_array(discontinuity_scanner.norm)))
 
 
@@ -188,18 +185,20 @@ def compute_sift(num_images: 'Number of images in image folder' = 0, display_res
     sift_features_class_name_pattern = "garment-{:02d}-sift-classes.npz"
     image_folder = map(lambda x: os.path.abspath(os.path.expanduser(x)), image_folder)
     image_folder = list(image_folder)[0]
-    discontinuity_scanner = process_images(num_images, image_folder, display_results)
+    logging.info("Loading images from {}".format(image_folder))
 
-    logging.info("Loading labels...")
-    labels = io.imread(os.path.join(image_folder, image_labels_name_pattern.format(i)), as_grey=True)
+    for i in range(1, num_images+1): # For each sample image
+        discontinuity_scanner = process_images(image_folder, i, display_results)
+        logging.info("\tLoading labels...")
+        labels = io.imread(os.path.join(image_folder, image_labels_name_pattern.format(i)), as_grey=True)
 
-    logging.info("Computing SIFT features...")
-    discontinuity_scanner.compute_SIFT(labels=np.where(labels > 0.5, 1, 0)) # Temporary fix for gimp creating images with weird values.
+        logging.info("\tComputing SIFT features...")
+        discontinuity_scanner.compute_SIFT(labels=np.where(labels > 0.5, 1, 0)) # Temporary fix for gimp creating images with weird values.
 
-    logging.info("Saving SIFT features...")
-    save_SIFT(os.path.join(image_folder, sift_features_name_pattern.format(i)),
-              discontinuity_scanner.keypoints, discontinuity_scanner.descriptors,
-              class_id_filename = os.path.join(image_folder, sift_features_class_name_pattern.format(i)))
+        logging.info("\tSaving SIFT features...")
+        save_SIFT(os.path.join(image_folder, sift_features_name_pattern.format(i)),
+                  discontinuity_scanner.keypoints, discontinuity_scanner.descriptors,
+                  class_id_filename = os.path.join(image_folder, sift_features_class_name_pattern.format(i)))
 
 @begin.subcommand
 @begin.convert(_automatic=True)
@@ -207,6 +206,8 @@ def train_svm(num_images: 'Number of images in image folder' = 0, *image_folder)
     """
     Loads SIFT data from the specified path and trains a SVM with them
     """
+    image_labels_name_pattern = "garment-{:02d}-labels.png"
+    sift_features_name_pattern = "garment-{:02d}-sift.npz"
     image_folder = map(lambda x: os.path.abspath(os.path.expanduser(x)), image_folder)
     image_folder = list(image_folder)[0]
     logging.info("Training SVM with features...")
