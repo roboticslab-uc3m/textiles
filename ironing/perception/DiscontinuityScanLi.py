@@ -206,15 +206,27 @@ def train_svm(num_images: 'Number of images in image folder' = 0, *image_folder)
     """
     Loads SIFT data from the specified path and trains a SVM with them
     """
-    image_labels_name_pattern = "garment-{:02d}-labels.png"
     sift_features_name_pattern = "garment-{:02d}-sift.npz"
+    sift_features_class_name_pattern = "garment-{:02d}-sift-classes.npz"
     image_folder = map(lambda x: os.path.abspath(os.path.expanduser(x)), image_folder)
     image_folder = list(image_folder)[0]
-    logging.info("Training SVM with features...")
-    des = np.load(os.path.join(image_folder, sift_features_name_pattern.format(i)))['descriptors']
-    y = np.load(os.path.join(image_folder, sift_features_class_name_pattern.format(i)))['y']
-    print(des.shape)
-    print(y.shape, np.bincount(y))
+
+    logging.info("Started training SVM...")
+    des = np.empty((0, 4+128)) # point x, point y, feature scale, feature orientation + descritor size (128 cols)
+    y = np.empty((0, 1))
+    for i in range(1, num_images+1): # For each sample image
+        logging.info("\tLoading data from image {}...".format(i))
+        des = np.vstack((des, np.load(os.path.join(image_folder, sift_features_name_pattern.format(i)))['descriptors']))
+        new_y = np.load(os.path.join(image_folder, sift_features_class_name_pattern.format(i)))['y']
+        y = np.vstack((y, np.reshape(new_y, (new_y.shape[0], 1))))
+    if des.shape[0] != y.shape[0]:
+        logging.error("Descriptor matrix does not match classes matrix")
+        return -1
+
+    _ , counts = np.unique(y, return_counts=True)
+    logging.info("Loaded {} examples, {} negative and {} positive".format(des.shape[0], counts[0], counts[1]))
+
+    logging.info("Training SVM with examples...")
     svm_params = dict( kernel_type = cv2.ml.SVM_LINEAR, svm_type = cv2.ml.SVM_C_SVC, C=2.67, gamma=5.383 )
 
 @begin.subcommand
