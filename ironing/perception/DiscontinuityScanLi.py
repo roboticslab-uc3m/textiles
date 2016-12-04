@@ -228,6 +228,9 @@ def train_svm(num_images: 'Number of images in image folder' = 0, *image_folder)
 
     logging.info("Training SVM with examples...")
     svm_params = dict( kernel_type = cv2.ml.SVM_LINEAR, svm_type = cv2.ml.SVM_C_SVC, C=2.67, gamma=5.383 )
+    svm = cv2.ml.SVM_create()
+    svm.train(np.float32(des[:, 4:]), cv2.ml.ROW_SAMPLE, np.int32(y))
+    svm.save(os.path.join(image_folder,'svm_data.dat'))
 
 @begin.subcommand
 @begin.convert(_automatic=True)
