@@ -307,7 +307,7 @@ void keyPressed(unsigned char key, int x, int y)
 
             //-- Save to file
             saveImageToFile(rgb_back, 640, 480, filename_rgb);
-            saveImageToFile(depth_mid, 640, 480, filename_depth);
+            saveDepthToFile(depth_mid, 640, 480, filename_depth);
             pthread_mutex_unlock(&gl_backbuf_mutex);
         }
         else
@@ -335,6 +335,16 @@ void saveImageToFile(uint8_t* image, int width, int height, const char* filepath
         color[2] = image[i+2];  /* blue */
         (void) fwrite(color, 1, 3, fp);
     }
+    (void) fclose(fp);
+}
+
+void saveDepthToFile(uint8_t* image, int width, int height, const char* filepath)
+{
+    //-- Open File
+    int i;
+    FILE *fp = fopen(filepath, "wb");
+    (void) fprintf(fp, "P6\n%d %d\n65535\n", width, height); //- -Write ppm header
+    (void) fwrite(image, 1, width*height, fp);
     (void) fclose(fp);
 }
 
