@@ -69,6 +69,7 @@ pthread_mutex_t gl_backbuf_mutex = PTHREAD_MUTEX_INITIALIZER;
 // front: owned by GL, "currently being drawn"
 uint8_t *depth_mid, *depth_front;
 uint8_t *rgb_back, *rgb_mid, *rgb_front;
+uint16_t *depth_back; //-- Raw depth image
 
 GLuint gl_depth_tex;
 GLuint gl_rgb_tex;
@@ -194,6 +195,7 @@ void keyPressed(unsigned char key, int x, int y)
 		free(rgb_back);
 		free(rgb_mid);
 		free(rgb_front);
+        free(depth_back);
 		// Not pthread_exit because OSX leaves a thread lying around and doesn't exit
 		exit(0);
 	}
@@ -417,6 +419,8 @@ void depth_cb(freenect_device *dev, void *v_depth, uint32_t timestamp)
 	uint16_t *depth = (uint16_t*)v_depth;
 
 	pthread_mutex_lock(&gl_backbuf_mutex);
+    memcpy(depth_back, depth, sizeof(uint16_t)*640*480); //-- Copy raw depth image
+
 	for (i=0; i<640*480; i++) {
 		int pval = t_gamma[depth[i]];
 		int lb = pval & 0xff;
@@ -540,6 +544,7 @@ int main(int argc, char **argv)
 	rgb_back = (uint8_t*)malloc(640*480*3);
 	rgb_mid = (uint8_t*)malloc(640*480*3);
 	rgb_front = (uint8_t*)malloc(640*480*3);
+    depth_back = (uint16_t*)malloc(640*480*1);
 
 	printf("Kinect camera test\n");
 
