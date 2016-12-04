@@ -5,7 +5,7 @@ from skimage import io
 from skimage import img_as_ubyte
 import numpy as np
 import matplotlib.pyplot as plt
-import cv2 # SIFT not in skimage
+import cv2 # SIFT, SVM not in skimage
 import begin
 import logging
 from common.math import normalize_array
@@ -241,8 +241,27 @@ def train_svm(num_images: 'Number of images in image folder' = 0, *image_folder)
 
 @begin.subcommand
 @begin.convert(_automatic=True)
-def predict(image_id: 'Id of the image to use for prediction' = 0, *image_folder):
-    svm_data_name_pattern = "garment-svm.dat"
+def predict(svm_datafile: 'File storing the SVM parameters' = '', image_id: 'Id of the image to use for prediction' = 0, *image_folder):
+    sift_features_name_pattern = "garment-{:02d}-sift.npz"
+    image_folder = map(lambda x: os.path.abspath(os.path.expanduser(x)), image_folder)
+    image_folder = list(image_folder)[0]
+
+    logging.info("Loading trained SVM data...")
+    try:
+        svm = cv2.ml.SVM_load(os.path.abspath(os.path.expanduser(svm_datafile)))
+    except AttributeError:
+        logging.error("\tYour OpenCV version does not support loading SVM parameters")
+        return -1
+
+    logging.info("Loading SIFT descriptors...")
+    des =  np.load(os.path.join(image_folder, sift_features_name_pattern.format(image_id)))['descriptors']
+
+    logging.info("Predicting...")
+    retval, result = svm.predict(np.float32(des[:,4:]))
+    _ , counts = np.unique(result, return_counts=True)
+    logging.info("\tPredicted {} points, {} negative and {} positive".format(result.shape[0], counts[0], counts[1]))
+
+    # Do more stuff with positive points here
 
 @begin.start(auto_convert=True)
 @begin.logging
