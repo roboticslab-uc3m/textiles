@@ -11,7 +11,6 @@ def save_SIFT(filename, keypoints, descriptors, class_id_filename="" ):
     """
     n = len(keypoints)
     m = descriptors[0].shape[0]
-    print(m)
     out_array = np.zeros((n, 4+m), dtype=np.float)
     for i, (kp, des) in enumerate(zip(keypoints, descriptors)):
         out_array[i, :4] = kp.pt[0], kp.pt[1], kp.size, kp.angle,

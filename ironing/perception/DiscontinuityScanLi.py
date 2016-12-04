@@ -190,10 +190,15 @@ def compute_sift(num_images: 'Number of images in image folder' = 0, display_res
     for i in range(1, num_images+1): # For each sample image
         discontinuity_scanner = process_images(image_folder, i, display_results)
         logging.info("\tLoading labels...")
-        labels = io.imread(os.path.join(image_folder, image_labels_name_pattern.format(i)), as_grey=True)
+        try:
+            labels = io.imread(os.path.join(image_folder, image_labels_name_pattern.format(i)), as_grey=True)
+            labels=np.where(labels > 0.5, 1, 0) # Temporary fix for gimp creating images with weird values.
+        except FileNotFoundError:
+            logging.info("\t\tLabels not found, skipping them!")
+            labels = None
 
         logging.info("\tComputing SIFT features...")
-        discontinuity_scanner.compute_SIFT(labels=np.where(labels > 0.5, 1, 0)) # Temporary fix for gimp creating images with weird values.
+        discontinuity_scanner.compute_SIFT(labels=labels)
 
         logging.info("\tSaving SIFT features...")
         save_SIFT(os.path.join(image_folder, sift_features_name_pattern.format(i)),
@@ -208,6 +213,7 @@ def train_svm(num_images: 'Number of images in image folder' = 0, *image_folder)
     """
     sift_features_name_pattern = "garment-{:02d}-sift.npz"
     sift_features_class_name_pattern = "garment-{:02d}-sift-classes.npz"
+    svm_data_name_pattern = "garment-svm.dat"
     image_folder = map(lambda x: os.path.abspath(os.path.expanduser(x)), image_folder)
     image_folder = list(image_folder)[0]
 
@@ -227,15 +233,16 @@ def train_svm(num_images: 'Number of images in image folder' = 0, *image_folder)
     logging.info("Loaded {} examples, {} negative and {} positive".format(des.shape[0], counts[0], counts[1]))
 
     logging.info("Training SVM with examples...")
-    svm_params = dict( kernel_type = cv2.ml.SVM_LINEAR, svm_type = cv2.ml.SVM_C_SVC, C=2.67, gamma=5.383 )
+    svm_params = dict( kernel_type = cv2.ml.SVM_LINEAR, svm_type = cv2.ml.SVM_C_SVC, C=2.67, gamma=5.383 ) # Need to find a way to set this
     svm = cv2.ml.SVM_create()
     svm.train(np.float32(des[:, 4:]), cv2.ml.ROW_SAMPLE, np.int32(y))
-    svm.save(os.path.join(image_folder,'svm_data.dat'))
+    svm.save(os.path.join(image_folder, svm_data_name_pattern))
+    return 0
 
 @begin.subcommand
 @begin.convert(_automatic=True)
-def predict():
-    logging.error("This is currently not implemented!")
+def predict(image_id: 'Id of the image to use for prediction' = 0, *image_folder):
+    svm_data_name_pattern = "garment-svm.dat"
 
 @begin.start(auto_convert=True)
 @begin.logging
