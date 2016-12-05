@@ -69,6 +69,7 @@ pthread_mutex_t gl_backbuf_mutex = PTHREAD_MUTEX_INITIALIZER;
 // front: owned by GL, "currently being drawn"
 uint8_t *depth_mid, *depth_front;
 uint8_t *rgb_back, *rgb_mid, *rgb_front;
+uint16_t *depth_back; //-- Raw depth image
 
 GLuint gl_depth_tex;
 GLuint gl_rgb_tex;
@@ -194,6 +195,7 @@ void keyPressed(unsigned char key, int x, int y)
 		free(rgb_back);
 		free(rgb_mid);
 		free(rgb_front);
+        free(depth_back);
 		// Not pthread_exit because OSX leaves a thread lying around and doesn't exit
 		exit(0);
 	}
@@ -298,9 +300,16 @@ void keyPressed(unsigned char key, int x, int y)
         {
             printf("Saving current frame...\n");
             pthread_mutex_lock(&gl_backbuf_mutex);
-	    char filename[32];
-	    sprintf(filename, "out-%d.ppm", time(NULL));
-            saveImageToFile(rgb_back, 640, 480, filename);
+
+            //-- Generate file names
+            char filename_rgb[32], filename_depth[32];
+            time_t timestamp = time(NULL);
+            sprintf(filename_rgb, "out-%d.ppm", timestamp);
+            sprintf(filename_depth, "out-depth-%d.ppm", timestamp);
+
+            //-- Save to file
+            saveImageToFile(rgb_back, 640, 480, filename_rgb);
+            saveDepthToFile(depth_back, 640, 480, filename_depth);
             pthread_mutex_unlock(&gl_backbuf_mutex);
         }
         else
@@ -329,6 +338,29 @@ void saveImageToFile(uint8_t* image, int width, int height, const char* filepath
         (void) fwrite(color, 1, 3, fp);
     }
     (void) fclose(fp);
+}
+
+void saveDepthToFile(uint16_t* image, int width, int height, const char* filepath)
+{
+    FILE *fp = fopen(filepath, "wb");
+    (void) fprintf(fp, "P5\n%d %d\n65535\n", width, height); //- -Write pgm header
+    transformDisparityToDepth(image, width*height);
+    (void) fwrite(image, sizeof(uint16_t), width*height, fp);
+    (void) fclose(fp);
+}
+
+void transformDisparityToDepth(uint16_t* disparity_img, int size)
+{
+    /* Transforms disparity map to depthmap
+     *
+     * NOTE: This function modifies the input image
+     *
+     * Parameters were obtained from here: https://openkinect.org/wiki/Imaging_Information
+     */
+
+    int i;
+    for (i = 0; i<size; i++)
+        disparity_img[i] = (int)(0.1236 * tan(disparity_img[i] / 2842.5 + 1.1863)*1000);
 }
 
 void ReSizeGLScene(int Width, int Height)
@@ -400,6 +432,8 @@ void depth_cb(freenect_device *dev, void *v_depth, uint32_t timestamp)
 	uint16_t *depth = (uint16_t*)v_depth;
 
 	pthread_mutex_lock(&gl_backbuf_mutex);
+    memcpy(depth_back, depth, sizeof(uint16_t)*640*480); //-- Copy raw depth image
+
 	for (i=0; i<640*480; i++) {
 		int pval = t_gamma[depth[i]];
 		int lb = pval & 0xff;
@@ -523,6 +557,7 @@ int main(int argc, char **argv)
 	rgb_back = (uint8_t*)malloc(640*480*3);
 	rgb_mid = (uint8_t*)malloc(640*480*3);
 	rgb_front = (uint8_t*)malloc(640*480*3);
+    depth_back = (uint16_t*)malloc(640*480*1);
 
 	printf("Kinect camera test\n");
 
