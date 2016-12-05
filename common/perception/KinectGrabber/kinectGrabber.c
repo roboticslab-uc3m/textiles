@@ -342,18 +342,9 @@ void saveImageToFile(uint8_t* image, int width, int height, const char* filepath
 
 void saveDepthToFile(uint16_t* image, int width, int height, const char* filepath)
 {
-    //-- Open File
-    int i;
     FILE *fp = fopen(filepath, "wb");
     (void) fprintf(fp, "P5\n%d %d\n65535\n", width, height); //- -Write pgm header
-    for (i = 0; i < width*height; i++)
-    {
-        static unsigned char pixel[2];
-        pixel[0] = ((unsigned char*)image)[i*2];
-        pixel[1] = ((unsigned char*)image)[i*2+1];
-        (void) fwrite(pixel, sizeof(unsigned char), 2, fp);
-    }
-
+    (void) fwrite(image, sizeof(uint16_t), width*height, fp);
     (void) fclose(fp);
 }
 
