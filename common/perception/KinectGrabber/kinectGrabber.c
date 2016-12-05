@@ -344,8 +344,23 @@ void saveDepthToFile(uint16_t* image, int width, int height, const char* filepat
 {
     FILE *fp = fopen(filepath, "wb");
     (void) fprintf(fp, "P5\n%d %d\n65535\n", width, height); //- -Write pgm header
+    transformDisparityToDepth(image, width*height);
     (void) fwrite(image, sizeof(uint16_t), width*height, fp);
     (void) fclose(fp);
+}
+
+void transformDisparityToDepth(uint16_t* disparity_img, int size)
+{
+    /* Transforms disparity map to depthmap
+     *
+     * NOTE: This function modifies the input image
+     *
+     * Parameters were obtained from here: https://openkinect.org/wiki/Imaging_Information
+     */
+
+    int i;
+    for (i = 0; i<size; i++)
+        disparity_img[i] = (int)(0.1236 * tan(disparity_img[i] / 2842.5 + 1.1863)*1000);
 }
 
 void ReSizeGLScene(int Width, int Height)
