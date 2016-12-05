@@ -340,13 +340,13 @@ void saveImageToFile(uint8_t* image, int width, int height, const char* filepath
     (void) fclose(fp);
 }
 
-void saveDepthToFile(uint8_t* image, int width, int height, const char* filepath)
+void saveDepthToFile(uint16_t* image, int width, int height, const char* filepath)
 {
     //-- Open File
     int i;
     FILE *fp = fopen(filepath, "wb");
-    (void) fprintf(fp, "P6\n%d %d\n65535\n", width, height); //- -Write ppm header
-    (void) fwrite(image, 1, width*height, fp);
+    (void) fprintf(fp, "P5\n%d %d\n65535\n", width, height); //- -Write ppm header
+    (void) fwrite(image, sizeof(uint16_t), width*height, fp);
     (void) fclose(fp);
 }
 
