@@ -63,7 +63,7 @@ class DiscontinuityScanLi(object):
         self.roi_rect = None
         # SIFT descriptors
         self.keypoints = None
-        self.descriptots = None
+        self.descriptors = None
 
     def load_images(self, image_folder, image_id=0, use_roi=True):
         image_folder = os.path.abspath(os.path.expanduser(image_folder))
@@ -199,6 +199,13 @@ def compute_sift(num_images: 'Number of images in image folder' = 0, display_res
 
         logging.info("\tComputing SIFT features...")
         discontinuity_scanner.compute_SIFT(labels=labels)
+        if display_results:
+            keypoints = discontinuity_scanner.keypoints
+            plt.imshow(discontinuity_scanner.norm)
+            for k in keypoints:
+                plt.plot(k.pt[0], k.pt[1], 'r*' if k.class_id == 0 else 'bo')
+            plt.show()
+
 
         logging.info("\tSaving SIFT features...")
         save_SIFT(os.path.join(image_folder, sift_features_name_pattern.format(i)),
