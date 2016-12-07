@@ -251,7 +251,8 @@ def train_svm(num_images: 'Number of images in image folder' = 0, *image_folder)
 
 @begin.subcommand
 @begin.convert(_automatic=True)
-def predict(svm_datafile: 'File storing the SVM parameters' = '', image_id: 'Id of the image to use for prediction' = 0, *image_folder):
+def predict(svm_datafile: 'File storing the SVM parameters' = '', image_id: 'Id of the image to use for prediction' = 0,
+        display_results: 'Show feedback of the results' = False, *image_folder):
     sift_features_name_pattern = "garment-{:02d}-sift.npz"
     image_folder = map(lambda x: os.path.abspath(os.path.expanduser(x)), image_folder)
     image_folder = list(image_folder)[0]
@@ -275,7 +276,25 @@ def predict(svm_datafile: 'File storing the SVM parameters' = '', image_id: 'Id 
         logging.info("\tPredicted {} points, {} negative and {} positive".format(result.shape[0], 0 if 0 not in values else counts[0],
                                                                                  0 if 1 not in values else counts[0]))
 
-    # Do more stuff with positive points here
+    # Visual feedback
+    if display_results:
+        # Load output image
+        image_output_name_pattern = "garment-{:02d}-out.png"
+        image = io.imread(os.path.join(image_folder, image_output_name_pattern.format(image_id)))
+
+        # Load descriptors
+        keypoints = des[:, :2] # (x, y) are the first columns of the matrix
+        plt.imshow(image)
+        xlims, ylims = plt.xlim(), plt.ylim() # Save plot dimensions to restore them
+        for example, prediction in zip(keypoints, result):
+            plt.plot(example[0], example[1], 'r*' if prediction == 0 else 'bo')
+        plt.xlim(xlims[0], xlims[1]) # Restore x axis
+        plt.ylim(ylims[0], ylims[1]) # Restore y axis
+        plt.show()
+
+    # If labels exist, maybe check out good is the prediction with them here
+
+    # And here we compute the hough transform maybe?
 
 @begin.start(auto_convert=True)
 @begin.logging
