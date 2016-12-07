@@ -258,8 +258,12 @@ def predict(svm_datafile: 'File storing the SVM parameters' = '', image_id: 'Id 
 
     logging.info("Predicting...")
     retval, result = svm.predict(np.float32(des[:,4:]))
-    _ , counts = np.unique(result, return_counts=True)
-    logging.info("\tPredicted {} points, {} negative and {} positive".format(result.shape[0], counts[0], counts[1]))
+    values , counts = np.unique(result, return_counts=True)
+    try:
+        logging.info("\tPredicted {} points, {} negative and {} positive".format(result.shape[0], counts[0], counts[1]))
+    except IndexError:
+        logging.info("\tPredicted {} points, {} negative and {} positive".format(result.shape[0], 0 if 0 not in values else counts[0],
+                                                                                 0 if 1 not in values else counts[0]))
 
     # Do more stuff with positive points here
 
