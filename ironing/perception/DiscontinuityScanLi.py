@@ -201,9 +201,12 @@ def compute_sift(num_images: 'Number of images in image folder' = 0, display_res
         discontinuity_scanner.compute_SIFT(labels=labels)
         if display_results:
             keypoints = discontinuity_scanner.keypoints
-            plt.imshow(discontinuity_scanner.norm)
+            plt.imshow(discontinuity_scanner.norm, cmap=plt.cm.viridis)
+            xlims, ylims = plt.xlim(), plt.ylim()
             for k in keypoints:
                 plt.plot(k.pt[0], k.pt[1], 'r*' if k.class_id == 0 else 'bo')
+            plt.xlim(xlims[0], xlims[1])
+            plt.ylim(ylims[0], ylims[1])
             plt.show()
 
 
