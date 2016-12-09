@@ -3,6 +3,7 @@
 import os
 from skimage import io
 from skimage import img_as_ubyte
+from skimage.transform import hough_line, hough_line_peaks
 import numpy as np
 import matplotlib.pyplot as plt
 import cv2 # SIFT, SVM not in skimage
@@ -313,7 +314,43 @@ def predict(svm_datafile: 'File storing the SVM parameters' = '', image_id: 'Id 
     except FileNotFoundError:
         pass
 
-    # And here we compute the hough transform maybe?
+    # Hough transform
+    result_image = np.zeros((image.shape[0], image.shape[1]))
+    for example, prediction in zip(keypoints, result):
+        if prediction == 1:
+            result_image[int(example[1]), int(example[0])] = 255
+
+
+    h, theta, d = hough_line(result_image)
+
+    # Plotting results
+    fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(8,4))
+
+    ax1.imshow(result_image, cmap=plt.cm.gray)
+    ax1.set_title('Input image')
+    ax1.set_axis_off()
+
+    ax2.imshow(np.log(1 + h),
+                 extent=[np.rad2deg(theta[-1]), np.rad2deg(theta[0]),
+                         d[-1], d[0]],
+                 cmap=plt.cm.gray, aspect=1/1.5)
+    ax2.set_title('Hough transform')
+    ax2.set_xlabel('Angles (degrees)')
+    ax2.set_ylabel('Distance (pixels)')
+    ax2.axis('image')
+
+    ax3.imshow(result_image, cmap=plt.cm.gray)
+    rows, cols = result_image.shape
+    for _, angle, dist in zip(*hough_line_peaks(h, theta, d)):
+        y0 = (dist - 0 * np.cos(angle)) / np.sin(angle)
+        y1 = (dist - cols * np.cos(angle)) / np.sin(angle)
+        ax3.plot((0, cols), (y0, y1), '-r')
+    ax3.axis((0, cols, rows, 0))
+    ax3.set_title('Detected lines')
+    ax3.set_axis_off()
+
+    plt.show()
+
 
 @begin.start(auto_convert=True)
 @begin.logging
