@@ -254,6 +254,7 @@ def train_svm(num_images: 'Number of images in image folder' = 0, *image_folder)
 def predict(svm_datafile: 'File storing the SVM parameters' = '', image_id: 'Id of the image to use for prediction' = 0,
         display_results: 'Show feedback of the results' = False, *image_folder):
     sift_features_name_pattern = "garment-{:02d}-sift.npz"
+    sift_features_class_name_pattern = "garment-{:02d}-sift-classes.npz"
     image_folder = map(lambda x: os.path.abspath(os.path.expanduser(x)), image_folder)
     image_folder = list(image_folder)[0]
 
@@ -293,6 +294,24 @@ def predict(svm_datafile: 'File storing the SVM parameters' = '', image_id: 'Id 
         plt.show()
 
     # If labels exist, maybe check out good is the prediction with them here
+    try:
+        labels = np.load(os.path.join(image_folder, sift_features_class_name_pattern.format(image_id)))['y']
+        tp, tn, fp, fn = 0, 0, 0, 0
+        for label, prediction in zip(labels, result):
+            if label == 1:
+                if prediction == 1:
+                    tp += 1
+                else:
+                    fn += 1
+            else:
+                if prediction == 1:
+                    fp += 1
+                else:
+                    tn += 1
+        logging.info("Confusion matrix:\n\t          |___1__|___0__| (Predicted)")
+        logging.info("\t(Truth) 1 | {:04d} | {:04d} |\n\t        0 | {:04d} | {:04d} |".format(tp ,fn, fp, tn))
+    except FileNotFoundError:
+        pass
 
     # And here we compute the hough transform maybe?
 
