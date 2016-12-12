@@ -20,6 +20,6 @@ Here you can find listed all publications related to the code hosted in this rep
 
 <a id="1">[1]</a> David Estevez, Juan G. Victores, Santiago Morante, Carlos Balaguer. Towards Robotic Garment Folding: A Vision Approach for Fold Detection. International Conference on Autonomous Robot Systems and Competitions (ICARSC). 2016. [[PDF]](http://roboticslab.uc3m.es/roboticslab/sites/default/files/estevez2016towards-preprint.pdf) [[poster]](http://www.slideshare.net/JuanGVictores/estevez2016towardsposter) [[bib]](doc/bib/estevez2016towards.bib) [[URL]](http://icarsc2016.ipb.pt/docs/ProgramaICARSC.pdf)
 
-<a id="2">[2]</a> David Estevez, Juan G. Victores, Carlos Balaguer. Future Trends in Perception and Manipulation for Unfolding and Folding Garments. Open Conference on Future Trends in Robotics (RoboCity 2016). 2016.
+<a id="2">[2]</a> David Estevez, Juan G. Victores, Carlos Balaguer. Future Trends in Perception and Manipulation for Unfolding and Folding Garments. Open Conference on Future Trends in Robotics (RoboCity 2016). 2016. [[PDF]](http://roboticslab.uc3m.es/roboticslab/sites/default/files/estevez2016future-preprint.pdf) [[slides]](http://www.slideshare.net/JuanGVictores/estevez2016futurepresentation) [[bib]](doc/bib/estevez2016future.bib)  [[URL]](http://roboticslab.uc3m.es/roboticslab/book/robocity16-open-conference-future-trends-robotics-1)
 
 <a id="3">[3]</a> David Estevez. Towards Robotic Clothes Folding: A Garment-Agnostic Unfolding Algorithm. Master's Thesis. 2016.
