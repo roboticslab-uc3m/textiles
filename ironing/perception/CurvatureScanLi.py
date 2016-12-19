@@ -9,6 +9,7 @@ import numpy as np
 from sklearn.mixture import GaussianMixture
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+from common.perception.roi import crop_roi
 
 """
 Curvature Scan Li
@@ -27,6 +28,17 @@ image_name_pattern = "garment-{}-depth.ppm"
 
 
 def shape_index_filter(img, lower_limit, upper_limit, hessian_sigma=1):
+    """
+    Filter curvature regions in a depth image using the shape index as criteria.
+
+    The shape index is computed using the eigenvectors of the Hessian matrix.
+
+    :param img: Depth image to filter regions from
+    :param lower_limit: Lower threshold of shape index value
+    :param upper_limit: Upper threshold of shape index value
+    :param hessian_sigma: Sigma used when computing the Hessian matrix
+    :return:
+    """
     Hxx, Hxy, Hyy = feature.hessian_matrix(img, sigma=hessian_sigma)
     k1, k2 = feature.hessian_matrix_eigvals(Hxx, Hxy, Hyy)
     shape_index = 2 / np.pi * np.arctan((k1 + k2) / (k1 - k2))
@@ -62,17 +74,16 @@ def make_ellipses(gmm, ax):
 if __name__ == '__main__':
     # Read depth images
     src = io.imread(os.path.join(image_folder, image_name_pattern.format("02")), as_grey=True)
-    #src = io.imread("/home/def/Downloads/414685.jpg", as_grey=True)
-    #src = io.imread("/home/def/Downloads/wrinkles-out-chiffon_99fe4d4c783282da.jpg", as_grey=True)
     io.imshow(src)
 
     # Set ROI
-    roi_rect = ((84, 10) , (501, 480))
-    roi = src[roi_rect[0][1]:roi_rect[1][1], roi_rect[0][0]:roi_rect[1][0]]
+    roi_rect = ((84, 10), (501, 480))
+    roi = crop_roi(roi_rect, src)
     io.imshow(roi)
     io.show()
 
-    # Compute hessian -> curvatures -> shape index
+    # Filter according to shape index
+    # Note: it uses eigenvectors of the Hessian to compute shape index internally
     wrinkles = shape_index_filter(roi, lower_limit=-0.125, upper_limit=0.625, hessian_sigma=15)
     io.imshow(wrinkles)
     io.show()
@@ -84,7 +95,6 @@ if __name__ == '__main__':
         volumes.append((i, np.sum(np.where(labels == i, labels, 0))))
 
     ordered_volumes = sorted(volumes, key=itemgetter(1))
-    print(ordered_volumes)
     high_bumps = np.zeros_like(wrinkles) # High bumps
     high_bumps_labels = []
     for label, volume in ordered_volumes:
