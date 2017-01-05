@@ -82,6 +82,7 @@ def make_ellipses(gmm, ax):
 if __name__ == '__main__':
     # Read depth images
     src = io.imread(os.path.join(image_folder, image_name_pattern.format("02")), as_grey=True)
+    src = depthMap_2_heightMap(src)
     io.imshow(src)
 
     # Set ROI
@@ -97,20 +98,20 @@ if __name__ == '__main__':
     io.show()
 
     # Find connected regions and compute volume
-    labels, n_labels = morphology.label(wrinkles, return_num=True)
+    labels, n_labels = morphology.label(wrinkles, background=0, return_num=True)
     volumes = []
-    for i in range(n_labels):
-        volumes.append((i, np.sum(np.where(labels == i, labels, 0))))
+    for i in range(1, n_labels):
+        max_h = np.where(labels == i, roi, 0).max()
+        min_h = np.min(np.where(labels == i, roi, max_h))
+        volumes.append((i, np.sum(np.where(labels == i, (roi - min_h) / (max_h - min_h), 0))))
 
-    ordered_volumes = sorted(volumes, key=itemgetter(1))
-    high_bumps = np.zeros_like(wrinkles) # High bumps
+    high_bumps = np.zeros_like(roi) # High bumps
     high_bumps_labels = []
-    for label, volume in ordered_volumes:
-        if volume > 10000:
+    for label, volume in volumes:
+        if volume > 1000:
             #high_bumps = np.bitwise_or(high_bumps, np.where(labels==label, labels, 0))
-            high_bumps = np.where(labels == label, roi, high_bumps)
+            high_bumps = np.where(labels==label, roi, high_bumps)
             high_bumps_labels.append(label)
-
     io.imshow(high_bumps)
     io.show()
 
