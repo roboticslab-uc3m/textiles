@@ -22,9 +22,37 @@ Conference on Robotics and Automation (ICRA), Stockholm, 2016.
 Finds height bumps on garments based on depth data.
 """
 
-image_folder = "~/Research/jresearch/2016-10-10-replicate-li/"
-image_folder = os.path.abspath(os.path.expanduser(image_folder))
-image_name_pattern = "garment-{}-depth.ppm"
+class CurvatureScanLi(object):
+    image_name_pattern = "garment-{}-depth.ppm"
+
+    def __init__(self):
+        raise NotImplementedError
+
+    def load_images(self, image_folder, image_id=0, use_roi=True):
+        raise NotImplementedError
+
+    @staticmethod
+    def shape_index(img, lower_limit, upper_limit, hessian_sigma=1):
+        raise NotImplementedError
+
+    @staticmethod
+    def shape_index_filter(img, lower_limit, upper_limit, hessian_sigma=1):
+        raise NotImplementedError
+
+    @staticmethod
+    def compute_normalized_volume(img, mask):
+        raise NotImplementedError
+
+    @staticmethod
+    def normalized_volume_filter(img, mask, threshold):
+        raise NotImplementedError
+
+    def fit_GMMs(self):
+        raise NotImplementedError
+
+    def run(self):
+        raise NotImplementedError
+
 
 def depthMap_2_heightMap(depth_map):
     """
@@ -55,9 +83,14 @@ def shape_index_filter(img, lower_limit, upper_limit, hessian_sigma=1):
     return np.bitwise_and(wrinkles_low, wrinkles_upper)
 
 
-colors = ['navy', 'turquoise', 'darkorange']
+def plot_gmm(gmm, ax):
+    """
+    Plot a Gaussian Mixture Model (GMM) in a existing figure
+    :param gmm: Gaussian Mixture Model
+    :param ax: Existing figure
+    """
+    colors = ['navy', 'turquoise', 'darkorange']
 
-def make_ellipses(gmm, ax):
     for n, color in enumerate(colors):
         if gmm.covariance_type == 'full':
             covariances = gmm.covariances_[n][:2, :2]
@@ -80,6 +113,10 @@ def make_ellipses(gmm, ax):
 
 
 if __name__ == '__main__':
+    image_folder = "~/Research/jresearch/2016-10-10-replicate-li/"
+    image_folder = os.path.abspath(os.path.expanduser(image_folder))
+    image_name_pattern = "garment-{}-depth.ppm"
+
     # Read depth images
     src = io.imread(os.path.join(image_folder, image_name_pattern.format("02")), as_grey=True)
     src = depthMap_2_heightMap(src)
