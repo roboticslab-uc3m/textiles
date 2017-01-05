@@ -39,9 +39,11 @@ def shape_index_filter(img, lower_limit, upper_limit, hessian_sigma=1):
     :param hessian_sigma: Sigma used when computing the Hessian matrix
     :return:
     """
-    Hxx, Hxy, Hyy = feature.hessian_matrix(img, sigma=hessian_sigma)
+    Hxx, Hxy, Hyy = feature.hessian_matrix(img, sigma=hessian_sigma, mode='nearest')
     k1, k2 = feature.hessian_matrix_eigvals(Hxx, Hxy, Hyy)
     shape_index = 2 / np.pi * np.arctan((k1 + k2) / (k1 - k2))
+    io.imshow(shape_index)
+    io.show()
     wrinkles_low = np.where(lower_limit <= shape_index, 1, 0)
     wrinkles_upper = np.where(shape_index < upper_limit, 1, 0)
     return np.bitwise_and(wrinkles_low, wrinkles_upper)
