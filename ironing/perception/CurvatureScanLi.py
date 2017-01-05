@@ -26,6 +26,12 @@ image_folder = "~/Research/jresearch/2016-10-10-replicate-li/"
 image_folder = os.path.abspath(os.path.expanduser(image_folder))
 image_name_pattern = "garment-{}-depth.ppm"
 
+def depthMap_2_heightMap(depth_map):
+    """
+    Gets a Depth Map, returns a Height Map
+    """
+    max_val = depth_map.max()
+    return max_val - depth_map
 
 def shape_index_filter(img, lower_limit, upper_limit, hessian_sigma=1):
     """
