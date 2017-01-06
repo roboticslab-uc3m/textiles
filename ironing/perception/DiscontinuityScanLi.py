@@ -7,8 +7,8 @@ from skimage.transform import hough_line, hough_line_peaks
 import numpy as np
 import matplotlib.pyplot as plt
 import cv2 # SIFT, SVM not in skimage
-import begin
 import logging
+logger = logging.getLogger(__name__)
 from common.math import normalize_array
 from common.perception.Features import save_SIFT
 from common.perception.roi import load_roi_from_file, crop_roi
@@ -64,7 +64,7 @@ class DiscontinuityScanLi(object):
                 self.image_ref_1 = crop_roi(self.roi_rect, self.image_ref_1)
                 self.image_ref_2 = crop_roi(self.roi_rect, self.image_ref_2)
             except FileNotFoundError:
-                logging.warning("Could not load ROI, file does not exist")
+                logger.warning("Could not load ROI, file does not exist")
 
 
     def normalize_images(self):
@@ -83,7 +83,7 @@ class DiscontinuityScanLi(object):
         # Compute SIFT features
         sift = cv2.xfeatures2d.SIFT_create()
         self.keypoints, self.descriptors = sift.detectAndCompute(img_as_ubyte(normalize_array(self.norm)),None)
-        logging.debug("Detected {} keypoints".format(len(self.keypoints)))
+        logger.debug("Detected {} keypoints".format(len(self.keypoints)))
 
         # Debug stuff
         # img = cv2.drawKeypoints(img_as_ubyte(normalize_array(self.norm)),keypoints, None)
@@ -96,7 +96,7 @@ class DiscontinuityScanLi(object):
                 kp.class_id = int(labels[x, y])
 
             for kp in self.keypoints:
-                logging.debug("Keypoint at {}, class {}".format(kp.pt, kp.class_id))
+                logger.debug("Keypoint at {}, class {}".format(kp.pt, kp.class_id))
 
 
 
@@ -120,13 +120,13 @@ class DiscontinuityScanLi(object):
 
 
 def process_images(image_folder, image_id, display_results=False):
-    logging.info("Processing image {}".format(image_id))
+    logger.info("Processing image {}".format(image_id))
     discontinuity_scanner = DiscontinuityScanLi()
 
-    logging.debug("\tLoading images...")
+    logger.debug("\tLoading images...")
     discontinuity_scanner.load_images(image_folder, image_id=image_id, use_roi=True)
 
-    logging.info("\tNormalizing images...")
+    logger.info("\tNormalizing images...")
     discontinuity_scanner.normalize_images()
 
     if display_results:
@@ -136,28 +136,24 @@ def process_images(image_folder, image_id, display_results=False):
     return discontinuity_scanner
 
 
-@begin.subcommand
-@begin.convert(_automatic=True)
 def generate_dataset(num_images: 'Number of images in image folder' = 0, display_results: 'Show feedback of the process' = False,
-          *image_folder):
+          image_folder=list()):
     """
     Generates a image dataset from the normalized images
     """
     image_output_name_pattern = "garment-{:02d}-out.png"
     image_folder = map(lambda x: os.path.abspath(os.path.expanduser(x)), image_folder)
     image_folder = list(image_folder)[0]
-    logging.info("Loading images from {}".format(image_folder))
+    logger.info("Loading images from {}".format(image_folder))
     for i in range(1, num_images+1): # For each sample image
         discontinuity_scanner = process_images(image_folder, i, display_results)
-        logging.info("\tGenerating dataset")
+        logger.info("\tGenerating dataset")
         colormap = plt.cm.viridis # or gray, inferno, etc
         io.imsave(os.path.join(image_folder, image_output_name_pattern.format(i)), colormap(normalize_array(discontinuity_scanner.norm)))
 
 
-@begin.subcommand
-@begin.convert(_automatic=True)
 def compute_sift(num_images: 'Number of images in image folder' = 0, display_results: 'Show feedback of the process' = False,
-          *image_folder):
+          image_folder=list()):
     """
     Computes the SIFT descriptors of the labeled images
     """
@@ -166,19 +162,19 @@ def compute_sift(num_images: 'Number of images in image folder' = 0, display_res
     sift_features_class_name_pattern = "garment-{:02d}-sift-classes.npz"
     image_folder = map(lambda x: os.path.abspath(os.path.expanduser(x)), image_folder)
     image_folder = list(image_folder)[0]
-    logging.info("Loading images from {}".format(image_folder))
+    logger.info("Loading images from {}".format(image_folder))
 
     for i in range(1, num_images+1): # For each sample image
         discontinuity_scanner = process_images(image_folder, i, display_results)
-        logging.info("\tLoading labels...")
+        logger.info("\tLoading labels...")
         try:
             labels = io.imread(os.path.join(image_folder, image_labels_name_pattern.format(i)), as_grey=True)
             labels=np.where(labels > 0.5, 1, 0) # Temporary fix for gimp creating images with weird values.
         except FileNotFoundError:
-            logging.info("\t\tLabels not found, skipping them!")
+            logger.info("\t\tLabels not found, skipping them!")
             labels = None
 
-        logging.info("\tComputing SIFT features...")
+        logger.info("\tComputing SIFT features...")
         discontinuity_scanner.compute_SIFT(labels=labels)
         if display_results:
             keypoints = discontinuity_scanner.keypoints
@@ -191,14 +187,13 @@ def compute_sift(num_images: 'Number of images in image folder' = 0, display_res
             plt.show()
 
 
-        logging.info("\tSaving SIFT features...")
+        logger.info("\tSaving SIFT features...")
         save_SIFT(os.path.join(image_folder, sift_features_name_pattern.format(i)),
                   discontinuity_scanner.keypoints, discontinuity_scanner.descriptors,
                   class_id_filename = os.path.join(image_folder, sift_features_class_name_pattern.format(i)))
 
-@begin.subcommand
-@begin.convert(_automatic=True)
-def train_svm(num_images: 'Number of images in image folder' = 0, *image_folder):
+
+def train_svm(num_images: 'Number of images in image folder' = 0, image_folder=list()):
     """
     Loads SIFT data from the specified path and trains a SVM with them
     """
@@ -208,54 +203,53 @@ def train_svm(num_images: 'Number of images in image folder' = 0, *image_folder)
     image_folder = map(lambda x: os.path.abspath(os.path.expanduser(x)), image_folder)
     image_folder = list(image_folder)[0]
 
-    logging.info("Started training SVM...")
+    logger.info("Started training SVM...")
     des = np.empty((0, 4+128)) # point x, point y, feature scale, feature orientation + descritor size (128 cols)
     y = np.empty((0, 1))
     for i in range(1, num_images+1): # For each sample image
-        logging.info("\tLoading data from image {}...".format(i))
+        logger.info("\tLoading data from image {}...".format(i))
         des = np.vstack((des, np.load(os.path.join(image_folder, sift_features_name_pattern.format(i)))['descriptors']))
         new_y = np.load(os.path.join(image_folder, sift_features_class_name_pattern.format(i)))['y']
         y = np.vstack((y, np.reshape(new_y, (new_y.shape[0], 1))))
     if des.shape[0] != y.shape[0]:
-        logging.error("Descriptor matrix does not match classes matrix")
+        logger.error("Descriptor matrix does not match classes matrix")
         return -1
 
     _ , counts = np.unique(y, return_counts=True)
-    logging.info("Loaded {} examples, {} negative and {} positive".format(des.shape[0], counts[0], counts[1]))
+    logger.info("Loaded {} examples, {} negative and {} positive".format(des.shape[0], counts[0], counts[1]))
 
-    logging.info("Training SVM with examples...")
+    logger.info("Training SVM with examples...")
     svm_params = dict( kernel_type = cv2.ml.SVM_LINEAR, svm_type = cv2.ml.SVM_C_SVC, C=2.67, gamma=5.383 ) # Need to find a way to set this
     svm = cv2.ml.SVM_create()
     svm.train(np.float32(des[:, 4:]), cv2.ml.ROW_SAMPLE, np.int32(y))
     svm.save(os.path.join(image_folder, svm_data_name_pattern))
     return 0
 
-@begin.subcommand
-@begin.convert(_automatic=True)
+
 def predict(svm_datafile: 'File storing the SVM parameters' = '', image_id: 'Id of the image to use for prediction' = 0,
-        display_results: 'Show feedback of the results' = False, *image_folder):
+        display_results: 'Show feedback of the results' = False, image_folder=list()):
     sift_features_name_pattern = "garment-{:02d}-sift.npz"
     sift_features_class_name_pattern = "garment-{:02d}-sift-classes.npz"
     image_folder = map(lambda x: os.path.abspath(os.path.expanduser(x)), image_folder)
     image_folder = list(image_folder)[0]
 
-    logging.info("Loading trained SVM data...")
+    logger.info("Loading trained SVM data...")
     try:
         svm = cv2.ml.SVM_load(os.path.abspath(os.path.expanduser(svm_datafile)))
     except AttributeError:
-        logging.error("\tYour OpenCV version does not support loading SVM parameters")
+        logger.error("\tYour OpenCV version does not support loading SVM parameters")
         return -1
 
-    logging.info("Loading SIFT descriptors...")
+    logger.info("Loading SIFT descriptors...")
     des =  np.load(os.path.join(image_folder, sift_features_name_pattern.format(image_id)))['descriptors']
 
-    logging.info("Predicting...")
+    logger.info("Predicting...")
     retval, result = svm.predict(np.float32(des[:,4:]))
     values , counts = np.unique(result, return_counts=True)
     try:
-        logging.info("\tPredicted {} points, {} negative and {} positive".format(result.shape[0], counts[0], counts[1]))
+        logger.info("\tPredicted {} points, {} negative and {} positive".format(result.shape[0], counts[0], counts[1]))
     except IndexError:
-        logging.info("\tPredicted {} points, {} negative and {} positive".format(result.shape[0], 0 if 0 not in values else counts[0],
+        logger.info("\tPredicted {} points, {} negative and {} positive".format(result.shape[0], 0 if 0 not in values else counts[0],
                                                                                  0 if 1 not in values else counts[0]))
 
     # Visual feedback
@@ -289,8 +283,8 @@ def predict(svm_datafile: 'File storing the SVM parameters' = '', image_id: 'Id 
                     fp += 1
                 else:
                     tn += 1
-        logging.info("Confusion matrix:\n\t          |___1__|___0__| (Predicted)")
-        logging.info("\t(Truth) 1 | {:04d} | {:04d} |\n\t        0 | {:04d} | {:04d} |".format(tp ,fn, fp, tn))
+        logger.info("Confusion matrix:\n\t          |___1__|___0__| (Predicted)")
+        logger.info("\t(Truth) 1 | {:04d} | {:04d} |\n\t        0 | {:04d} | {:04d} |".format(tp ,fn, fp, tn))
     except FileNotFoundError:
         pass
 
@@ -332,7 +326,3 @@ def predict(svm_datafile: 'File storing the SVM parameters' = '', image_id: 'Id 
     plt.show()
 
 
-@begin.start(auto_convert=True)
-@begin.logging
-def main():
-    pass
