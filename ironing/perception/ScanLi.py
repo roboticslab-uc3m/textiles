@@ -17,4 +17,13 @@ Finds the most suitable paths for ironing depending on wrinkles
 """
 
 class ScanLi(object):
-    pass
+    def __init__(self):
+        self.discontinuity_scanner = DiscontinuityScanLi.DiscontinuityScanLi()
+        self.curvature_scanner = CurvatureScanLi.CurvatureScanLi()
+
+    def load_images(self, image_folder, image_id=0, use_roi=True):
+        self.discontinuity_scanner.load_images(image_folder, image_id, use_roi)
+        self.curvature_scanner.load_images(image_folder, image_id, use_roi)
+
+    def run(self):
+        pass
