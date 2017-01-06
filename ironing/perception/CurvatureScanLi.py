@@ -94,16 +94,15 @@ class CurvatureScanLi(object):
 
     @staticmethod
     def compute_normalized_volume(img, mask):
-        raise NotImplementedError
+        max_h = np.where(mask == 1, img, 0).max()
+        min_h = np.min(np.where(mask == 1, img, max_h))
+        return np.sum(np.where(mask == 1, (img - min_h) / (max_h - min_h), 0))
 
     def normalized_volume_filter(self, threshold):
         # Find connected regions and compute volume
         labels, n_labels = morphology.label(self.wrinkles, background=0, return_num=True)
-        volumes = []
-        for i in range(1, n_labels):
-            max_h = np.where(labels == i, self.height_map, 0).max()
-            min_h = np.min(np.where(labels == i, self.height_map, max_h))
-            volumes.append((i, np.sum(np.where(labels == i, (self.height_map - min_h) / (max_h - min_h), 0))))
+        volumes = [ (i, self.compute_normalized_volume(self.height_map, np.where(labels==i, 1, 0)))
+                    for i in range(1, n_labels)]
 
         self.high_bumps = np.zeros_like(self.height_map) # High bumps
         self.high_bumps_labels = []
@@ -147,7 +146,7 @@ class CurvatureScanLi(object):
             io.show()
 
         # Find connected regions and filter according to normalized volume
-        self.normalized_volume_filter(1000)
+        self.normalized_volume_filter(threshold=1000)
 
         # Note: Principal components are said to be computed, but they are never really used later
         # in the thesis, so I'm not computing them. If I were, that computation would go here.
