@@ -1,5 +1,9 @@
 # coding=utf-8
 
+from common.math import normalize_array
+from common.perception.Features import save_SIFT
+from common.perception.roi import load_roi_from_file, crop_roi
+
 import os
 from skimage import io
 from skimage import img_as_ubyte
@@ -9,9 +13,7 @@ import matplotlib.pyplot as plt
 import cv2 # SIFT, SVM not in skimage
 import logging
 logger = logging.getLogger(__name__)
-from common.math import normalize_array
-from common.perception.Features import save_SIFT
-from common.perception.roi import load_roi_from_file, crop_roi
+
 
 """
 Discontinuity Scan Li
@@ -24,6 +26,7 @@ Conference on Robotics and Automation (ICRA), Stockholm, 2016.
 Finds wrinkles on garments based on rgb images taken with two different
 perpendicular illumination sources.
 """
+
 
 class DiscontinuityScanLi(object):
     image_wrinkles_name_pattern = "garment-{:02d}-image-{:02d}.ppm"
@@ -66,7 +69,6 @@ class DiscontinuityScanLi(object):
             except FileNotFoundError:
                 logger.warning("Could not load ROI, file does not exist")
 
-
     def normalize_images(self):
         """
         Apply normalization method as described in Li's algorithm
@@ -97,8 +99,6 @@ class DiscontinuityScanLi(object):
 
             for kp in self.keypoints:
                 logger.debug("Keypoint at {}, class {}".format(kp.pt, kp.class_id))
-
-
 
     def plot_input_images(self, colormap=plt.cm.viridis):
         """
@@ -185,7 +185,6 @@ def compute_sift(num_images: 'Number of images in image folder' = 0, display_res
             plt.xlim(xlims[0], xlims[1])
             plt.ylim(ylims[0], ylims[1])
             plt.show()
-
 
         logger.info("\tSaving SIFT features...")
         save_SIFT(os.path.join(image_folder, sift_features_name_pattern.format(i)),
@@ -293,7 +292,6 @@ def predict(svm_datafile: 'File storing the SVM parameters' = '', image_id: 'Id 
     for example, prediction in zip(keypoints, result):
         if prediction == 1:
             result_image[int(example[1]), int(example[0])] = 255
-
 
     h, theta, d = hough_line(result_image)
 

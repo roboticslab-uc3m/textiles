@@ -1,16 +1,14 @@
 # coding=utf-8
 
+from common.perception.roi import load_roi_from_file, crop_roi
+
 import os
-from operator import itemgetter
 from skimage import io
 from skimage import feature
 from skimage import morphology
 import numpy as np
 from sklearn.mixture import GaussianMixture
-import matplotlib as mpl
 import matplotlib.pyplot as plt
-from common.perception.roi import load_roi_from_file, crop_roi
-
 import logging
 logger = logging.getLogger(__name__)
 
@@ -24,6 +22,7 @@ Conference on Robotics and Automation (ICRA), Stockholm, 2016.
 
 Finds height bumps on garments based on depth data.
 """
+
 
 class CurvatureScanLi(object):
     image_name_pattern = "garment-{:02d}-depth.ppm"
