@@ -32,6 +32,10 @@ class DiscontinuityScanLi(object):
     image_wrinkles_name_pattern = "garment-{:02d}-image-{:02d}.ppm"
     image_reference_name_pattern = "garment-{:02d}-imageref-{:02d}.ppm"
     image_roi_name_pattern = "garment-{:02d}-roi.txt"
+    image_labels_name_pattern = "garment-{:02d}-labels.png"
+    sift_features_name_pattern = "garment-{:02d}-sift.npz"
+    sift_features_class_name_pattern = "garment-{:02d}-sift-classes.npz"
+    svm_data_name_pattern = "garment-svm.dat"
 
     def __init__(self):
         # General images
@@ -157,9 +161,6 @@ def compute_sift(num_images: 'Number of images in image folder' = 0, display_res
     """
     Computes the SIFT descriptors of the labeled images
     """
-    image_labels_name_pattern = "garment-{:02d}-labels.png"
-    sift_features_name_pattern = "garment-{:02d}-sift.npz"
-    sift_features_class_name_pattern = "garment-{:02d}-sift-classes.npz"
     image_folder = map(lambda x: os.path.abspath(os.path.expanduser(x)), image_folder)
     image_folder = list(image_folder)[0]
     logger.info("Loading images from {}".format(image_folder))
@@ -168,7 +169,8 @@ def compute_sift(num_images: 'Number of images in image folder' = 0, display_res
         discontinuity_scanner = process_images(image_folder, i, display_results)
         logger.info("\tLoading labels...")
         try:
-            labels = io.imread(os.path.join(image_folder, image_labels_name_pattern.format(i)), as_grey=True)
+            labels = io.imread(os.path.join(image_folder, DiscontinuityScanLi.image_labels_name_pattern.format(i)),
+                               as_grey=True)
             labels=np.where(labels > 0.5, 1, 0) # Temporary fix for gimp creating images with weird values.
         except FileNotFoundError:
             logger.info("\t\tLabels not found, skipping them!")
@@ -187,18 +189,15 @@ def compute_sift(num_images: 'Number of images in image folder' = 0, display_res
             plt.show()
 
         logger.info("\tSaving SIFT features...")
-        save_SIFT(os.path.join(image_folder, sift_features_name_pattern.format(i)),
+        save_SIFT(os.path.join(image_folder, DiscontinuityScanLi.sift_features_name_pattern.format(i)),
                   discontinuity_scanner.keypoints, discontinuity_scanner.descriptors,
-                  class_id_filename = os.path.join(image_folder, sift_features_class_name_pattern.format(i)))
+                  class_id_filename = os.path.join(image_folder, DiscontinuityScanLi.sift_features_class_name_pattern.format(i)))
 
 
 def train_svm(num_images: 'Number of images in image folder' = 0, image_folder=list()):
     """
     Loads SIFT data from the specified path and trains a SVM with them
     """
-    sift_features_name_pattern = "garment-{:02d}-sift.npz"
-    sift_features_class_name_pattern = "garment-{:02d}-sift-classes.npz"
-    svm_data_name_pattern = "garment-svm.dat"
     image_folder = map(lambda x: os.path.abspath(os.path.expanduser(x)), image_folder)
     image_folder = list(image_folder)[0]
 
@@ -207,8 +206,9 @@ def train_svm(num_images: 'Number of images in image folder' = 0, image_folder=l
     y = np.empty((0, 1))
     for i in range(1, num_images+1): # For each sample image
         logger.info("\tLoading data from image {}...".format(i))
-        des = np.vstack((des, np.load(os.path.join(image_folder, sift_features_name_pattern.format(i)))['descriptors']))
-        new_y = np.load(os.path.join(image_folder, sift_features_class_name_pattern.format(i)))['y']
+        des = np.vstack((des, np.load(os.path.join(image_folder,
+                                                   DiscontinuityScanLi.sift_features_name_pattern.format(i)))['descriptors']))
+        new_y = np.load(os.path.join(image_folder, DiscontinuityScanLi.sift_features_class_name_pattern.format(i)))['y']
         y = np.vstack((y, np.reshape(new_y, (new_y.shape[0], 1))))
     if des.shape[0] != y.shape[0]:
         logger.error("Descriptor matrix does not match classes matrix")
@@ -221,14 +221,12 @@ def train_svm(num_images: 'Number of images in image folder' = 0, image_folder=l
     svm_params = dict( kernel_type = cv2.ml.SVM_LINEAR, svm_type = cv2.ml.SVM_C_SVC, C=2.67, gamma=5.383 ) # Need to find a way to set this
     svm = cv2.ml.SVM_create()
     svm.train(np.float32(des[:, 4:]), cv2.ml.ROW_SAMPLE, np.int32(y))
-    svm.save(os.path.join(image_folder, svm_data_name_pattern))
+    svm.save(os.path.join(image_folder, DiscontinuityScanLi.svm_data_name_pattern))
     return 0
 
 
 def predict(svm_datafile: 'File storing the SVM parameters' = '', image_id: 'Id of the image to use for prediction' = 0,
         display_results: 'Show feedback of the results' = False, image_folder=list()):
-    sift_features_name_pattern = "garment-{:02d}-sift.npz"
-    sift_features_class_name_pattern = "garment-{:02d}-sift-classes.npz"
     image_folder = map(lambda x: os.path.abspath(os.path.expanduser(x)), image_folder)
     image_folder = list(image_folder)[0]
 
@@ -240,7 +238,8 @@ def predict(svm_datafile: 'File storing the SVM parameters' = '', image_id: 'Id 
         return -1
 
     logger.info("Loading SIFT descriptors...")
-    des =  np.load(os.path.join(image_folder, sift_features_name_pattern.format(image_id)))['descriptors']
+    des =  np.load(os.path.join(image_folder,
+                                DiscontinuityScanLi.sift_features_name_pattern.format(image_id)))['descriptors']
 
     logger.info("Predicting...")
     retval, result = svm.predict(np.float32(des[:,4:]))
@@ -269,7 +268,8 @@ def predict(svm_datafile: 'File storing the SVM parameters' = '', image_id: 'Id 
 
     # If labels exist, maybe check out good is the prediction with them here
     try:
-        labels = np.load(os.path.join(image_folder, sift_features_class_name_pattern.format(image_id)))['y']
+        labels = np.load(os.path.join(image_folder,
+                                      DiscontinuityScanLi.sift_features_class_name_pattern.format(image_id)))['y']
         tp, tn, fp, fn = 0, 0, 0, 0
         for label, prediction in zip(labels, result):
             if label == 1:
