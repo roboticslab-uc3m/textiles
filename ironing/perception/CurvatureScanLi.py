@@ -1,6 +1,7 @@
 # coding=utf-8
 
 from common.perception.roi import load_roi_from_file, crop_roi
+from common.math import normalize
 
 import os
 from skimage import io
@@ -34,6 +35,7 @@ class CurvatureScanLi(object):
         self.wrinkles = None
         self.high_bumps = None
         self.high_bumps_labels = None
+        self.gmm = None
 
     def load_images(self, image_folder, image_id=0, use_roi=True):
         image_folder = os.path.abspath(os.path.expanduser(image_folder))
@@ -118,22 +120,24 @@ class CurvatureScanLi(object):
         data = np.transpose(np.nonzero(self.high_bumps))
         n_classes = len(self.high_bumps_labels)
 
-        clf = GaussianMixture(n_components=n_classes, covariance_type='full')
-        clf.fit(data)
+        self.gmm = GaussianMixture(n_components=n_classes, covariance_type='full')
+        self.gmm.fit(data)
 
+        # Generate probability image from GMM
+        x = np.linspace(self.roi_rect[0][0], self.roi_rect[1][0])
+        y = np.linspace(self.roi_rect[0][1], self.roi_rect[1][1])
+        X, Y = np.meshgrid(x, y)
+        XX = np.array([X.ravel(), Y.ravel()]).T
+        Z = -self.gmm.score_samples(XX)
+        Z = Z.reshape(X.shape)
         if debug:
             # display predicted scores by the model as a contour plot
-            x = np.linspace(self.roi_rect[0][0], self.roi_rect[1][0])
-            y = np.linspace(self.roi_rect[0][1], self.roi_rect[1][1])
-            X, Y = np.meshgrid(x, y)
-            XX = np.array([X.ravel(), Y.ravel()]).T
-            Z = -clf.score_samples(XX)
-            Z = Z.reshape(X.shape)
-
             CS = plt.contour(X, Y, Z)
             CB = plt.colorbar(CS, shrink=0.8, extend='both')
             plt.scatter(data[:, 0], data[:, 1], .8)
             plt.show()
+
+        return np.transpose(1-normalize(Z))
 
     def run(self, debug=False):
         # Filter according to shape index
