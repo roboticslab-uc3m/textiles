@@ -3,6 +3,9 @@
 import DiscontinuityScanLi
 import CurvatureScanLi
 
+import numpy as np
+from skimage import io
+
 """
 Scan Li
 -----------------------------------------------------------------------
@@ -27,5 +30,9 @@ class ScanLi(object):
         self.curvature_scanner.load_images(image_folder, image_id, use_roi)
 
     def run(self, debug):
-        self.curvature_scanner.run(debug)
-        self.discontinuity_scanner.run(debug)
+        curvatures = self.curvature_scanner.run(debug)
+        _, discontinuities = self.discontinuity_scanner.run(debug)
+
+        result = np.bitwise_and(curvatures, discontinuities)
+
+        io.imshow(result)

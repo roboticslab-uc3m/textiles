@@ -1,9 +1,11 @@
 #!/usr/env python3
 # coding=utf-8
-import begin
-import logging
 
 import DiscontinuityScanLi
+import ScanLi
+
+import begin
+import os
 
 """
 Run Li
@@ -41,9 +43,21 @@ def train_svm(num_images: 'Number of images in image folder' = 0, *image_folder)
 
 @begin.subcommand
 @begin.convert(_automatic=True)
-def predict(svm_datafile: 'File storing the SVM parameters' = '', image_id: 'Id of the image to use for prediction' = 0,
-        display_results: 'Show feedback of the results' = False, *image_folder):
-    DiscontinuityScanLi.predict(svm_datafile, image_id, display_results, image_folder)
+def predict(image_id: 'Id of the image to use for prediction' = 0, display_results: 'Show feedback of the results' = False,
+            *image_folder):
+    DiscontinuityScanLi.predict(image_id, display_results, image_folder)
+
+
+@begin.subcommand
+@begin.convert(_automatic=True)
+def run(image_id: 'Id of the image to use for prediction' = 0, display_results: 'Show feedback of the results' = False,
+            *image_folder):
+    image_folder = map(lambda x: os.path.abspath(os.path.expanduser(x)), image_folder)
+    image_folder = list(image_folder)[0]
+
+    scanner = ScanLi.ScanLi()
+    scanner.load_images(image_folder, image_id)
+    scanner.run(display_results)
 
 
 @begin.start(auto_convert=True)

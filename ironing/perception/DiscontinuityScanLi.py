@@ -150,7 +150,13 @@ class DiscontinuityScanLi(object):
 
         h, theta, d = hough_line(result_image)
 
-        # Plotting results
+        # Generate image from Hough transform lines
+        hough_lines_image = np.zeros((self.norm.shape[0], self.norm.shape[1]))
+        for _, angle, dist in zip(*hough_line_peaks(h, theta, d)):
+            y0 = (dist - 0 * np.cos(angle)) / np.sin(angle)
+            y1 = (dist - self.norm.shape[1] * np.cos(angle)) / np.sin(angle)
+            cv2.line(hough_lines_image, (0, self.norm.shape[1]), (y0, y1), 0)
+
         if debug:
             fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(8,4))
 
@@ -179,7 +185,7 @@ class DiscontinuityScanLi(object):
 
             plt.show()
 
-        return result
+        return result, hough_lines_image
 
     def plot_input_images(self, colormap=plt.cm.viridis):
         """
@@ -302,8 +308,8 @@ def train_svm(num_images: 'Number of images in image folder' = 0, image_folder=l
     return 0
 
 
-def predict(svm_datafile: 'File storing the SVM parameters' = '', image_id: 'Id of the image to use for prediction' = 0,
-        display_results: 'Show feedback of the results' = False, image_folder=list()):
+def predict(image_id: 'Id of the image to use for prediction' = 0, display_results: 'Show feedback of the results' = False,
+            image_folder=list()):
     image_folder = map(lambda x: os.path.abspath(os.path.expanduser(x)), image_folder)
     image_folder = list(image_folder)[0]
 
@@ -314,7 +320,7 @@ def predict(svm_datafile: 'File storing the SVM parameters' = '', image_id: 'Id 
     discontinuity_scanner.load_svm(image_folder)
 
     logger.info("Predicting...")
-    result = discontinuity_scanner.run(display_results)
+    result, _ = discontinuity_scanner.run(display_results)
 
     # If labels exist, check out good is the prediction with them here
     try:
