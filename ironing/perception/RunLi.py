@@ -50,7 +50,7 @@ def predict(image_id: 'Id of the image to use for prediction' = 0, display_resul
 
 @begin.subcommand
 @begin.convert(_automatic=True)
-def run(image_id: 'Id of the image to use for prediction' = 0, display_results: 'Show feedback of the results' = False,
+def run(image_id: 'Id of the image to use for analysis' = 0, display_results: 'Show feedback of the results' = False,
             *image_folder):
     image_folder = map(lambda x: os.path.abspath(os.path.expanduser(x)), image_folder)
     image_folder = list(image_folder)[0]
