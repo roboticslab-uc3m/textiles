@@ -1,8 +1,8 @@
 #!/usr/env python3
 # coding=utf-8
 
-import DiscontinuityScanLi
-import ScanLi
+import ironing.perception.Li.DiscontinuityScanLi as DiscontinuityScanLi
+import ironing.perception.Li.ScanLi as ScanLi
 
 import begin
 import os
@@ -10,8 +10,17 @@ import os
 """
 Run Li
 ----------------------------------------------------------------------------
-Runs the different scans implemented in CurvatureScanLi, DiscontinuityScanLi
-and ScanLi.
+Runs the different scans from Yinxiao Li's Thesis, implemented in
+CurvatureScanLi, DiscontinuityScanLi and ScanLi.
+
+Wrinkle detection using Discontinuity and Curvature scans, as described
+in Yinxiao Li's Thesis and in article:
+ * Y. Li, X. Hu, D. Xu, Y. Yue, E. Grinspun, and P. Allen, “Multi-
+Sensor Surface Analysis for Robotic Ironing,” in IEEE International
+Conference on Robotics and Automation (ICRA), Stockholm, 2016.
+
+Finds the most suitable paths for ironing depending on wrinkles
+(discontinuities) and height bumps.
 """
 
 
