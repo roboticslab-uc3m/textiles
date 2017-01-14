@@ -165,9 +165,8 @@ def depthMap_2_heightMap(depth_map):
     max_val = depth_map.max()
     return max_val - depth_map
 
-
 if __name__ == '__main__':
-    image_folder = "~/Research/jresearch/2016-10-10-replicate-li/"
+    image_folder = "~/Research/jResearch/2016-10-10-replicate-li/"
 
     # Configure logger
     logging.basicConfig(level=logging.DEBUG)
