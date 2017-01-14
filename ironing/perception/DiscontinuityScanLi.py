@@ -1,6 +1,6 @@
 # coding=utf-8
 
-from common.math import normalize_array
+from common.math import normalize
 from common.perception.Features import save_SIFT
 from common.perception.roi import load_roi_from_file, crop_roi
 
@@ -90,7 +90,7 @@ class DiscontinuityScanLi(object):
         """
         # Compute SIFT features
         sift = cv2.xfeatures2d.SIFT_create()
-        self.keypoints, self.descriptors = sift.detectAndCompute(img_as_ubyte(normalize_array(self.norm)),None)
+        self.keypoints, self.descriptors = sift.detectAndCompute(img_as_ubyte(normalize(self.norm)),None)
         logger.debug("Detected {} keypoints".format(len(self.keypoints)))
 
         # Debug stuff
@@ -236,7 +236,7 @@ def generate_dataset(num_images: 'Number of images in image folder' = 0, display
         discontinuity_scanner = process_images(image_folder, i, display_results)
         logger.info("\tGenerating dataset")
         colormap = plt.cm.viridis # or gray, inferno, etc
-        io.imsave(os.path.join(image_folder, image_output_name_pattern.format(i)), colormap(normalize_array(discontinuity_scanner.norm)))
+        io.imsave(os.path.join(image_folder, image_output_name_pattern.format(i)), colormap(normalize(discontinuity_scanner.norm)))
 
 
 def compute_sift(num_images: 'Number of images in image folder' = 0, display_results: 'Show feedback of the process' = False,

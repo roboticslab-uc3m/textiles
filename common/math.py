@@ -27,16 +27,6 @@ def rotZ(angle):
                      [ s,  c, 0],
                      [ 0,  0, 1]])
 
-def normalize_array(array):
-    """
-    Normalize an array to have values between 0 and 1
-    Note: this only works with arrays with values from 0 to any positive values.
-    :param array: Input array
-    :return: Normalized array
-    """
-    array -= array.min()
-    array /= array.max()
-    return array
 
 def normalize(X):
     """

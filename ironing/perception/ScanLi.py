@@ -35,4 +35,5 @@ class ScanLi(object):
 
         result = np.bitwise_and(curvatures, discontinuities)
 
-        io.imshow(result)
+        if debug:
+            io.imshow(result)
