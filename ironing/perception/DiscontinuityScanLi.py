@@ -52,6 +52,8 @@ class DiscontinuityScanLi(object):
         # SIFT descriptors
         self.keypoints = None
         self.descriptors = None
+        # SVM
+        self.svm = None
 
     def load_images(self, image_folder, image_id=0, use_roi=True):
         image_folder = os.path.abspath(os.path.expanduser(image_folder))
@@ -103,6 +105,81 @@ class DiscontinuityScanLi(object):
 
             for kp in self.keypoints:
                 logger.debug("Keypoint at {}, class {}".format(kp.pt, kp.class_id))
+
+    def load_svm(self, svm_folder):
+        """
+        Loads the SVM parameters from a file named as the attribute self.svm_data_name_pattern in the specified folder
+        """
+        svm_folder = os.path.abspath(os.path.expanduser(svm_folder))
+
+        try:
+            self.svm = cv2.ml.SVM_load(os.path.join(svm_folder, self.svm_data_name_pattern))
+        except AttributeError:
+            logger.error("\tYour OpenCV version does not support loading SVM parameters")
+            raise AttributeError("OpenCV version does not support loading SVM parameters")
+
+    def run(self, debug=False):
+        self.normalize_images()
+        self.compute_SIFT()
+
+        # Prediction
+        retval, result = self.svm.predict(np.float32(self.descriptors[:,4:]))
+        values, counts = np.unique(result, return_counts=True)
+        try:
+            logger.info("\tPredicted {} points, {} negative and {} positive".format(result.shape[0], counts[0], counts[1]))
+        except IndexError:
+            logger.info("\tPredicted {} points, {} negative and {} positive".format(result.shape[0], 0 if 0 not in values else counts[0],
+                                                                                     0 if 1 not in values else counts[0]))
+        # Visual feedback
+        if debug:
+            # Load descriptors
+            keypoints = self.descriptors[:, :2] # (x, y) are the first columns of the matrix
+            plt.imshow(self.norm)
+            xlims, ylims = plt.xlim(), plt.ylim() # Save plot dimensions to restore them
+            for example, prediction in zip(keypoints, result):
+                plt.plot(example[0], example[1], 'r*' if prediction == 0 else 'bo')
+            plt.xlim(xlims[0], xlims[1]) # Restore x axis
+            plt.ylim(ylims[0], ylims[1]) # Restore y axis
+            plt.show()
+
+        # Hough transform
+        result_image = np.zeros((self.norm.shape[0], self.norm.shape[1]))
+        for example, prediction in zip(self.keypoints, result):
+            if prediction == 1:
+                result_image[int(example[1]), int(example[0])] = 255
+
+        h, theta, d = hough_line(result_image)
+
+        # Plotting results
+        if debug:
+            fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(8,4))
+
+            ax1.imshow(result_image, cmap=plt.cm.gray)
+            ax1.set_title('Input image')
+            ax1.set_axis_off()
+
+            ax2.imshow(np.log(1 + h),
+                         extent=[np.rad2deg(theta[-1]), np.rad2deg(theta[0]),
+                                 d[-1], d[0]],
+                         cmap=plt.cm.gray, aspect=1/1.5)
+            ax2.set_title('Hough transform')
+            ax2.set_xlabel('Angles (degrees)')
+            ax2.set_ylabel('Distance (pixels)')
+            ax2.axis('image')
+
+            ax3.imshow(result_image, cmap=plt.cm.gray)
+            rows, cols = result_image.shape
+            for _, angle, dist in zip(*hough_line_peaks(h, theta, d)):
+                y0 = (dist - 0 * np.cos(angle)) / np.sin(angle)
+                y1 = (dist - cols * np.cos(angle)) / np.sin(angle)
+                ax3.plot((0, cols), (y0, y1), '-r')
+            ax3.axis((0, cols, rows, 0))
+            ax3.set_title('Detected lines')
+            ax3.set_axis_off()
+
+            plt.show()
+
+        return result
 
     def plot_input_images(self, colormap=plt.cm.viridis):
         """
@@ -230,43 +307,16 @@ def predict(svm_datafile: 'File storing the SVM parameters' = '', image_id: 'Id 
     image_folder = map(lambda x: os.path.abspath(os.path.expanduser(x)), image_folder)
     image_folder = list(image_folder)[0]
 
-    logger.info("Loading trained SVM data...")
-    try:
-        svm = cv2.ml.SVM_load(os.path.abspath(os.path.expanduser(svm_datafile)))
-    except AttributeError:
-        logger.error("\tYour OpenCV version does not support loading SVM parameters")
-        return -1
+    # Create scanner and load images
+    discontinuity_scanner = process_images(image_folder, image_id, display_results)
 
-    logger.info("Loading SIFT descriptors...")
-    des =  np.load(os.path.join(image_folder,
-                                DiscontinuityScanLi.sift_features_name_pattern.format(image_id)))['descriptors']
+    logger.info("Loading trained SVM data...")
+    discontinuity_scanner.load_svm(image_folder)
 
     logger.info("Predicting...")
-    retval, result = svm.predict(np.float32(des[:,4:]))
-    values , counts = np.unique(result, return_counts=True)
-    try:
-        logger.info("\tPredicted {} points, {} negative and {} positive".format(result.shape[0], counts[0], counts[1]))
-    except IndexError:
-        logger.info("\tPredicted {} points, {} negative and {} positive".format(result.shape[0], 0 if 0 not in values else counts[0],
-                                                                                 0 if 1 not in values else counts[0]))
+    result = discontinuity_scanner.run(display_results)
 
-    # Visual feedback
-    if display_results:
-        # Load output image
-        image_output_name_pattern = "garment-{:02d}-out.png"
-        image = io.imread(os.path.join(image_folder, image_output_name_pattern.format(image_id)))
-
-        # Load descriptors
-        keypoints = des[:, :2] # (x, y) are the first columns of the matrix
-        plt.imshow(image)
-        xlims, ylims = plt.xlim(), plt.ylim() # Save plot dimensions to restore them
-        for example, prediction in zip(keypoints, result):
-            plt.plot(example[0], example[1], 'r*' if prediction == 0 else 'bo')
-        plt.xlim(xlims[0], xlims[1]) # Restore x axis
-        plt.ylim(ylims[0], ylims[1]) # Restore y axis
-        plt.show()
-
-    # If labels exist, maybe check out good is the prediction with them here
+    # If labels exist, check out good is the prediction with them here
     try:
         labels = np.load(os.path.join(image_folder,
                                       DiscontinuityScanLi.sift_features_class_name_pattern.format(image_id)))['y']
@@ -287,40 +337,5 @@ def predict(svm_datafile: 'File storing the SVM parameters' = '', image_id: 'Id 
     except FileNotFoundError:
         pass
 
-    # Hough transform
-    result_image = np.zeros((image.shape[0], image.shape[1]))
-    for example, prediction in zip(keypoints, result):
-        if prediction == 1:
-            result_image[int(example[1]), int(example[0])] = 255
-
-    h, theta, d = hough_line(result_image)
-
-    # Plotting results
-    fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(8,4))
-
-    ax1.imshow(result_image, cmap=plt.cm.gray)
-    ax1.set_title('Input image')
-    ax1.set_axis_off()
-
-    ax2.imshow(np.log(1 + h),
-                 extent=[np.rad2deg(theta[-1]), np.rad2deg(theta[0]),
-                         d[-1], d[0]],
-                 cmap=plt.cm.gray, aspect=1/1.5)
-    ax2.set_title('Hough transform')
-    ax2.set_xlabel('Angles (degrees)')
-    ax2.set_ylabel('Distance (pixels)')
-    ax2.axis('image')
-
-    ax3.imshow(result_image, cmap=plt.cm.gray)
-    rows, cols = result_image.shape
-    for _, angle, dist in zip(*hough_line_peaks(h, theta, d)):
-        y0 = (dist - 0 * np.cos(angle)) / np.sin(angle)
-        y1 = (dist - cols * np.cos(angle)) / np.sin(angle)
-        ax3.plot((0, cols), (y0, y1), '-r')
-    ax3.axis((0, cols, rows, 0))
-    ax3.set_title('Detected lines')
-    ax3.set_axis_off()
-
-    plt.show()
 
 

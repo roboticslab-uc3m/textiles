@@ -23,7 +23,9 @@ class ScanLi(object):
 
     def load_images(self, image_folder, image_id=0, use_roi=True):
         self.discontinuity_scanner.load_images(image_folder, image_id, use_roi)
+        self.discontinuity_scanner.load_svm()
         self.curvature_scanner.load_images(image_folder, image_id, use_roi)
 
-    def run(self):
-        pass
+    def run(self, debug):
+        self.curvature_scanner.run(debug)
+        self.discontinuity_scanner.run(debug)
