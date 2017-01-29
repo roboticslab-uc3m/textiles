@@ -3,15 +3,15 @@ pcl_batch_euclidean_cluster allows processing several files using the clustering
 program clusteringCleanup, developed with pcl
 """
 
-__author__ = 'def'
-
 import os
 import glob
 import subprocess
 import numpy as np
-from pcl_utils import  colorize_point_cloud
+from .pcl_utils import colorize_point_cloud
 
-parallelize = True # True to run several processes in parallel
+__author__ = 'def'
+
+parallelize = True  # True to run several processes in parallel
 
 # garment_data_names = ["Jacket1", "Jacket2", "Jacket3", "Jacket4", "Jacket5",
 #                       "LeatherJacket1", "LeatherJacket2", "LeatherJacket3", "LeatherJacket4",
@@ -20,7 +20,7 @@ parallelize = True # True to run several processes in parallel
 #                       "TestBox"]
 garment_data_names = ["dress1", "dress2", "dress3", "hoodie1", "hoodie2", "hoodie3", "hoodieBad",
                       "pants1", "pants2", "pants3"]
-#garment_data_pattern = "~/Research/point_clouds/{0}/mesh_1.ply"
+# garment_data_pattern = "~/Research/point_clouds/{0}/mesh_1.ply"
 garment_data_pattern = "~/Research/jresearch/2016-05-06-textiles-draft/{0}/mesh_1.ply"
 
 pcl_processing_binary = "clusteringCleanup"
@@ -30,6 +30,7 @@ pcl_renderer_binary = "render2png"
 pcl_renderer_folder = "~/Repositories/textiles/pcl/build"
 
 output_folder = "~/Repositories/textiles/data/clustered-2016-05-06-thick-garments"
+
 
 def process_single_cloud(args):
     name, debug = args
