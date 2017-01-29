@@ -30,13 +30,13 @@ def rigid_transform_3D(A, B):
 
     # special reflection case
     if np.linalg.det(R) < 0:
-       print "Reflection detected"
+       print("Reflection detected")
        Vt[2,:] *= -1
        R = np.dot(Vt.T, U.T)
 
     t = np.dot(-R, centroid_A.T) + centroid_B.T
 
-    print t
+    print(t)
 
     return R, t
 
@@ -76,24 +76,24 @@ if __name__ == '__main__':
     err = sum(err)
     rmse = np.sqrt(err/n);
 
-    print "Points A"
-    print A
-    print ""
+    print("Points A")
+    print(A)
+    print("")
 
-    print "Points B"
-    print B
-    print ""
+    print("Points B")
+    print(B)
+    print("")
 
-    print "Rotation"
-    print R
-    print ""
+    print("Rotation")
+    print(R)
+    print("")
 
-    print "Translation"
-    print t
-    print ""
+    print("Translation")
+    print(t)
+    print("")
 
-    print "Computed:"
-    print ret_R, ret_t
+    print("Computed:")
+    print(ret_R, ret_t)
 
-    print "RMSE:", rmse
-    print "If RMSE is near zero, the function is correct!"
+    print("RMSE:", rmse)
+    print("If RMSE is near zero, the function is correct!")
