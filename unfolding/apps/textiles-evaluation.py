@@ -41,8 +41,8 @@ def compute_stages(args):
         bumpiness = GarmentPickAndPlacePoints.calculate_bumpiness(labeled_image, unfold_paths)
         pick_point, place_point = GarmentPickAndPlacePoints.calculate_pick_and_place_points(labeled_image, unfold_paths,
                                                                                             bumpiness)
-    except ValueError, e:
-        # print "\t[-] Exception ocurred!", e
+    except ValueError as e:
+        # print("\t[-] Exception ocurred!", e)
         return False
 
     f = open(out_prefix + '-bumpiness.txt', 'w')
@@ -59,7 +59,7 @@ def compute_stages(args):
 if __name__ == "__main__":
     # Input and output folders:
     input_dir = os.path.expanduser('~/Research/garments-birdsEye-flat')
-    print "[+] Loading data from:", input_dir
+    print("[+] Loading data from:", input_dir)
     output_dir = input_dir+'-results'
     if not os.path.exists(output_dir):
             os.makedirs(output_dir)
@@ -67,9 +67,9 @@ if __name__ == "__main__":
     # Load input paths
     image_paths, depth_image_paths = load_data(input_dir)
     if not image_paths or not depth_image_paths:
-        print "[!] No data was loaded!"
+        print("[!] No data was loaded!")
     else:
-        print "[+] Loaded: {} garments".format(len(image_paths))
+        print("[+] Loaded: {} garments".format(len(image_paths)))
 
     # for path_rgb_image, path_depth_image in zip(image_paths, depth_image_paths):
     #     compute_stages(path_rgb_image, path_depth_image)

@@ -32,11 +32,11 @@ if __name__ == '__main__':
                 bumpiness = GarmentPickAndPlacePoints.calculate_bumpiness(labeled_image, unfold_paths)
                 pick_point, place_point = GarmentPickAndPlacePoints.calculate_pick_and_place_points(labeled_image, unfold_paths,
                                                                                                     bumpiness)
-            except ValueError, e:
-                # print "\t[-] Exception ocurred!", e
+            except ValueError as e:
+                # print("\t[-] Exception ocurred!", e)
                 continue
             else:
-                print pick_point, place_point
+                print(pick_point, place_point)
                 bottle = yarp.Bottle()
                 bottle.addDouble(pick_point[0])
                 bottle.addDouble(pick_point[1])

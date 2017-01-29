@@ -115,7 +115,7 @@ class TextilesEvaluationWidget(QtGui.QWidget):
         """
         try:
             image_file = self.current_result.next()
-        except StopIteration, e:
+        except StopIteration as e:
             image_file = self.load_next_result()
 
         self.updateImage(image_file)
@@ -126,8 +126,8 @@ class TextilesEvaluationWidget(QtGui.QWidget):
         """
         try:
             self.current_result = iter(self.input_iterator.next())
-        except StopIteration, e:
-            print "nothing left!"
+        except StopIteration as e:
+            print("nothing left!")
             self.saveDataToFile(self.output_data_path)
             QtCore.QCoreApplication.instance().quit()
         else:
@@ -156,9 +156,9 @@ class TextilesEvaluationWidget(QtGui.QWidget):
                     for item in padded_entry:
                         f.write('{} '.format(item))
                     f.write('\n')
-                except TypeError, e:
+                except TypeError as e:
                     # nothing to write
-                    print e
+                    print(e)
 
     def start(self, folder):
         """

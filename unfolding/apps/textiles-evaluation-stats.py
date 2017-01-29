@@ -73,9 +73,9 @@ if __name__ == '__main__':
 
     # Find stats for each block
     for block in blocks:
-        print generate_table(block, percentage=False, floatfmt=".2f")
+        print(generate_table(block, percentage=False, floatfmt=".2f"))
 
-    print generate_table(data, garment_label="All", percentage=False, floatfmt=".2f")
+    print(generate_table(data, garment_label="All", percentage=False, floatfmt=".2f"))
 
     with open('aux.txt', 'w') as f:
         for block in blocks:
