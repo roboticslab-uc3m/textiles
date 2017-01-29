@@ -4,6 +4,7 @@
 Utils to work with Regions of Interest (ROIs)
 """
 
+
 def load_roi_from_file(filename):
     """
     Loads region of interest from a file. The file format is the following:
@@ -18,6 +19,7 @@ def load_roi_from_file(filename):
         (start_x, start_y), (end_x, end_y) = [map(int, line.split(' ')) for line in lines]
 
     return (start_x, start_y), (end_x, end_y)
+
 
 def crop_roi(roi_rect, image):
     """

@@ -7,13 +7,14 @@ Transform coordinate from pixel coordinate to world coordinates in the camera fr
 import numpy as np
 import collections
 
+
 class Transformer:
     """
     Transforms coordinates from pixel coordinates to world coordinates in the camera frame of reference
     """
     def __init__(self):
         self.H_image_object = None
-        self.H_object_kinfu =None
+        self.H_object_kinfu = None
         self.H_kinfu_cam = None
         self.H_root_cam = None
         self.pixel_resolution = None
@@ -39,8 +40,8 @@ class Transformer:
         self.pixel_resolution = pixel_resolution
 
         self.H_image_object = np.identity(4)
-        self.H_image_object[:2,3] = [ float(i) for i in image_origin ]
-        self.H_image_object[0, 3] *= -1 # Axes in image are inverted
+        self.H_image_object[:2,3] = [float(i) for i in image_origin]
+        self.H_image_object[0, 3] *= -1  # Axes in image are inverted
         self.H_image_object[1, 1] = -1
         self.H_image_object[2, 2] = -1
 
@@ -48,7 +49,6 @@ class Transformer:
             self._compute_inverse_transform()
         except (np.linalg.linalg.LinAlgError, TypeError):
             pass
-
 
     def add_kinfu_wrt_object_transform(self, T):
         """
@@ -92,7 +92,6 @@ class Transformer:
         except (np.linalg.linalg.LinAlgError, TypeError) as e:
             pass
 
-
     def cam(self, target):
         """
         Apply inverse transformation to transform points in pixel coordinates to
@@ -113,8 +112,8 @@ class Transformer:
                                 0, 1]]).transpose() for x, y in points]
 
         # Apply transformation to all points
-        transformed_np_points =  [ np.dot(self.H_cam_image, point) for point in np_points ]
-        transformed_points = [ (float(x), float(y), float(z)) for x, y, z, w in transformed_np_points]
+        transformed_np_points = [np.dot(self.H_cam_image, point) for point in np_points]
+        transformed_points = [(float(x), float(y), float(z)) for x, y, z, w in transformed_np_points]
 
         if isinstance(target, collections.Iterable):
             return transformed_points
@@ -141,8 +140,8 @@ class Transformer:
                                 0, 1]]).transpose() for x, y in points]
 
         # Apply transformation to all points
-        transformed_np_points =  [ np.dot(self.H_root_image, point) for point in np_points ]
-        transformed_points = [ (float(x), float(y), float(z)) for x, y, z, w in transformed_np_points]
+        transformed_np_points = [np.dot(self.H_root_image, point) for point in np_points]
+        transformed_points = [(float(x), float(y), float(z)) for x, y, z, w in transformed_np_points]
 
         if isinstance(target, collections.Iterable):
             return transformed_points
@@ -170,8 +169,8 @@ class Transformer:
                                 0, 1]]).transpose() for x, y in points]
 
         # Apply transformation to all points
-        transformed_np_points =  [ np.dot(self.H_kinfu_image, point) for point in np_points ]
-        transformed_points = [ (float(x), float(y), float(z)) for x, y, z, w in transformed_np_points]
+        transformed_np_points = [np.dot(self.H_kinfu_image, point) for point in np_points ]
+        transformed_points = [(float(x), float(y), float(z)) for x, y, z, w in transformed_np_points]
 
         if isinstance(target, collections.Iterable):
             return transformed_points
@@ -191,13 +190,13 @@ class Transformer:
 
         for i, line in enumerate(file_contents):
             if 'TVector' in line:
-                H_kinfu_cam[0,3] = float(file_contents[i+1])
-                H_kinfu_cam[1,3] = float(file_contents[i+2])
-                H_kinfu_cam[2,3] = float(file_contents[i+3])
+                H_kinfu_cam[0, 3] = float(file_contents[i+1])
+                H_kinfu_cam[1, 3] = float(file_contents[i+2])
+                H_kinfu_cam[2, 3] = float(file_contents[i+3])
             if 'RMatrix' in line:
-                H_kinfu_cam[0,:3] = [ float(n) for n in file_contents[i+1].split(' ') if n ]
-                H_kinfu_cam[1,:3] = [ float(n) for n in file_contents[i+2].split(' ') if n ]
-                H_kinfu_cam[2,:3] = [ float(n) for n in file_contents[i+3].split(' ') if n ]
+                H_kinfu_cam[0, :3] = [float(n) for n in file_contents[i+1].split(' ') if n]
+                H_kinfu_cam[1, :3] = [float(n) for n in file_contents[i+2].split(' ') if n]
+                H_kinfu_cam[2, :3] = [float(n) for n in file_contents[i+3].split(' ') if n]
 
         return H_kinfu_cam
 
@@ -243,12 +242,12 @@ if __name__ == "__main__":
 
     bad_points = 0
     for (exp_x, exp_y, exp_z), (res_x, res_y, res_z) in zip(expected_trajectory, result):
-         try:
+        try:
             assert(isclose(exp_x, res_x))
             assert(isclose(exp_y, res_y))
             assert(isclose(exp_z, res_z))
-         except AssertionError:
-            print (exp_x, exp_y, exp_z), (res_x, res_y, res_z)
+        except AssertionError:
+            print((exp_x, exp_y, exp_z), (res_x, res_y, res_z))
             bad_points += 1
             #break
 
@@ -259,12 +258,12 @@ if __name__ == "__main__":
 
     bad_points2 = 0
     for (exp_x, exp_y, exp_z), (res_x, res_y, res_z) in zip(expected_debug, result2):
-         try:
+        try:
             assert(isclose(exp_x, res_x))
             assert(isclose(exp_y, res_y))
             assert(isclose(exp_z, res_z))
-         except AssertionError:
-            print (exp_x, exp_y, exp_z), (res_x, res_y, res_z)
+        except AssertionError:
+            print((exp_x, exp_y, exp_z), (res_x, res_y, res_z))
             bad_points2 += 1
             #break
 
@@ -275,12 +274,12 @@ if __name__ == "__main__":
 
     bad_points_root = 0
     for (exp_x, exp_y, exp_z), (res_x, res_y, res_z) in zip(expected_root, result_root):
-         try:
+        try:
             assert(isclose(exp_x, res_x))
             assert(isclose(exp_y, res_y))
             assert(isclose(exp_z, res_z))
-         except AssertionError:
-            print (exp_x, exp_y, exp_z), (res_x, res_y, res_z)
+        except AssertionError:
+            print((exp_x, exp_y, exp_z), (res_x, res_y, res_z))
             bad_points_root += 1
             #break
 

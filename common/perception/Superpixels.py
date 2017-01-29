@@ -4,11 +4,13 @@ import operator
 
 __author__ = 'def', 'smorante'
 
+
 def get_highest_superpixel(image):
     """ Returns the superpixel with the lowest value (highest in the point cloud) """
     labels = np.unique(image)
     lowest_value = labels[np.unravel_index(labels.argmin(), labels.shape)]
-    return np.where(image<=lowest_value, 255, 0).astype(np.uint8)
+    return np.where(image <= lowest_value, 255, 0).astype(np.uint8)
+
 
 def get_highest_point_with_superpixels(image):
     blobs = get_highest_superpixel(image)
@@ -17,9 +19,11 @@ def get_highest_point_with_superpixels(image):
     max_index, max_value = max(enumerate([props.area for props in regions]), key=operator.itemgetter(1))
     return regions[max_index].centroid
 
+
 def get_centroid(image):
     m = measure.moments(image)
     return m[0, 1] / m[0, 0], m[1, 0] / m[0, 0]
+
 
 def line_sampling_points(p1, p2, step):
     # Order points:
@@ -51,6 +55,6 @@ def line_sampling(image, p1, p2, step):
     x, y = line_sampling_points(p1, p2, step)
     # print image.shape
     if len(image.shape) == 3:
-        return [ int(image[int(j), int(i), :]) for i, j in zip(x, y)]
+        return [int(image[int(j), int(i), :]) for i, j in zip(x, y)]
     else:
-        return [ int(image[int(j), int(i)]) for i, j in zip(x, y)]
+        return [int(image[int(j), int(i)]) for i, j in zip(x, y)]
