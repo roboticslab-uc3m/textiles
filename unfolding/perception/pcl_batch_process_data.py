@@ -45,7 +45,7 @@ def process_batch(args):
                                if os.path.exists(os.path.expanduser(pattern.format(name)))][0]
     except IndexError:
         if debug:
-            print "No file found for " + name + ', skipping...'
+            print("No file found for " + name + ', skipping...')
         return
 
     # Call the processing program:
@@ -60,14 +60,14 @@ def process_batch(args):
             "0.03 0.02 0.2"]
 
     if debug:
-        print "Command: " + str(" ".join(args))
-        print "Processing..."
+        print("Command: " + str(" ".join(args)))
+        print("Processing...")
     p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = p.communicate()
 
     if debug:
-        print str(out)
-        print str(err)
+        print(str(out))
+        print(str(err))
 
     # Call the coloring routine
     data = np.loadtxt(os.path.expanduser(os.path.join(output_folder,
@@ -87,8 +87,8 @@ def process_batch(args):
     out, err = p.communicate()
 
     if debug:
-        print "Generate picture from input data...\n" + str(out)
-        print str(err)
+        print("Generate picture from input data...\n" + str(out))
+        print(str(err))
 
 if __name__ == "__main__":
     if parallelize:

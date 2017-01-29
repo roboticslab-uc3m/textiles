@@ -35,7 +35,7 @@ def process_single_cloud(args):
     name, debug = args
 
     if debug:
-        print "Garment: " + name
+        print("Garment: " + name)
 
     # Create output dir if needed (and empty old data)
     current_output_folder = os.path.expanduser(os.path.join(output_folder, name))
@@ -45,7 +45,7 @@ def process_single_cloud(args):
         for filename in glob.glob(os.path.join(current_output_folder, "*")):
             try:
                 os.remove(filename)
-            except OSError, e:
+            except OSError as e:
                 pass
 
     # Call the processing program:
@@ -56,9 +56,9 @@ def process_single_cloud(args):
     p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = p.communicate()
     if debug:
-        print "Command: " + str(" ".join(args))
-        print "Processing...\n" + str(out)
-        print str(err)
+        print("Command: " + str(" ".join(args)))
+        print("Processing...\n" + str(out))
+        print(str(err))
     # Take all point clouds and generate a render
     args = [os.path.expanduser(os.path.join(pcl_renderer_folder, pcl_renderer_binary)),
             "-o", os.path.join(current_output_folder, "render.png")]
@@ -66,8 +66,8 @@ def process_single_cloud(args):
     p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = p.communicate()
     if debug:
-        print "Generate picture from input data...\n" + str(out)
-        print str(err)
+        print("Generate picture from input data...\n" + str(out))
+        print(str(err))
 
 
 if __name__ == "__main__":
