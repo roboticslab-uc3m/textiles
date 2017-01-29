@@ -109,7 +109,7 @@ class CurvatureScanLi(object):
         self.high_bumps_labels = []
         for label, volume in volumes:
             if volume > 1000:
-                #high_bumps = np.bitwise_or(high_bumps, np.where(labels==label, labels, 0))
+                # high_bumps = np.bitwise_or(high_bumps, np.where(labels==label, labels, 0))
                 self.high_bumps = np.where(labels==label, self.height_map, self.high_bumps)
                 self.high_bumps_labels.append(label)
 

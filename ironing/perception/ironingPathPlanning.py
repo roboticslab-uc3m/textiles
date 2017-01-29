@@ -13,7 +13,7 @@ from skimage import img_as_ubyte
 import cv2
 from skimage.filters import frangi, hessian
 
-#image_filename = "/home/def/Research/jResearch/2016-06-23-textiles-ironing/hoodie1/colored_mesh_1.ply-output.pcd-depth_image.m"
+# image_filename = "/home/def/Research/jResearch/2016-06-23-textiles-ironing/hoodie1/colored_mesh_1.ply-output.pcd-depth_image.m"
 image_filename = "/home/def/Research/jresearch/2016-07-25-textiles-ironing/hoodie1/colored_mesh_1.ply-output.pcd-wild_image.m"
 mask_filename = "/home/def/Research/jresearch/2016-07-25-textiles-ironing/hoodie1/colored_mesh_1.ply-output.pcd-image_mask.m"
 use_frangi = False
@@ -28,7 +28,7 @@ if __name__ == '__main__':
     mask = img_as_ubyte(binary_erosion(mask), disk(7))
 
     # Normalize (?)
-    minimum = 0.9 #np.min(image[np.nonzero(image)])
+    minimum = 0.9  # np.min(image[np.nonzero(image)])
     normalized_image = np.where(image > minimum, (image - minimum) / (image.max()-minimum), 0)
     filtered_image = median(normalized_image, disk(3))
 
@@ -127,7 +127,6 @@ if __name__ == '__main__':
         plt.plot( (start_x, end_x), (start_y, end_y), 'r-', linewidth=2.0, alpha=0.7 )
     plt.show()
 
-
     # Skeletonize wrinkle contour:
     current_wrinkle = np.zeros(image.shape, np.uint8)
     cv2.drawContours(current_wrinkle, [current_wrinkle_contour], -1, 255, -1)
@@ -154,7 +153,6 @@ if __name__ == '__main__':
     ################################################################################
     # Find row and column locations that are non-zero in skeleton
     (rows,cols) = np.nonzero(wrinkle_skeleton)
-
 
     # Retrieve the trajectory as a graph (plus extreme nodes)
     trajectory = {}

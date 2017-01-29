@@ -81,7 +81,7 @@ class DiscontinuityScanLi(object):
         """
         self.norm_1 = self.image_wrinkles_1 / self.image_ref_1
         self.norm_2 = self.image_wrinkles_2 / self.image_ref_2
-        self.norm = np.sqrt(np.power(self.norm_1,2)+np.power(self.norm_2,2))
+        self.norm = np.sqrt(np.power(self.norm_1, 2)+np.power(self.norm_2, 2))
 
     def compute_SIFT(self, labels=None):
         """
@@ -90,7 +90,7 @@ class DiscontinuityScanLi(object):
         """
         # Compute SIFT features
         sift = cv2.xfeatures2d.SIFT_create()
-        self.keypoints, self.descriptors = sift.detectAndCompute(img_as_ubyte(normalize(self.norm)),None)
+        self.keypoints, self.descriptors = sift.detectAndCompute(img_as_ubyte(normalize(self.norm)), None)
         logger.debug("Detected {} keypoints".format(len(self.keypoints)))
 
         # Debug stuff
@@ -128,18 +128,19 @@ class DiscontinuityScanLi(object):
         try:
             logger.info("\tPredicted {} points, {} negative and {} positive".format(result.shape[0], counts[0], counts[1]))
         except IndexError:
-            logger.info("\tPredicted {} points, {} negative and {} positive".format(result.shape[0], 0 if 0 not in values else counts[0],
-                                                                                     0 if 1 not in values else counts[0]))
+            logger.info("\tPredicted {} points, {} negative and {} positive".format(result.shape[0],
+                                                                                    0 if 0 not in values else counts[0],
+                                                                                    0 if 1 not in values else counts[0]))
         # Visual feedback
         if debug:
             # Load descriptors
-            keypoints = self.descriptors[:, :2] # (x, y) are the first columns of the matrix
+            keypoints = self.descriptors[:, :2]  # (x, y) are the first columns of the matrix
             plt.imshow(self.norm)
-            xlims, ylims = plt.xlim(), plt.ylim() # Save plot dimensions to restore them
+            xlims, ylims = plt.xlim(), plt.ylim()  # Save plot dimensions to restore them
             for example, prediction in zip(keypoints, result):
                 plt.plot(example[0], example[1], 'r*' if prediction == 0 else 'bo')
-            plt.xlim(xlims[0], xlims[1]) # Restore x axis
-            plt.ylim(ylims[0], ylims[1]) # Restore y axis
+            plt.xlim(xlims[0], xlims[1])  # Restore x axis
+            plt.ylim(ylims[0], ylims[1])  # Restore y axis
             plt.show()
 
         # Hough transform
@@ -232,10 +233,10 @@ def generate_dataset(num_images: 'Number of images in image folder' = 0, display
     image_folder = map(lambda x: os.path.abspath(os.path.expanduser(x)), image_folder)
     image_folder = list(image_folder)[0]
     logger.info("Loading images from {}".format(image_folder))
-    for i in range(1, num_images+1): # For each sample image
+    for i in range(1, num_images+1):  # For each sample image
         discontinuity_scanner = process_images(image_folder, i, display_results)
         logger.info("\tGenerating dataset")
-        colormap = plt.cm.viridis # or gray, inferno, etc
+        colormap = plt.cm.viridis  # or gray, inferno, etc
         io.imsave(os.path.join(image_folder, image_output_name_pattern.format(i)), colormap(normalize(discontinuity_scanner.norm)))
 
 
@@ -254,7 +255,7 @@ def compute_sift(num_images: 'Number of images in image folder' = 0, display_res
         try:
             labels = io.imread(os.path.join(image_folder, DiscontinuityScanLi.image_labels_name_pattern.format(i)),
                                as_grey=True)
-            labels=np.where(labels > 0.5, 1, 0) # Temporary fix for gimp creating images with weird values.
+            labels=np.where(labels > 0.5, 1, 0)  # Temporary fix for gimp creating images with weird values.
         except FileNotFoundError:
             logger.info("\t\tLabels not found, skipping them!")
             labels = None
@@ -274,7 +275,7 @@ def compute_sift(num_images: 'Number of images in image folder' = 0, display_res
         logger.info("\tSaving SIFT features...")
         save_SIFT(os.path.join(image_folder, DiscontinuityScanLi.sift_features_name_pattern.format(i)),
                   discontinuity_scanner.keypoints, discontinuity_scanner.descriptors,
-                  class_id_filename = os.path.join(image_folder, DiscontinuityScanLi.sift_features_class_name_pattern.format(i)))
+                  class_id_filename=os.path.join(image_folder, DiscontinuityScanLi.sift_features_class_name_pattern.format(i)))
 
 
 def train_svm(num_images: 'Number of images in image folder' = 0, image_folder=list()):
@@ -285,7 +286,7 @@ def train_svm(num_images: 'Number of images in image folder' = 0, image_folder=l
     image_folder = list(image_folder)[0]
 
     logger.info("Started training SVM...")
-    des = np.empty((0, 4+128)) # point x, point y, feature scale, feature orientation + descritor size (128 cols)
+    des = np.empty((0, 4+128))  # point x, point y, feature scale, feature orientation + descritor size (128 cols)
     y = np.empty((0, 1))
     for i in range(1, num_images+1): # For each sample image
         logger.info("\tLoading data from image {}...".format(i))
@@ -301,7 +302,7 @@ def train_svm(num_images: 'Number of images in image folder' = 0, image_folder=l
     logger.info("Loaded {} examples, {} negative and {} positive".format(des.shape[0], counts[0], counts[1]))
 
     logger.info("Training SVM with examples...")
-    svm_params = dict( kernel_type = cv2.ml.SVM_LINEAR, svm_type = cv2.ml.SVM_C_SVC, C=2.67, gamma=5.383 ) # Need to find a way to set this
+    svm_params = dict( kernel_type = cv2.ml.SVM_LINEAR, svm_type = cv2.ml.SVM_C_SVC, C=2.67, gamma=5.383 )  # Need to find a way to set this
     svm = cv2.ml.SVM_create()
     svm.train(np.float32(des[:, 4:]), cv2.ml.ROW_SAMPLE, np.int32(y))
     svm.save(os.path.join(image_folder, DiscontinuityScanLi.svm_data_name_pattern))
@@ -342,6 +343,3 @@ def predict(image_id: 'Id of the image to use for prediction' = 0, display_resul
         logger.info("\t(Truth) 1 | {:04d} | {:04d} |\n\t        0 | {:04d} | {:04d} |".format(tp ,fn, fp, tn))
     except FileNotFoundError:
         pass
-
-
-

@@ -19,6 +19,7 @@ Finds the most suitable paths for ironing depending on wrinkles
 (discontinuities) and height bumps.
 """
 
+
 class ScanLi(object):
     def __init__(self):
         self.discontinuity_scanner = DiscontinuityScanLi.DiscontinuityScanLi()
