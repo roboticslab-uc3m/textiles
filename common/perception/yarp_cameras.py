@@ -3,6 +3,7 @@ import yarp
 import contextlib
 from abc import abstractmethod
 
+
 class YarpCamera(object):
     """
     Abstract base class for cameras using yarp
@@ -14,6 +15,7 @@ class YarpCamera(object):
     @abstractmethod
     def get_image(self):
         """ Returns a numpy array with the image data """
+
 
 class YarpRGBCamera(YarpCamera):
     """
@@ -60,6 +62,7 @@ class YarpDepthCamera(YarpCamera):
             raise RuntimeError("read() reallocated my yarp_img")
 
         return img
+
 
 class YarpNetworkException(RuntimeError):
     """ Exception raised when some error ocurred in the yarp network (exception body explains the error) """
@@ -113,8 +116,3 @@ if __name__ == '__main__':
         plt.imshow(depth_image, cmap=plt.cm.RdGy)
 
         plt.show()
-
-
-
-
-

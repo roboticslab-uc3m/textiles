@@ -1,5 +1,3 @@
-__author__ = 'def'
-
 from scipy import ndimage as ndi
 from skimage.morphology import watershed, disk
 from skimage.filters import rank
@@ -8,6 +6,9 @@ from skimage.restoration import denoise_tv_chambolle
 from skimage import exposure
 
 import matplotlib.pyplot as plt
+
+__author__ = 'def'
+
 
 class GarmentAnalysis:
     def __init__(self):
@@ -32,7 +33,7 @@ class GarmentAnalysis:
 
         # display results
         fig, axes = plt.subplots(2,3)
-        axes[0, 0].imshow(image)#, cmap=plt.cm.spectral, interpolation='nearest')
+        axes[0, 0].imshow(image)  # , cmap=plt.cm.spectral, interpolation='nearest')
         axes[0, 1].imshow(denoised, cmap=plt.cm.spectral, interpolation='nearest')
         axes[0, 2].imshow(markers, cmap=plt.cm.spectral, interpolation='nearest')
         axes[1, 0].imshow(gradient, cmap=plt.cm.spectral, interpolation='nearest')
@@ -44,7 +45,7 @@ if __name__ == '__main__':
     import numpy as np
 
     src = np.loadtxt('../pcl/build/cube.m')
-    print "Loaded point cloud data with %d unique values" % np.unique(src).shape[0]
+    print("Loaded point cloud data with %d unique values" % np.unique(src).shape[0])
     filtered_src = rank.median(src, disk(5))
     plt.figure(0)
     plt.imshow(src)
@@ -54,4 +55,4 @@ if __name__ == '__main__':
 
     # ga = GarmentAnalysis.GarmentAnalysis()
     # ga.compute(filtered_src)
-    # print "Found %d pathes" % ga.n_patches
+    # print "Found %d patches" % ga.n_patches

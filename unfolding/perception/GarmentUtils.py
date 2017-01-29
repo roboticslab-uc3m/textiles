@@ -3,6 +3,9 @@ from collections import namedtuple
 
 __author__ = 'def'
 
+Result = namedtuple('Result', ['name', 'bumpiness', 'segmentation', 'clustering', 'pnp'])
+
+
 def load_data(root_path):
     good_images = []
     good_depth_files = []
@@ -24,7 +27,6 @@ def load_data(root_path):
 
     return good_images, good_depth_files
 
-Result = namedtuple('Result', ['name', 'bumpiness','segmentation', 'clustering', 'pnp', ])
 
 def load_results_data(root_path):
     results = []
@@ -43,13 +45,13 @@ def load_results_data(root_path):
         pnp_image = None
         bumpiness_data = None
 
-        if any(map(lambda x: x.find(garment_name+'-')!=-1, clustering_image_files)):
+        if any(map(lambda x: x.find(garment_name+'-') != -1, clustering_image_files)):
             cluster_image = os.path.join(folder, garment_name + '-clustering.png')
-        if any(map(lambda x: x.find(garment_name+'-')!=-1, pnp_image_files)):
+        if any(map(lambda x: x.find(garment_name+'-') != -1, pnp_image_files)):
             pnp_image = os.path.join(folder, garment_name + '-pnp.png')
-        if any(map(lambda x: x.find(garment_name+'-')!=-1, bumpiness_files)):
+        if any(map(lambda x: x.find(garment_name+'-') != -1, bumpiness_files)):
             with open(os.path.join(folder, garment_name+'-bumpiness.txt'), 'r') as f:
-                bumpiness_data = [ int(line.strip('\n')) for line in f.readlines() ]
+                bumpiness_data = [int(line.strip('\n')) for line in f.readlines()]
 
         results.append(Result(garment_name, bumpiness_data, seg_image, cluster_image, pnp_image))
 

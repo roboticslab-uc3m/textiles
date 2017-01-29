@@ -21,14 +21,14 @@ np_points_root = [np.array([[x, y, z, 1]]).transpose() for x, y, z in points_roo
 
 
 points_cam = np.dot(kinfu_wrt_cam, np.hstack(np_points_kinfu))
-print points_cam
+print(points_cam)
 
 R, t = rigid_transform_3D(points_cam[:3,:].transpose(), np.hstack(np_points_root)[:3,:].transpose())
-print R, t
+print(R, t)
 
 H_root_cam = np.identity(4)
 H_root_cam[:3, :3] = R
 H_root_cam[:3, 3] = t
-print H_root_cam
+print(H_root_cam)
 
 

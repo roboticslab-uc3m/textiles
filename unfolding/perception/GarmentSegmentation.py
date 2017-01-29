@@ -1,9 +1,10 @@
 import cv2
 import numpy as np
 
+
 class GarmentSegmentation:
     @staticmethod
-    def background_substraction(image):
+    def background_subtraction(image):
         """
         Segments the garment from the background. This implementation returns colorful and dark
         objects as garments, and white and clear objects as background.
@@ -13,17 +14,17 @@ class GarmentSegmentation:
         # Convert to HSV color space
         image_hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
-       # Threshold value and saturation (using Otsu for threshold selection)
-        blur_s = cv2.GaussianBlur(image_hsv[:, :, 1],(5,5),0)
+        # Threshold value and saturation (using Otsu for threshold selection)
+        blur_s = cv2.GaussianBlur(image_hsv[:, :, 1],(5, 5), 0)
         ret, mask_s = cv2.threshold(blur_s, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-    #    cv2.imshow("----", mask_s)
+        # cv2.imshow("----", mask_s)
 
-        blur_v = cv2.GaussianBlur(image_hsv[:, :, 2],(5,5),0)
+        blur_v = cv2.GaussianBlur(image_hsv[:, :, 2], (5, 5), 0)
         ret, mask_v = cv2.threshold(blur_v, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
         mask = cv2.bitwise_and(mask_s, mask_v)
 
         # Filter result using morphological operations (closing)
-        kernel = np.ones((5,5),np.uint8)
+        kernel = np.ones((5, 5), np.uint8)
         filtered_mask_close = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel, iterations=5)
         filtered_mask_open = cv2.morphologyEx(filtered_mask_close, cv2.MORPH_OPEN, kernel, iterations=8)
 

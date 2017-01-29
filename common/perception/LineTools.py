@@ -6,6 +6,7 @@ __author__ = 'def'
 # see Computer Graphics by F.S. Hill
 # http://stackoverflow.com/questions/3252194/numpy-and-line-intersections
 
+
 def perp(a):
     """
     Calculate the vector perpendicular to other vector in 2D
@@ -34,6 +35,7 @@ def line_intersection(a1, a2, b1, b2):
     denom = np.dot(dap, db)
     num = np.dot(dap, dp )
     return (num / denom.astype(float))*db + b1
+
 
 def line_intersects(a1, a2, b1, b2):
     """
@@ -102,15 +104,18 @@ def seg_intersection(a1, a2, b1, b2):
                 warnings.filterwarnings('error')
                 try:
                     intersection = line_intersection(a1, a2, b1, b2)
-                except Warning, w:
+                except Warning:
                     pass
 
     # Check if intersection found is within limits to ensure that belongs to segment
-    if min(a1[0], a2[0]) <= intersection[0] <= max(a1[0], a2[0]) and min(b1[0], b2[0])  <= intersection[0] <= max(b1[0], b2[0]) and \
-        min(a1[1], a2[1]) <= intersection[1] <= max(a1[1], a2[1]) and min(b1[1], b2[1])  <= intersection[1] <= max(b1[1], b2[1]):
+    if min(a1[0], a2[0]) <= intersection[0] <= max(a1[0], a2[0]) \
+        and min(b1[0], b2[0]) <= intersection[0] <= max(b1[0], b2[0]) \
+        and min(a1[1], a2[1]) <= intersection[1] <= max(a1[1], a2[1]) \
+        and min(b1[1], b2[1]) <= intersection[1] <= max(b1[1], b2[1]):
         return intersection
     else:
         return [np.NaN, np.NaN]
+
 
 def seg_intersects(a1, a2, b1, b2):
     """
@@ -123,6 +128,7 @@ def seg_intersects(a1, a2, b1, b2):
     :return: True if the two segments intersect, False otherwise
     """
     return any(np.isfinite(seg_intersection(a1, a2, b1, b2)))
+
 
 def seg_intersection_line(s1, s2, l1, l2):
     """
@@ -178,7 +184,7 @@ def seg_intersection_line(s1, s2, l1, l2):
                 warnings.filterwarnings('error')
                 try:
                     intersection = line_intersection(s1, s2, l1, l2)
-                except Warning, w:
+                except Warning:
                     pass
 
     # Check if intersection found is within limits to ensure that belongs to segment
@@ -187,6 +193,7 @@ def seg_intersection_line(s1, s2, l1, l2):
         return intersection
     else:
         return [np.NaN, np.NaN]
+
 
 def seg_intersects_line(s1, s2, l1, l):
     """
@@ -200,6 +207,7 @@ def seg_intersects_line(s1, s2, l1, l):
     """
     return any(np.isfinite(seg_intersection(s1, s2, l1, l)))
 
+
 def seg_intersects_polygon(segment, polygon):
     """
     Checks if a segment intersects with a polygon
@@ -208,6 +216,7 @@ def seg_intersects_polygon(segment, polygon):
     :return: True if they intersect, False otherwise
     """
     return bool(len(seg_intersection_polygon(segment, polygon)))
+
 
 def seg_intersection_polygon(segment, polygon):
     """
@@ -219,6 +228,7 @@ def seg_intersection_polygon(segment, polygon):
     return list(filter(lambda x: any(np.isfinite(x)),
                        [seg_intersection(segment[0], segment[1], edge[0], edge[1]) for edge in polygon]))
 
+
 def line_intersects_polygon(line, polygon):
     """
     Checks if a line intersects with a polygon
@@ -227,6 +237,7 @@ def line_intersects_polygon(line, polygon):
     :return: True if they intersect, False otherwise
     """
     return bool(len(line_intersection_polygon(line, polygon)))
+
 
 def line_intersection_polygon(line, polygon):
     """
@@ -238,6 +249,7 @@ def line_intersection_polygon(line, polygon):
     return list(filter(lambda x: any(np.isfinite(x)),
                        [seg_intersection_line(edge[0], edge[1], line[0], line[1]) for edge in polygon]))
 
+
 def contour_to_segments(contour):
     """
     Converts a contour (opencv list of points) to a list of segments
@@ -246,64 +258,66 @@ def contour_to_segments(contour):
     """
     return [(start.ravel().tolist(), end.ravel().tolist()) for start, end in zip(contour, contour[1:])]
 
+
 def midpoint(a, b):
     """
     Computes the midpoint of a segment defined by wo end points.
-    :param a: End oint of the segment
+    :param a: End point of the segment
     :param b: End point of the segment
     :return: Midpoint
     """
     return [a[0]+(b[0]-a[0])/2.0, a[1]+(b[1]-a[1])/2.0]
 
+
 if __name__ == "__main__":
     # Testing line intersection
-    p1 = np.array( [0.0, 0.0] )
-    p2 = np.array( [1.0, 1.0] )
+    p1 = np.array([0.0, 0.0])
+    p2 = np.array([1.0, 1.0])
 
-    p3 = np.array( [1.0, 3.0] )
-    p4 = np.array( [2.0, 1.0] )
+    p3 = np.array([1.0, 3.0])
+    p4 = np.array([2.0, 1.0])
 
-    print "Line intersection: ", line_intersection(p1, p2, p3, p4)
+    print("Line intersection: ", line_intersection(p1, p2, p3, p4))
 
     # Testing line intersection (boolean)
-    print "Line intersects?: ", line_intersects(p1, p2, p3, p4)
+    print("Line intersects?: ", line_intersects(p1, p2, p3, p4))
     assert line_intersects(p1, p2, p3, p4)
 
-    p1 = np.array( [0.0, 0.0] )
-    p2 = np.array( [1.0, 1.0] )
+    p1 = np.array([0.0, 0.0])
+    p2 = np.array([1.0, 1.0])
 
-    p3 = np.array( [0.0, 1.0] )
-    p4 = np.array( [1.0, 2.0] )
+    p3 = np.array([0.0, 1.0])
+    p4 = np.array([1.0, 2.0])
 
-    print "Line intersects?: ", line_intersects(p1, p2, p3, p4)
+    print("Line intersects?: ", line_intersects(p1, p2, p3, p4))
     assert not line_intersects(p1, p2, p3, p4)
 
     # Testing segment intersection
-    p1 = np.array( [0.0, 0.0] )
-    p2 = np.array( [1.0, 0.0] )
+    p1 = np.array([0.0, 0.0])
+    p2 = np.array([1.0, 0.0])
 
-    p3 = np.array( [4.0, -5.0] )
-    p4 = np.array( [4.0, 2.0] )
-
-    assert not seg_intersects(p1, p2, p3, p4)
-
-    p1 = np.array( [2.0, 2.0] )
-    p2 = np.array( [4.0, 3.0] )
-
-    p3 = np.array( [6.0, 0.0] )
-    p4 = np.array( [6.0, 3.0] )
+    p3 = np.array([4.0, -5.0])
+    p4 = np.array([4.0, 2.0])
 
     assert not seg_intersects(p1, p2, p3, p4)
 
-    p1 = np.array( [1.0, 1.0] )
-    p2 = np.array( [10.0, 1.0] )
+    p1 = np.array([2.0, 2.0])
+    p2 = np.array([4.0, 3.0])
 
-    p3 = np.array( [1.0, 2.0] )
-    p4 = np.array( [10.0, 2.0] )
+    p3 = np.array([6.0, 0.0])
+    p4 = np.array([6.0, 3.0])
 
     assert not seg_intersects(p1, p2, p3, p4)
 
-    contour = [[[0, 0], [50, 50]],[[50,50], [50,0]],[[50, 0], [0,0]]]
+    p1 = np.array([1.0, 1.0])
+    p2 = np.array([10.0, 1.0])
+
+    p3 = np.array([1.0, 2.0])
+    p4 = np.array([10.0, 2.0])
+
+    assert not seg_intersects(p1, p2, p3, p4)
+
+    contour = [[[0, 0], [50, 50]], [[50, 50], [50, 0]], [[50, 0], [0, 0]]]
     line1 = [[-10, 25], [24, 25]]
     line2 = [[-10, 25], [75, 25]]
     line3 = [[-10, 25], [0, 25]]
@@ -317,31 +331,28 @@ if __name__ == "__main__":
     test_seg_02 = ((0, 2), (4, 2))
     test_seg_03 = ((0, 3), (6, 3))
     test_seg_04 = ((5, 1,), (6, 2))
-    polypoints = [(0,0), (5, 5), (5,0)]
-    polygon = [ [start, end] for start, end in zip(polypoints, polypoints[1:]+[polypoints[0]])]
-    print seg_intersection(test_seg_02[0], test_seg_02[1], polypoints[0], polypoints[1])
+    polypoints = [(0, 0), (5, 5), (5, 0)]
+    polygon = [[start, end] for start, end in zip(polypoints, polypoints[1:]+[polypoints[0]])]
+    print(seg_intersection(test_seg_02[0], test_seg_02[1], polypoints[0], polypoints[1]))
 
-    #segments
     assert not seg_intersects_polygon(test_seg_01, polygon)
-    assert  seg_intersects_polygon(test_seg_02, polygon)
+    assert seg_intersects_polygon(test_seg_02, polygon)
     assert len(seg_intersection_polygon(test_seg_02, polygon)) == 1
-    print "Num intersects:", len(seg_intersection_polygon(test_seg_02, polygon)), seg_intersection_polygon(test_seg_02, polygon)
-    assert  seg_intersects_polygon(test_seg_03, polygon)
-    print "Num intersects:", len(seg_intersection_polygon(test_seg_03, polygon)), seg_intersection_polygon(test_seg_03, polygon)
+    print("Num intersects:", len(seg_intersection_polygon(test_seg_02, polygon)), seg_intersection_polygon(test_seg_02, polygon))
+    assert seg_intersects_polygon(test_seg_03, polygon)
+    print("Num intersects:", len(seg_intersection_polygon(test_seg_03, polygon)), seg_intersection_polygon(test_seg_03, polygon))
     assert len(seg_intersection_polygon(test_seg_03, polygon)) == 2
-    assert  seg_intersects_polygon(test_seg_04, polygon)
+    assert seg_intersects_polygon(test_seg_04, polygon)
     assert len(seg_intersection_polygon(test_seg_04, polygon)) == 1
-    print "Num intersects:", len(seg_intersection_polygon(test_seg_04, polygon)), seg_intersection_polygon(test_seg_04, polygon)
+    print("Num intersects:", len(seg_intersection_polygon(test_seg_04, polygon)), seg_intersection_polygon(test_seg_04, polygon))
 
-    #lines
-    #assert not line_intersects_polygon(test_seg_01, polygon)
-    print "[Line] Num intersects:", len(line_intersection_polygon(test_seg_01, polygon)), line_intersection_polygon(test_seg_01, polygon)
-    assert  line_intersects_polygon(test_seg_02, polygon)
+    print("[Line] Num intersects:", len(line_intersection_polygon(test_seg_01, polygon)), line_intersection_polygon(test_seg_01, polygon))
+    assert line_intersects_polygon(test_seg_02, polygon)
     assert len(line_intersection_polygon(test_seg_02, polygon)) == 2
-    print "[Line] Num intersects:", len(line_intersection_polygon(test_seg_02, polygon)), line_intersection_polygon(test_seg_02, polygon)
-    assert  line_intersects_polygon(test_seg_03, polygon)
-    print "[Line] intersects:", len(line_intersection_polygon(test_seg_03, polygon)), line_intersection_polygon(test_seg_03, polygon)
+    print("[Line] Num intersects:", len(line_intersection_polygon(test_seg_02, polygon)), line_intersection_polygon(test_seg_02, polygon))
+    assert line_intersects_polygon(test_seg_03, polygon)
+    print("[Line] intersects:", len(line_intersection_polygon(test_seg_03, polygon)), line_intersection_polygon(test_seg_03, polygon))
     assert len(line_intersection_polygon(test_seg_03, polygon)) == 2
-    assert  line_intersects_polygon(test_seg_04, polygon)
+    assert line_intersects_polygon(test_seg_04, polygon)
     assert len(line_intersection_polygon(test_seg_04, polygon)) == 2
-    print "[Line] intersects:", len(line_intersection_polygon(test_seg_04, polygon)), line_intersection_polygon(test_seg_04, polygon)
+    print("[Line] intersects:", len(line_intersection_polygon(test_seg_04, polygon)), line_intersection_polygon(test_seg_04, polygon))

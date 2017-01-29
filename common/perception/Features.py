@@ -7,7 +7,7 @@ def save_SIFT(filename, keypoints, descriptors, class_id_filename="" ):
     :param filename: Name of the output file
     :param keypoints: Keypoints (computed with OpenCV)
     :param descriptors: Descriptors (computed with OpenCV)
-    :param: class_id_filename: If provided, saves also the class_id of each keypoint in a separate file
+    :param class_id_filename: If provided, saves also the class_id of each keypoint in a separate file
     """
     n = len(keypoints)
     m = descriptors[0].shape[0]

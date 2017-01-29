@@ -8,6 +8,7 @@ from PySide import QtUiTools
 
 from unfolding.perception.GarmentUtils import load_results_data
 
+
 def load_ui(file_name, where=None):
     """
     Loads a .UI file into the corresponding Qt Python object
@@ -33,6 +34,7 @@ def load_ui(file_name, where=None):
 # Named tuple to store evaluation results
 Evaluation = namedtuple('Evaluation', 'name stage1 stage2 stage3')
 
+
 class TextilesEvaluationWidget(QtGui.QWidget):
     def __init__(self, parent=None):
         QtGui.QWidget.__init__(self, parent)
@@ -55,9 +57,9 @@ class TextilesEvaluationWidget(QtGui.QWidget):
         self.current_output = None
         self.output_data_path = os.path.abspath('.')
 
-        self.setupUI()
+        self.setup_ui()
 
-    def setupUI(self):
+    def setup_ui(self):
         # Load UI and set it as main layout
         ui_file_path = os.path.join(os.path.realpath(os.path.dirname(__file__)), 'TextilesEvaluationWidget.ui')
         main_widget = load_ui(ui_file_path, self)
@@ -73,11 +75,11 @@ class TextilesEvaluationWidget(QtGui.QWidget):
         self.graphicsView = self.findChild(QtGui.QGraphicsView, 'graphicsView')
 
         # Connect slots / callbacks
-        self.greatResultButton.clicked.connect(self.onGreatButtonClicked)
-        self.goodResultButton.clicked.connect(self.onGoodButtonClicked)
-        self.badResultButton.clicked.connect(self.onBadButtonClicked)
+        self.greatResultButton.clicked.connect(self.on_great_button_clicked)
+        self.goodResultButton.clicked.connect(self.on_good_button_clicked)
+        self.badResultButton.clicked.connect(self.on_bad_button_clicked)
 
-    def updateImage(self, filename):
+    def update_image(self, filename):
         """
         Set pixmap in widget's graphics view
         """
@@ -96,29 +98,29 @@ class TextilesEvaluationWidget(QtGui.QWidget):
         self.graphicsView.setScene(scene)
         self.graphicsView.show()
 
-    def onGreatButtonClicked(self):
+    def on_great_button_clicked(self):
         self.current_output.append(1)
-        self.onButtonClicked()
+        self.on_button_clicked()
 
-    def onGoodButtonClicked(self):
+    def on_good_button_clicked(self):
         self.current_output.append(0.5)
-        self.onButtonClicked()
+        self.on_button_clicked()
 
-    def onBadButtonClicked(self):
+    def on_bad_button_clicked(self):
         self.current_output.append(0)
         image_file = self.load_next_result()
-        self.updateImage(image_file)
+        self.update_image(image_file)
 
-    def onButtonClicked(self):
+    def on_button_clicked(self):
         """
         Try to load next image, if there is no image left, load the next item
         """
         try:
             image_file = self.current_result.next()
-        except StopIteration, e:
+        except StopIteration as e:
             image_file = self.load_next_result()
 
-        self.updateImage(image_file)
+        self.update_image(image_file)
 
     def load_next_result(self):
         """
@@ -126,9 +128,9 @@ class TextilesEvaluationWidget(QtGui.QWidget):
         """
         try:
             self.current_result = iter(self.input_iterator.next())
-        except StopIteration, e:
-            print "nothing left!"
-            self.saveDataToFile(self.output_data_path)
+        except StopIteration as e:
+            print("nothing left!")
+            self.save_data_to_file(self.output_data_path)
             QtCore.QCoreApplication.instance().quit()
         else:
             # Info label setup
@@ -140,13 +142,13 @@ class TextilesEvaluationWidget(QtGui.QWidget):
             self.current_output = list()
             self.current_output.append(garment_name)
             self.output_data.append(self.current_output)
-            self.saveDataToFile(self.output_data_path)
+            self.save_data_to_file(self.output_data_path)
 
             # Get first image
             image_file = self.current_result.next()
             return image_file
 
-    def saveDataToFile(self, filename):
+    def save_data_to_file(self, filename):
         with open(filename, 'w') as f:
             for entry in sorted(self.output_data, key=itemgetter(0)):
                 try:
@@ -156,9 +158,9 @@ class TextilesEvaluationWidget(QtGui.QWidget):
                     for item in padded_entry:
                         f.write('{} '.format(item))
                     f.write('\n')
-                except TypeError, e:
+                except TypeError as e:
                     # nothing to write
-                    print e
+                    print(e)
 
     def start(self, folder):
         """
@@ -166,7 +168,7 @@ class TextilesEvaluationWidget(QtGui.QWidget):
         """
         self.input_results = load_results_data(folder)
         self.input_iterator = iter(self.input_results)
-        self.updateImage(self.load_next_result())
+        self.update_image(self.load_next_result())
 
 
 if __name__ == '__main__':

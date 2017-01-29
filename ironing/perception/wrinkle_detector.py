@@ -24,9 +24,9 @@ if __name__ == "__main__":
     X = np.array([ [i, j, k] for (i, j, k) in zip(data['x'], data['y'], data['z'])])
 
     fig = plt.figure()
-    #ax = fig.add_subplot(111, projection='3d')
-    #ax.scatter(data[:,0], data[:,1], data[:,2], c='r', marker='o')
-    plt.scatter(X[:,0], X[:,1], c='r', marker='.')
+    # ax = fig.add_subplot(111, projection='3d')
+    # ax.scatter(data[:,0], data[:,1], data[:,2], c='r', marker='o')
+    plt.scatter(X[:, 0], X[:, 1], c='r', marker='.')
     plt.show()
 
     lowest_bic = np.infty
