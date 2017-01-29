@@ -6,6 +6,7 @@ from skimage import util
 from skimage import restoration
 from skimage import exposure
 
+
 class GarmentDepthMapClustering:
     @staticmethod
     def preprocess(depth_image, mask):
@@ -23,8 +24,10 @@ class GarmentDepthMapClustering:
 
         scaled_depth_map = masked_depth_image.copy()
         # Get range of values (min, max, range)
-        min_value = masked_depth_image[np.unravel_index(np.where(masked_depth_image == 0, background, masked_depth_image).argmin(), masked_depth_image.shape)]
-        max_value = masked_depth_image[np.unravel_index(np.where(masked_depth_image == background, 0,masked_depth_image).argmax(), masked_depth_image.shape)]
+        min_value = masked_depth_image[np.unravel_index(np.where(masked_depth_image == 0, background,
+                                                                 masked_depth_image).argmin(), masked_depth_image.shape)]
+        max_value = masked_depth_image[np.unravel_index(np.where(masked_depth_image == background, 0,
+                                                                 masked_depth_image).argmax(), masked_depth_image.shape)]
         range_value = max_value-min_value
 
         # Normalize using depth range
@@ -45,7 +48,8 @@ class GarmentDepthMapClustering:
         scaled_depth_map = masked_depth_image.copy()
 
         # Normalize using height range
-        max_value = masked_depth_image[np.unravel_index(np.where(masked_depth_image == background, 0,masked_depth_image).argmax(), masked_depth_image.shape)]
+        max_value = masked_depth_image[np.unravel_index(np.where(masked_depth_image == background, 0,
+                                                                 masked_depth_image).argmax(), masked_depth_image.shape)]
         scaled_depth_map = np.where(scaled_depth_map != background, (max_value - scaled_depth_map) * (255/max_value), 255)
         scaled_depth_map = scaled_depth_map.astype(np.uint8)
         return scaled_depth_map

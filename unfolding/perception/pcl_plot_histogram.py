@@ -16,7 +16,7 @@ if __name__ == '__main__':
     image_filenames = sys.argv[1:]
     if not image_filenames:
         print("usage: pcl_plot_histogram [histogram_file.m]")
-        #image_filenames = ["../pcl/build/histogram_image.m"]
+        # image_filenames = ["../pcl/build/histogram_image.m"]
         image_filenames = ["/home/def/Repositories/textiles/build/ironing/perception/image_mask.m",
                            "/home/def/Repositories/textiles/build/ironing/perception/wild_mean_image.m"]
 
@@ -26,7 +26,7 @@ if __name__ == '__main__':
         except IOError:
             print( "Skipping " + image_filename)
             continue
-        #normalized_image = image/image.max()
+        # normalized_image = image/image.max()
         # This normalizes images where 0 means background
         minimum = np.min(image[np.nonzero(image)])
         normalized_image = np.where( image != 0, (image - minimum) / (image.max()-minimum), 0)

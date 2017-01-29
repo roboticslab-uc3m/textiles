@@ -19,7 +19,7 @@ if __name__ == "__main__":
         depth_image = np.loadtxt(path_depth_image)
 
         # Garment Segmentation Stage
-        mask = GarmentSegmentation.background_substraction(image_src)
+        mask = GarmentSegmentation.background_subtraction(image_src)
         approximated_polygon = GarmentSegmentation.compute_approximated_polygon(mask)
         unfolding.perception.GarmentPlot.plot_segmentation_stage(image_src, mask, approximated_polygon)
 

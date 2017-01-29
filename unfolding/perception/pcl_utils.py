@@ -7,8 +7,9 @@ import struct
 
 import GarmentAnalysis
 
+
 def surface_plot(data):
-    from mpl_toolkits.mplot3d import Axes3D
+    # from mpl_toolkits.mplot3d import Axes3D
     import matplotlib.pyplot as plt
 
     fig = plt.figure()
@@ -34,6 +35,7 @@ def surface_plot(data):
     #     linewidth=0, antialiased=False, shade=False)
     plt.show()
 
+
 def rgb_to_pcl_float(r, g, b):
     """
     src: python-pcl bindings
@@ -42,6 +44,7 @@ def rgb_to_pcl_float(r, g, b):
     rgb_bytes = struct.pack('I', rgb)
     p_rgb = struct.unpack('f', rgb_bytes)[0]
     return p_rgb
+
 
 def colorize_point_cloud(xyz_data, color_data, output_file, cmap=pylab.cm.cool):
     X = xyz_data[:,0]
@@ -57,8 +60,7 @@ def colorize_point_cloud(xyz_data, color_data, output_file, cmap=pylab.cm.cool):
 
     with open(output_file, 'w') as f:
         # Write pcd header
-        f.write(
-        """# PCD v.7 - Point Cloud Data file format
+        f.write("""# PCD v.7 - Point Cloud Data file format
 VERSION .7
 FIELDS x y z rgb
 SIZE 4 4 4 4
@@ -76,6 +78,7 @@ DATA ascii
             color_packed = rgb_to_pcl_float(*color[0:3])
             f.write("{:f} {:f} {:f} {:e}\n".format(x, y, z, color_packed))
 
+
 def colorize_rsd_point_cloud(xyz_data, r_min_data, r_max_data, output_file):
     colors = {"plane":rgb_to_pcl_float(255,0,0),
               "cylinder":rgb_to_pcl_float(0,0,255),
@@ -89,8 +92,7 @@ def colorize_rsd_point_cloud(xyz_data, r_min_data, r_max_data, output_file):
 
     with open(output_file, 'w') as f:
         # Write pcd header
-        f.write(
-        """# PCD v.7 - Point Cloud Data file format
+        f.write("""# PCD v.7 - Point Cloud Data file format
 VERSION .7
 FIELDS x y z rgb
 SIZE 4 4 4 4

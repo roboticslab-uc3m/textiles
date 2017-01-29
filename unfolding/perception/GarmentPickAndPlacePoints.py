@@ -18,7 +18,6 @@ class GarmentPickAndPlacePoints:
         polygon_segments = LineTools.contour_to_segments(approximated_polygon)
         polygon_midpoints = [LineTools.midpoint(start, end) for start, end in polygon_segments]
 
-
         # Get paths to traverse:
         candidate_paths = list(itertools.product(highest_points, polygon_midpoints))
         valid_paths = list(filter(lambda x: len(LineTools.seg_intersection_polygon(x, polygon_segments)) <= 1,
