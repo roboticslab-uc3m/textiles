@@ -2,17 +2,18 @@
 # Author: Nghia Ho
 
 import numpy as np
-#from math import sqrt
+# from math import sqrt
 
 # Input: expects Nx3 matrix of points
 # Returns R,t
 # R = 3x3 rotation matrix
 # t = 3x1 column vector
 
+
 def rigid_transform_3D(A, B):
     assert len(A) == len(B)
 
-    N = A.shape[0]; # total points
+    N = A.shape[0]  # total points
 
     centroid_A = np.mean(A, axis=0)
     centroid_B = np.mean(B, axis=0)
@@ -30,9 +31,9 @@ def rigid_transform_3D(A, B):
 
     # special reflection case
     if np.linalg.det(R) < 0:
-       print("Reflection detected")
-       Vt[2,:] *= -1
-       R = np.dot(Vt.T, U.T)
+        print("Reflection detected")
+        Vt[2, :] *= -1
+        R = np.dot(Vt.T, U.T)
 
     t = np.dot(-R, centroid_A.T) + centroid_B.T
 
@@ -44,29 +45,29 @@ if __name__ == '__main__':
     # Test with random data
 
     # Random rotation and translation
-    R = np.mat(np.random.rand(3,3))
-    t = np.mat(np.random.rand(3,1))
+    R = np.mat(np.random.rand(3, 3))
+    t = np.mat(np.random.rand(3, 1))
 
     # make R a proper rotation matrix, force orthonormal
     U, S, Vt = np.linalg.svd(R)
-    R = np.dot(U,Vt)
+    R = np.dot(U, Vt)
 
     # remove reflection
     if np.linalg.det(R) < 0:
-       Vt[2,:] *= -1
-       R = np.dot(U,Vt)
+        Vt[2, :] *= -1
+        R = np.dot(U, Vt)
 
     # number of points
     n = 10
 
-    A = np.mat(np.random.rand(n,3));
-    B = np.dot(R,A.T) + np.tile(t, (1, n))
-    B = B.T;
+    A = np.mat(np.random.rand(n, 3))
+    B = np.dot(R, A.T) + np.tile(t, (1, n))
+    B = B.T
 
     # recover the transformation
     ret_R, ret_t = rigid_transform_3D(A, B)
 
-    A2 = (np.dot(ret_R,A.T)) + np.tile(ret_t, (1, n))
+    A2 = (np.dot(ret_R, A.T)) + np.tile(ret_t, (1, n))
     A2 = A2.T
 
     # Find the error
@@ -74,7 +75,7 @@ if __name__ == '__main__':
 
     err = np.multiply(err, err)
     err = sum(err)
-    rmse = np.sqrt(err/n);
+    rmse = np.sqrt(err/n)
 
     print("Points A")
     print(A)
