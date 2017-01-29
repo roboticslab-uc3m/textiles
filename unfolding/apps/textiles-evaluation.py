@@ -34,7 +34,8 @@ def compute_stages(args):
     # Garment Depth Map Clustering Stage
     preprocessed_depth_image = GarmentDepthMapClustering.preprocess(depth_image, mask)
     labeled_image = GarmentDepthMapClustering.cluster_similar_regions(preprocessed_depth_image)
-    unfolding.perception.GarmentPlot.plot_clustering_stage(image_src, labeled_image, to_file=out_prefix + '-clustering.pdf')
+    unfolding.perception.GarmentPlot.plot_clustering_stage(image_src, labeled_image, to_file=out_prefix +
+                                                           '-clustering.pdf')
     # Garment Pick and Place Points Stage
     try:
         unfold_paths = GarmentPickAndPlacePoints.calculate_unfold_paths(labeled_image, approximated_polygon)
@@ -49,9 +50,11 @@ def compute_stages(args):
     for value in bumpiness:
         f.write(str(value)+'\n')
     f.close()
-    unfolding.perception.GarmentPlot.plot_pick_and_place_stage(image_src, labeled_image, approximated_polygon, unfold_paths,
+    unfolding.perception.GarmentPlot.plot_pick_and_place_stage(image_src, labeled_image, approximated_polygon,
+                                                               unfold_paths,
                                                                pick_point, place_point, to_file=out_prefix + '-pnp.pdf')
-    unfolding.perception.GarmentPlot.plot_pick_and_place_points(image_src, pick_point, place_point, to_file=out_prefix + '-direction.pdf')
+    unfolding.perception.GarmentPlot.plot_pick_and_place_points(image_src, pick_point, place_point, to_file=out_prefix +
+                                                                '-direction.pdf')
 
     return True
 

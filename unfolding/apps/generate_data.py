@@ -27,5 +27,3 @@ if __name__ == '__main__':
 #        print out, err
 
         os.chdir('..')
-
-    

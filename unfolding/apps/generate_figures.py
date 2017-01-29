@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 def figure_7_2():
     input_filename = '../data/20150625_2/sweater01_1_fold.mat'
     img = np.loadtxt(input_filename)

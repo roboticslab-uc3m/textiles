@@ -30,7 +30,8 @@ if __name__ == '__main__':
             try:
                 unfold_paths = GarmentPickAndPlacePoints.calculate_unfold_paths(labeled_image, approximated_polygon)
                 bumpiness = GarmentPickAndPlacePoints.calculate_bumpiness(labeled_image, unfold_paths)
-                pick_point, place_point = GarmentPickAndPlacePoints.calculate_pick_and_place_points(labeled_image, unfold_paths,
+                pick_point, place_point = GarmentPickAndPlacePoints.calculate_pick_and_place_points(labeled_image,
+                                                                                                    unfold_paths,
                                                                                                     bumpiness)
             except ValueError as e:
                 # print("\t[-] Exception ocurred!", e)

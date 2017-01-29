@@ -10,8 +10,7 @@ import unfolding.perception.GarmentPlot
 from unfolding.perception.GarmentUtils import load_data
 
 if __name__ == "__main__":
-
-    #image_paths, depth_image_paths = load_data('../data/20150902')
+    # image_paths, depth_image_paths = load_data('../data/20150902')
     image_paths, depth_image_paths = load_data('/home/def/Research/garments-birdsEye/jacket')
 
     for path_rgb_image, path_depth_image in zip(image_paths, depth_image_paths):

@@ -5,10 +5,10 @@ import numpy as np
 from tabulate import tabulate
 
 # Define garment categories
-categories = {'hoodie':0, 'jacket':1, 'pants':2, 'polo':3, 'robe':4, 'skirt':5}
+categories = {'hoodie': 0, 'jacket': 1, 'pants': 2, 'polo': 3, 'robe': 4, 'skirt': 5}
 
 
-def generate_table(garment_data, garment_label = None, percentage=False, **kwargs):
+def generate_table(garment_data, garment_label=None, percentage=False, **kwargs):
     """
     Generates a nice table displaying results
     :param garment_data:
@@ -28,7 +28,8 @@ def generate_table(garment_data, garment_label = None, percentage=False, **kwarg
     txt += '\n\n'
     return txt
 
-def generate_table2(garment_data, garment_label = None, percentage=False, **kwargs):
+
+def generate_table2(garment_data, garment_label=None, percentage=False, **kwargs):
     """
     Generates a nice table displaying results
     :param garment_data:
@@ -49,6 +50,7 @@ def generate_table2(garment_data, garment_label = None, percentage=False, **kwar
     txt += tabulate(table, headers=["stage", "percent"], **kwargs)
     txt += '\n\n'
     return txt
+
 
 if __name__ == '__main__':
     # Load file and modify categories to be loaded in numpy
