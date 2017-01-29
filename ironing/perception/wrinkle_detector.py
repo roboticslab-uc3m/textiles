@@ -65,4 +65,3 @@ if __name__ == "__main__":
     spl.legend([b[0] for b in bars], cv_types)
 
     plt.show()
-    
