@@ -46,7 +46,7 @@ class Transformer:
 
         try:
             self._compute_inverse_transform()
-        except np.linalg.linalg.LinAlgError, TypeError:
+        except (np.linalg.linalg.LinAlgError, TypeError):
             pass
 
 
@@ -252,7 +252,7 @@ if __name__ == "__main__":
             bad_points += 1
             #break
 
-    print "Results image -> cam: {}/{} bad points".format(bad_points, len(result))
+    print("Results image -> cam: {}/{} bad points".format(bad_points, len(result)))
 
     # Testing transform image -> kinfu
     result2 = transformer.debug(trajectory_image_px)
@@ -268,7 +268,7 @@ if __name__ == "__main__":
             bad_points2 += 1
             #break
 
-    print "Results image -> kinfu: {}/{} bad points".format(bad_points2, len(result2))
+    print("Results image -> kinfu: {}/{} bad points".format(bad_points2, len(result2)))
 
     # Testing transform image -> root
     result_root = transformer.root(trajectory_image_px)
@@ -284,4 +284,4 @@ if __name__ == "__main__":
             bad_points_root += 1
             #break
 
-    print "Results image -> root: {}/{} bad points".format(bad_points_root, len(result_root))
+    print("Results image -> root: {}/{} bad points".format(bad_points_root, len(result_root)))
