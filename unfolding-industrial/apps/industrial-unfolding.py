@@ -1,9 +1,3 @@
-__author__ = "def"
-
-import cv2
-import numpy as np
-import os
-
 # Local (textiles) imports
 from unfolding.perception.GarmentSegmentation import GarmentSegmentation
 from unfolding.perception.GarmentDepthMapClustering import GarmentDepthMapClustering
@@ -12,12 +6,19 @@ from unfolding.perception import GarmentPlot
 from common.perception.Transformer import Transformer
 from common.perception.depth_calibration import H_root_cam, kinfu_wrt_cam
 from common.user_interface import query_yes_no
+
+import cv2
+import numpy as np
+import os
 import abb
 
+__author__ = "def"
 
-#path_input_mesh = "/home/def/Research/jresearch/2016-05-06-textiles-draft/pants1/textured_mesh.ply"
-#path_input_mesh = "/home/def/Research/jresearch/2016-04-20-textiles-draft/hoodie3/textured_mesh.ply"
+
+# path_input_mesh = "/home/def/Research/jresearch/2016-05-06-textiles-draft/pants1/textured_mesh.ply"
+# path_input_mesh = "/home/def/Research/jresearch/2016-04-20-textiles-draft/hoodie3/textured_mesh.ply"
 path_input_mesh = "/home/yo/martes/blackHoodie3/mesh_1.ply"
+
 
 def sparse2dense(mask):
     """
@@ -53,7 +54,7 @@ if __name__ == "__main__":
 
     # Load input data
     depth_image = np.loadtxt(path_depth_image)
-    depth_image = depth_image.transpose() # Retrocompatibility again
+    depth_image = depth_image.transpose()  # Retrocompatibility again
     mask = sparse2dense(cv2.imread(path_mask, cv2.cv.CV_LOAD_IMAGE_GRAYSCALE))
     image_src = mask
 
@@ -99,19 +100,18 @@ if __name__ == "__main__":
     print(pick_point_abs, place_point_abs)
     from common.perception.Utils import points_to_file
     points_to_file([pick_point_abs, place_point_abs], os.path.join(os.path.split(path_input_mesh)[0],
-                                                                        "pick_and_place.pcd"))
+                                                                   "pick_and_place.pcd"))
 
     pick_point_root, place_point_root = change_frame.root([pick_point, place_point])
     distance = np.sqrt((pick_point_root[0]-place_point_root[0])**2+
                        (pick_point_root[1]-place_point_root[1])**2)
 
-    print("Target points are:\n\tPick: {}\n\tPlace: {}\n\tMax height: {}".format(
-        pick_point_root, place_point_root, distance*0.4))
+    print("Target points are:\n\tPick: {}\n\tPlace: {}\n\tMax height: {}".format(pick_point_root, place_point_root,
+                                                                                 distance*0.4))
     ans = query_yes_no("Perform pick and place operation? (WARNING: this operation might be potentially destructive)",
-                 default="no")
+                       default="no")
 
     if ans == 'yes':
-
         robot.set_units(linear='meters',angular='degrees')
         robot.pick_and_place(pick_point_root[0], pick_point_root[1],
                              place_point_root[0], place_point_root[1], distance*0.4)
