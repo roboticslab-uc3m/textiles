@@ -51,8 +51,8 @@ def colorize_point_cloud(xyz_data, color_data, output_file, cmap=pylab.cm.cool):
     try:
         color_data_norm = (color_data - color_data.min()) / (color_data.max()-color_data.min())
         color_data_rgba = cmap(color_data_norm)
-    except RuntimeError, e:
-        print "Error colorizing point cloud: \n" + str(e)
+    except RuntimeError as e:
+        print("Error colorizing point cloud: \n" + str(e))
         return
 
     with open(output_file, 'w') as f:
@@ -91,16 +91,17 @@ def colorize_rsd_point_cloud(xyz_data, r_min_data, r_max_data, output_file):
         # Write pcd header
         f.write(
         """# PCD v.7 - Point Cloud Data file format
-        VERSION .7
-        FIELDS x y z rgb
-        SIZE 4 4 4 4
-        TYPE F F F F
-        COUNT 1 1 1 1
-        WIDTH {0:d}
-        HEIGHT 1
-        VIEWPOINT 0 0 0 1 0 0 0
-        POINTS {0:d}
-        DATA ascii""".format(len(r_min_data)-1))
+VERSION .7
+FIELDS x y z rgb
+SIZE 4 4 4 4
+TYPE F F F F
+COUNT 1 1 1 1
+WIDTH {0:d}
+HEIGHT 1
+VIEWPOINT 0 0 0 1 0 0 0
+POINTS {0:d}
+DATA ascii
+""".format(len(r_min_data)-1))
 
         # Write data
         for x, y, z, r_min, r_max in zip(X, Y, Z, r_min_data, r_max_data):

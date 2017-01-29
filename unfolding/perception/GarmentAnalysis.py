@@ -44,7 +44,7 @@ if __name__ == '__main__':
     import numpy as np
 
     src = np.loadtxt('../pcl/build/cube.m')
-    print "Loaded point cloud data with %d unique values" % np.unique(src).shape[0]
+    print("Loaded point cloud data with %d unique values" % np.unique(src).shape[0])
     filtered_src = rank.median(src, disk(5))
     plt.figure(0)
     plt.imshow(src)
