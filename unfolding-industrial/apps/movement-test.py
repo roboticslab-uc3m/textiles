@@ -24,16 +24,16 @@ if __name__ == "__main__":
     change_frame.add_kinfu_params(np.linalg.inv(kinfu_wrt_cam))
     change_frame.add_cam_wrt_root_transform(H_root_cam)
 
-    print "---"
+    print("---")
 
     test_points_px = [(139, 60), (68,49), (40,113), (122,131), (100, 78)]
     points_to_file(change_frame.debug(test_points_px), os.path.join(os.path.split(path_input_mesh)[0], "points.pcd"))
 
     test_points = change_frame.root(test_points_px)
     for point in test_points:
-        print point
+        print(point)
 
-    print "---"
+    print("---")
 
     # Convert mask to root
     path_mask = path_input_mesh + "-mask.png"

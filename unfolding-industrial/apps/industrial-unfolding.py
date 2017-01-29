@@ -75,7 +75,7 @@ if __name__ == "__main__":
     pick_point, place_point = GarmentPickAndPlacePoints.calculate_pick_and_place_points(labeled_image, unfold_paths,
                                                                                          bumpiness)
     # GarmentPlot.plot_paths(image_src, approximated_polygon, unfold_paths)
-    print "Bumpiness: ", bumpiness
+    print("Bumpiness: ", bumpiness)
     # GarmentPlot.plot_pick_and_place_points(image_src, pick_point, place_point)
     GarmentPlot.plot_pick_and_place_stage(image_src, labeled_image, approximated_polygon, unfold_paths,
                                                                pick_point, place_point)
@@ -96,7 +96,7 @@ if __name__ == "__main__":
 
     # Transform points (debug edition)
     pick_point_abs, place_point_abs = change_frame.debug([pick_point, place_point])
-    print pick_point_abs, place_point_abs
+    print(pick_point_abs, place_point_abs)
     from common.perception.Utils import points_to_file
     points_to_file([pick_point_abs, place_point_abs], os.path.join(os.path.split(path_input_mesh)[0],
                                                                         "pick_and_place.pcd"))
@@ -105,8 +105,8 @@ if __name__ == "__main__":
     distance = np.sqrt((pick_point_root[0]-place_point_root[0])**2+
                        (pick_point_root[1]-place_point_root[1])**2)
 
-    print "Target points are:\n\tPick: {}\n\tPlace: {}\n\tMax height: {}".format(
-        pick_point_root, place_point_root, distance*0.4)
+    print("Target points are:\n\tPick: {}\n\tPlace: {}\n\tMax height: {}".format(
+        pick_point_root, place_point_root, distance*0.4))
     ans = query_yes_no("Perform pick and place operation? (WARNING: this operation might be potentially destructive)",
                  default="no")
 
