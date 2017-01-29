@@ -165,7 +165,7 @@ if __name__ == '__main__':
                 trajectory.setdefault((src_x, src_y), []).append((dst_x, dst_y))
         if len(trajectory.get((src_x, src_y), [])) == 1:
             extreme_points.append((src_x, src_y))
-    print trajectory
+    print(trajectory)
 
     # Step 3 (4&5): Compute start and end points
     start = None
@@ -191,7 +191,7 @@ if __name__ == '__main__':
             if destination not in trajectory_points:
                 src_node = destination
                 continue
-    print trajectory_points
+    print(trajectory_points)
 
     # Display the image and plot endpoints
     plt.imshow(normalized_image, interpolation='nearest', cmap=plt.cm.RdGy)
