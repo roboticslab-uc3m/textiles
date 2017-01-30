@@ -3,6 +3,7 @@ import subprocess
 from skimage.io import imread
 
 from unfolding.perception.GarmentSegmentation import GarmentSegmentation
+from common.perception.Utils import sparse2dense
 
 pcl_processing_binary = "foldingClothesMesh"
 pcl_processing_folder = "~/Repositories/textiles/pcl/build"
@@ -26,6 +27,6 @@ class GarmentDepthSegmentation(GarmentSegmentation):
         out, err = p.communicate()
 
         # Load generated mask
-        mask = imread(image+'-mask.png')
+        mask = sparse2dense(imread(image+'-mask.png', as_grey=True))
 
         return mask
