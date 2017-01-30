@@ -38,7 +38,7 @@ def sparse2dense(mask):
     closing = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
 
     # Fill large holes
-    mask_outlines, dummy = cv2.findContours(closing.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    _, mask_outlines, _ = cv2.findContours(closing.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     cv2.fillPoly(closing, mask_outlines, 255)
 
     return closing

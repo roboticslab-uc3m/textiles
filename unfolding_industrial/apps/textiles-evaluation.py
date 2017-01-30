@@ -1,4 +1,3 @@
-from skimage.io import imread
 import numpy as np
 import os
 from multiprocessing import Pool
@@ -16,7 +15,7 @@ input_folder = '~/Research/datasets/2017-01-30-unfolding'
 
 def compute_stages(point_cloud_path):
     # Output file prefix
-    filename = os.path.basename(point_cloud_path)
+    filename = os.path.basename(os.path.dirname(point_cloud_path))
     prefix = os.path.splitext(filename)[0]
     out_prefix = os.path.join(output_dir, prefix)
 
@@ -28,25 +27,28 @@ def compute_stages(point_cloud_path):
     depth_image = depth_image.transpose()  # Retrocompatibility
     image_src = mask # To be computed from depth image
 
-
     approximated_polygon = GarmentDepthSegmentation.compute_approximated_polygon(mask)
     unfolding.perception.GarmentPlot.plot_segmentation_stage(image_src, mask, approximated_polygon,
-                                                             to_file=out_prefix + '-segmentation.pdf')
+                                                             to_file=out_prefix + '-segmentation.png')
 
     # Garment Depth Map Clustering Stage
     preprocessed_depth_image = GarmentDepthMapClustering.preprocess(depth_image, mask)
     labeled_image = GarmentDepthMapClustering.cluster_similar_regions(preprocessed_depth_image)
     unfolding.perception.GarmentPlot.plot_clustering_stage(image_src, labeled_image, to_file=out_prefix +
-                                                           '-clustering.pdf')
+                                                           '-clustering.png')
     # Garment Pick and Place Points Stage
-    try:
-        unfold_paths = GarmentPickAndPlacePoints.calculate_unfold_paths(labeled_image, approximated_polygon)
-        bumpiness = GarmentPickAndPlacePoints.calculate_bumpiness(labeled_image, unfold_paths)
-        pick_point, place_point = GarmentPickAndPlacePoints.calculate_pick_and_place_points(labeled_image, unfold_paths,
+    unfold_paths = GarmentPickAndPlacePoints.calculate_unfold_paths(labeled_image, approximated_polygon)
+    bumpiness = GarmentPickAndPlacePoints.calculate_bumpiness(labeled_image, unfold_paths)
+    pick_point, place_point = GarmentPickAndPlacePoints.calculate_pick_and_place_points(labeled_image, unfold_paths,
                                                                                             bumpiness)
-    except ValueError as e:
-        # print("\t[-] Exception ocurred!", e)
-        return False
+    # try:
+    #     unfold_paths = GarmentPickAndPlacePoints.calculate_unfold_paths(labeled_image, approximated_polygon)
+    #     bumpiness = GarmentPickAndPlacePoints.calculate_bumpiness(labeled_image, unfold_paths)
+    #     pick_point, place_point = GarmentPickAndPlacePoints.calculate_pick_and_place_points(labeled_image, unfold_paths,
+    #                                                                                         bumpiness)
+    # except ValueError as e:
+    #     print("\t[-] Exception ocurred!", e)
+    #     return False
 
     f = open(out_prefix + '-bumpiness.txt', 'w')
     for value in bumpiness:
@@ -54,9 +56,9 @@ def compute_stages(point_cloud_path):
     f.close()
     unfolding.perception.GarmentPlot.plot_pick_and_place_stage(image_src, labeled_image, approximated_polygon,
                                                                unfold_paths,
-                                                               pick_point, place_point, to_file=out_prefix + '-pnp.pdf')
+                                                               pick_point, place_point, to_file=out_prefix + '-pnp.png')
     unfolding.perception.GarmentPlot.plot_pick_and_place_points(image_src, pick_point, place_point, to_file=out_prefix +
-                                                                '-direction.pdf')
+                                                                '-direction.png')
 
     return True
 
@@ -82,4 +84,5 @@ if __name__ == "__main__":
     it = p.imap_unordered(compute_stages, point_cloud_paths)
 
     for result in tqdm(it):
-        pass
+        if not result:
+            print("Some error ocurred!")

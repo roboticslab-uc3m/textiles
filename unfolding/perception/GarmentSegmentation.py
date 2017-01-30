@@ -39,7 +39,7 @@ class GarmentSegmentation:
         :return: Garment Approximated Polygon (as a vector of 2D points)
         """
         # Get clothes outline with largest area
-        garment_outlines, dummy = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        _, garment_outlines, _ = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         largest_outline = max(garment_outlines, key=cv2.contourArea)
 
         # Simplify outline to approximated polygon:

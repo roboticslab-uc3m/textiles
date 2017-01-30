@@ -42,7 +42,7 @@ if __name__ == "__main__":
     # Load input data
     depth_image = np.loadtxt(path_depth_image)
     depth_image = depth_image.transpose()  # Retrocompatibility again
-    mask = sparse2dense(cv2.imread(path_mask, cv2.cv.CV_LOAD_IMAGE_GRAYSCALE))
+    mask = sparse2dense(cv2.imread(path_mask, cv2.IMREAD_GRAYSCALE))
     image_src = mask
 
     # Garment Segmentation Stage
