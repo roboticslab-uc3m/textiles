@@ -1,3 +1,5 @@
+import cv2
+
 def points_to_file(points, output_file):
     """
     Save a series of 3D points to a PCL's PCD file
@@ -26,3 +28,17 @@ DATA ascii
             except TypeError:
                 # Otherwise point is a tuple
                 f.write("{} {} {}\n".format(point[0], point[1], point[2]))
+
+
+def sparse2dense(mask):
+    """
+    From a sparse segmentation mask (obtained from a point cloud) get a dense mask
+    """
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+    closing = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
+
+    # Fill large holes
+    mask_outlines, dummy = cv2.findContours(closing.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    cv2.fillPoly(closing, mask_outlines, 255)
+
+    return closing

@@ -6,6 +6,7 @@ from unfolding.perception import GarmentPlot
 from common.perception.Transformer import Transformer
 from common.perception.depth_calibration import H_root_cam, kinfu_wrt_cam
 from common.user_interface import query_yes_no
+from common.perception.Utils import sparse2dense
 
 import cv2
 import numpy as np
@@ -18,20 +19,6 @@ __author__ = "def"
 # path_input_mesh = "/home/def/Research/jresearch/2016-05-06-textiles-draft/pants1/textured_mesh.ply"
 # path_input_mesh = "/home/def/Research/jresearch/2016-04-20-textiles-draft/hoodie3/textured_mesh.ply"
 path_input_mesh = "/home/yo/martes/blackHoodie3/mesh_1.ply"
-
-
-def sparse2dense(mask):
-    """
-    From a sparse segmentation mask (obtained from a point cloud) get a dense mask
-    """
-    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
-    closing = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
-
-    # Fill large holes
-    mask_outlines, dummy = cv2.findContours(closing.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    cv2.fillPoly(closing, mask_outlines, 255)
-
-    return closing
 
 
 if __name__ == "__main__":
