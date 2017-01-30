@@ -2,6 +2,7 @@
 
 from common.perception.roi import load_roi_from_file, crop_roi
 from common.math import normalize
+from common.perception.Utils import depthMap_2_heightMap
 
 import os
 from skimage import io
@@ -157,13 +158,6 @@ class CurvatureScanLi(object):
         # Fit GMMs to wrinkles
         self.fit_GMMs(debug)
 
-
-def depthMap_2_heightMap(depth_map):
-    """
-    Gets a Depth Map, returns a Height Map
-    """
-    max_val = depth_map.max()
-    return max_val - depth_map
 
 if __name__ == '__main__':
     image_folder = "~/Research/jResearch/2016-10-10-replicate-li/"

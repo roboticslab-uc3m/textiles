@@ -42,3 +42,11 @@ def sparse2dense(mask):
     cv2.fillPoly(closing, mask_outlines, 255)
 
     return closing
+
+
+def depthMap_2_heightMap(depth_map):
+    """
+    Gets a Depth Map, returns a Height Map
+    """
+    max_val = depth_map.max()
+    return max_val - depth_map
