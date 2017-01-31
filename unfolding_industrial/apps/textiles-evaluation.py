@@ -5,7 +5,7 @@ from tqdm import tqdm
 
 from unfolding_industrial.perception.GarmentDepthSegmentation import GarmentDepthSegmentation
 from unfolding.perception.GarmentDepthMapClustering import GarmentDepthMapClustering
-from unfolding.perception.GarmentPickAndPlacePoints import GarmentPickAndPlacePoints
+from unfolding_industrial.perception.GarmentMirrorPickAndPlacePoints import GarmentMirrorPickAndPlacePoints
 import unfolding.perception.GarmentPlot
 from common.perception.Utils import depthMap_2_heightMap
 
@@ -37,12 +37,14 @@ def compute_stages(point_cloud_path):
     labeled_image = GarmentDepthMapClustering.cluster_similar_regions(preprocessed_depth_image)
     unfolding.perception.GarmentPlot.plot_clustering_stage(image_src, labeled_image, to_file=out_prefix +
                                                            '-clustering.png')
-    # Garment Pick and Place Points Stage
+
     try:
-        unfold_paths = GarmentPickAndPlacePoints.calculate_unfold_paths(labeled_image, approximated_polygon)
-        bumpiness = GarmentPickAndPlacePoints.calculate_bumpiness(labeled_image, unfold_paths)
-        pick_point, place_point = GarmentPickAndPlacePoints.calculate_pick_and_place_points(labeled_image, unfold_paths,
-                                                                                            bumpiness)
+        unfold_paths = GarmentMirrorPickAndPlacePoints.calculate_unfold_paths(labeled_image, approximated_polygon)
+        bumpiness = GarmentMirrorPickAndPlacePoints.calculate_bumpiness(labeled_image, unfold_paths)
+        pick_point, place_point = GarmentMirrorPickAndPlacePoints.calculate_pick_and_place_points(labeled_image,
+                                                                                                  unfold_paths,
+                                                                                                  bumpiness,
+                                                                                                  approximated_polygon=approximated_polygon)
     except ValueError as e:
         print("\t[-] Exception ocurred!", e)
         return False
