@@ -38,7 +38,8 @@ def compute_stages(point_cloud_path):
 
     # Garment Depth Map Clustering Stage
     preprocessed_depth_image = GarmentDepthMapClustering.preprocess(depth_image, mask)
-    labeled_image = GarmentDepthMapClustering.cluster_similar_regions(preprocessed_depth_image)
+    # preprocessed_depth_image = normalize(np.ma.masked_array(depth_image, mask=np.bitwise_not(mask)))
+    labeled_image = GarmentDepthMapClustering.cluster_similar_regions(preprocessed_depth_image, mask=mask)
     unfolding.perception.GarmentPlot.plot_clustering_stage(image_src, labeled_image, to_file=out_prefix +
                                                            '-clustering.png')
 

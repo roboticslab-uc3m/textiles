@@ -38,8 +38,9 @@ class GarmentDepthMapClustering:
     @staticmethod
     def preprocess_heightmap(heightmap, mask):
         """
-        Removes the background information and normalizes the depth image range to 8-bit unsigned. To be used in a heightmap (height relative to the table).
-        :param heighmap:
+        Removes the background information and normalizes the depth image range to 8-bit unsigned. To be used in a
+        heightmap (height relative to the table).
+        :param heightmap:
         :param mask: Segmentation mask where white is garment and black is background
         :return: Depth image normalized and converted to 8-bit unsigned compatible with depth-image-based algorithms
         """
@@ -66,10 +67,10 @@ class GarmentDepthMapClustering:
 
         # denoise image
         denoised = restoration.denoise_tv_chambolle(scaled_depth_map, weight=0.05)
-        denoised_equalize= exposure.equalize_hist(denoised)
+        denoised_equalize = exposure.equalize_hist(denoised)
 
         # find continuous region (low gradient) --> markers
-        markers = filters.rank.gradient(denoised_equalize, morphology.disk(5)) < 10 # 25,15  10,10
+        markers = filters.rank.gradient(denoised_equalize, morphology.disk(5)) < 10  # 25,15  10,10
 
         markers = ndimage.label(markers)[0]
 
