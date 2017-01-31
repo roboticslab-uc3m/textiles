@@ -9,6 +9,7 @@ from unfolding.perception.GarmentDepthMapClustering import GarmentDepthMapCluste
 from unfolding_industrial.perception.GarmentMirrorPickAndPlacePoints import GarmentMirrorPickAndPlacePoints
 import unfolding.perception.GarmentPlot
 from common.perception.Utils import depthMap_2_heightMap
+from common.math import normalize
 
 __author__ = "def"
 
@@ -27,7 +28,8 @@ def compute_stages(point_cloud_path):
 
     # Load other computed data
     depth_image = depthMap_2_heightMap(np.loadtxt(point_cloud_path+'-depth.txt'))
-    image_src = plt.get_cmap('RdGy')(depth_image)
+    # image_src = plt.get_cmap('RdGy')(depth_image)
+    image_src = plt.get_cmap('viridis')(normalize(depth_image))
     depth_image = depth_image.transpose()  # Retrocompatibility
 
     approximated_polygon = GarmentDepthSegmentation.compute_approximated_polygon(mask)
