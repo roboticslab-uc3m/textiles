@@ -6,7 +6,7 @@ from unfolding.perception.GarmentSegmentation import GarmentSegmentation
 from common.perception.Utils import sparse2dense
 
 pcl_processing_binary = "kinfuUnfolding"
-pcl_processing_folder = "~/Repositories/textiles/build/unfolding-industrial/perception/"
+pcl_processing_folder = "~/Repositories/textiles/build/unfolding_industrial/perception/"
 
 
 class GarmentDepthSegmentation(GarmentSegmentation):
