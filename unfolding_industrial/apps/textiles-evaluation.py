@@ -7,11 +7,12 @@ from unfolding_industrial.perception.GarmentDepthSegmentation import GarmentDept
 from unfolding.perception.GarmentDepthMapClustering import GarmentDepthMapClustering
 from unfolding.perception.GarmentPickAndPlacePoints import GarmentPickAndPlacePoints
 import unfolding.perception.GarmentPlot
-from unfolding.perception.GarmentUtils import load_data
+from common.perception.Utils import depthMap_2_heightMap
 
 __author__ = "def"
 
 input_folder = '~/Research/datasets/2017-01-30-unfolding'
+parallel = True
 
 def compute_stages(point_cloud_path):
     # Output file prefix
@@ -23,7 +24,7 @@ def compute_stages(point_cloud_path):
     mask = GarmentDepthSegmentation.background_subtraction(point_cloud_path)
 
     # Load other computed data
-    depth_image = np.loadtxt(point_cloud_path+'-depth.txt')
+    depth_image = depthMap_2_heightMap(np.loadtxt(point_cloud_path+'-depth.txt'))
     depth_image = depth_image.transpose()  # Retrocompatibility
     image_src = mask # To be computed from depth image
 
@@ -37,18 +38,14 @@ def compute_stages(point_cloud_path):
     unfolding.perception.GarmentPlot.plot_clustering_stage(image_src, labeled_image, to_file=out_prefix +
                                                            '-clustering.png')
     # Garment Pick and Place Points Stage
-    unfold_paths = GarmentPickAndPlacePoints.calculate_unfold_paths(labeled_image, approximated_polygon)
-    bumpiness = GarmentPickAndPlacePoints.calculate_bumpiness(labeled_image, unfold_paths)
-    pick_point, place_point = GarmentPickAndPlacePoints.calculate_pick_and_place_points(labeled_image, unfold_paths,
+    try:
+        unfold_paths = GarmentPickAndPlacePoints.calculate_unfold_paths(labeled_image, approximated_polygon)
+        bumpiness = GarmentPickAndPlacePoints.calculate_bumpiness(labeled_image, unfold_paths)
+        pick_point, place_point = GarmentPickAndPlacePoints.calculate_pick_and_place_points(labeled_image, unfold_paths,
                                                                                             bumpiness)
-    # try:
-    #     unfold_paths = GarmentPickAndPlacePoints.calculate_unfold_paths(labeled_image, approximated_polygon)
-    #     bumpiness = GarmentPickAndPlacePoints.calculate_bumpiness(labeled_image, unfold_paths)
-    #     pick_point, place_point = GarmentPickAndPlacePoints.calculate_pick_and_place_points(labeled_image, unfold_paths,
-    #                                                                                         bumpiness)
-    # except ValueError as e:
-    #     print("\t[-] Exception ocurred!", e)
-    #     return False
+    except ValueError as e:
+        print("\t[-] Exception ocurred!", e)
+        return False
 
     f = open(out_prefix + '-bumpiness.txt', 'w')
     for value in bumpiness:
@@ -80,9 +77,13 @@ if __name__ == "__main__":
     else:
         print("[+] Loaded: {} garments".format(len(point_cloud_paths)))
 
-    p = Pool()
-    it = p.imap_unordered(compute_stages, point_cloud_paths)
+    if parallel:
+        p = Pool()
+        it = p.imap_unordered(compute_stages, point_cloud_paths)
 
-    for result in tqdm(it):
-        if not result:
-            print("Some error ocurred!")
+        for result in tqdm(it):
+            if not result:
+                print("Some error ocurred!")
+    else:
+        for path in tqdm(point_cloud_paths):
+            result = compute_stages(path)
