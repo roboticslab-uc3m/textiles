@@ -38,3 +38,12 @@ def normalize(X):
     :return: Normalized array
     """
     return (X - X.min()) / (X.max() - X.min())
+
+
+def mirror(v, l):
+    """
+    Computes the reflection of point v across a line through the origin in two dimensions
+    :param v: Point to compute reflection
+    :param l: Line through the origin
+    """
+    return 2*np.dot(v, l)*l/np.dot(l, l) - v

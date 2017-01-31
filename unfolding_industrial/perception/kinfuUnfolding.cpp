@@ -47,6 +47,7 @@ void show_usage(char * program_name)
     std::cout << std::endl;
     std::cout << "Usage: " << program_name << " cloud_filename.[pcd|ply]" << std::endl;
     std::cout << "-h:  Show this help." << std::endl;
+    std::cout << "--debug: Debug mode, shows visual feedback of each step" << std::endl;
     std::cout << "--ransac-threshold: Set ransac threshold value (default: 0.02)" << std::endl;
 }
 
@@ -76,6 +77,7 @@ int main (int argc, char** argv)
 
     //-- Command-line arguments
     float ransac_threshold = 0.02;
+    bool debug_enabled = false;
 
     //-- Show usage
     if (pcl::console::find_switch(argc, argv, "-h") || pcl::console::find_switch(argc, argv, "--help"))
@@ -83,6 +85,10 @@ int main (int argc, char** argv)
         show_usage(argv[0]);
         return 0;
     }
+
+    if (pcl::console::find_switch(argc, argv, "--debug"))
+        debug_enabled = true;
+
 
     if (pcl::console::find_switch(argc, argv, "--ransac-threshold"))
         pcl::console::parse_argument(argc, argv, "--ransac-threshold", ransac_threshold);
@@ -146,7 +152,7 @@ int main (int argc, char** argv)
     //--------------------------------------------------------------------------------------------------------
     //-- Program does actual work from here
     //--------------------------------------------------------------------------------------------------------
-    debug.setEnabled(true);
+    debug.setEnabled(debug_enabled);
     debug.plotPointCloud<pcl::PointXYZ>(source_cloud, Debug::COLOR_CYAN);
     debug.show("Original with color");
 
@@ -186,7 +192,7 @@ int main (int argc, char** argv)
         std::cout << "Model inliers: " << table_plane_points->indices.size() << std::endl;
     }
 
-    debug.setEnabled(false);
+    debug.setEnabled(debug_enabled);
     debug.plotPointCloud<pcl::PointXYZ>(source_cloud, Debug::COLOR_CYAN);
     debug.plotPlane(*table_plane_coefficients, Debug::COLOR_BLUE);
     debug.show("Table plane");
@@ -200,7 +206,7 @@ int main (int argc, char** argv)
     extract_indices.setNegative(true);
     extract_indices.filter(*not_table_points);
 
-    debug.setEnabled(true);
+    debug.setEnabled(debug_enabled);
     debug.plotPointCloud<pcl::PointXYZ>(not_table_points, Debug::COLOR_CYAN);
     debug.show("Not table points");
 
@@ -236,7 +242,7 @@ int main (int argc, char** argv)
       }
     }
 
-    debug.setEnabled(false);
+    debug.setEnabled(debug_enabled);
     debug.plotPointCloud<pcl::PointXYZ>(largest_cluster, Debug::COLOR_CYAN);
     debug.show("Filtered garment cloud");
 
@@ -255,7 +261,7 @@ int main (int argc, char** argv)
     //-- Save 2D image origin point
     record_point(argv[filenames[0]]+std::string("-origin.txt"), pcl::PointXYZ(min_point_OBB.x, max_point_OBB.y, 0));
 
-    debug.setEnabled(false);
+    debug.setEnabled(debug_enabled);
     debug.plotPointCloud<pcl::PointXYZ>(largest_cluster, Debug::COLOR_CYAN);
     debug.plotBoundingBox(min_point_OBB, max_point_OBB, position_OBB, rotational_matrix_OBB, Debug::COLOR_GREEN);
     debug.show("Oriented bounding cloud");
@@ -294,7 +300,7 @@ int main (int argc, char** argv)
     //-- Save to file
     record_transformation(argv[filenames[0]]+std::string("-transform.txt"), T);
 
-    debug.setEnabled(true);
+    debug.setEnabled(debug_enabled);
     debug.plotPointCloud<pcl::PointXYZ>(oriented_garment, Debug::COLOR_CYAN);
     debug.plotPointCloud<pcl::PointXYZ>(largest_cluster, Debug::COLOR_CYAN);
     debug.plotBoundingBox(min_point_OBB, max_point_OBB, position_OBB, rotational_matrix_OBB, Debug::COLOR_YELLOW);
