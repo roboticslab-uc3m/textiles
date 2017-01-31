@@ -2,6 +2,7 @@ import numpy as np
 import os
 from multiprocessing import Pool
 from tqdm import tqdm
+import matplotlib.pyplot as plt
 
 from unfolding_industrial.perception.GarmentDepthSegmentation import GarmentDepthSegmentation
 from unfolding.perception.GarmentDepthMapClustering import GarmentDepthMapClustering
@@ -14,6 +15,7 @@ __author__ = "def"
 input_folder = '~/Research/datasets/2017-01-30-unfolding'
 parallel = True
 
+
 def compute_stages(point_cloud_path):
     # Output file prefix
     filename = os.path.basename(os.path.dirname(point_cloud_path))
@@ -25,8 +27,8 @@ def compute_stages(point_cloud_path):
 
     # Load other computed data
     depth_image = depthMap_2_heightMap(np.loadtxt(point_cloud_path+'-depth.txt'))
+    image_src = plt.get_cmap('RdGy')(depth_image)
     depth_image = depth_image.transpose()  # Retrocompatibility
-    image_src = mask # To be computed from depth image
 
     approximated_polygon = GarmentDepthSegmentation.compute_approximated_polygon(mask)
     unfolding.perception.GarmentPlot.plot_segmentation_stage(image_src, mask, approximated_polygon,
@@ -85,7 +87,7 @@ if __name__ == "__main__":
 
         for result in tqdm(it):
             if not result:
-                print("Some error ocurred!")
+                print("Some error occurred!")
     else:
         for path in tqdm(point_cloud_paths):
             result = compute_stages(path)
