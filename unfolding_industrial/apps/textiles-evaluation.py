@@ -29,7 +29,7 @@ def compute_stages(point_cloud_path):
     # Load other computed data
     depth_image = depthMap_2_heightMap(np.loadtxt(point_cloud_path+'-depth.txt'))
     # image_src = plt.get_cmap('RdGy')(depth_image)
-    image_src = plt.get_cmap('viridis')(normalize(depth_image))
+    image_src = plt.get_cmap('viridis')(normalize(np.ma.masked_array(depth_image, mask=np.bitwise_not(mask))))
     depth_image = depth_image.transpose()  # Retrocompatibility
 
     approximated_polygon = GarmentDepthSegmentation.compute_approximated_polygon(mask)
