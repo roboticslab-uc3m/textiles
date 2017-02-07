@@ -7,18 +7,31 @@ Main repository for the research related to textile perception and manipulation 
 <img src="images/roboticslab.png" height="100px" align= "left"> <img src="images/uc3m.png" height="100px" align="right"><br><br><br><br>
 
 
-# Repository
+## Textiles: Manipulation and Perception of Deformable Objects
+
+The Textiles repository currently hosts two main lines of research:
+
+### Garment Unfolding
+In [[1]](#1) we developed a garment-agnostic algorithm to unfold clothes that works using 3D sensor information. The depth information provided by the sensor is converted into a grayscale image. This image is segmented using watershed algorithm. This algorithm provide us with labeled regions, each having a different height. In this labeled image, we assume that the highest height region belongs to the fold. Starting on this region, and ending in the garment border, tentative paths are created in several directions to analyze the height profile. For each profile, a bumpiness value is computed, and the lowest one is selected as the unfolding direction. A final extension on this line is performed to create a pick point on the fold border, and a place point outside the garment. In [[2]](#2) we offer an extended description of the same original algorithm. 
+
+Later on, we wrote about future trends we expect in this field [[3]](#3).
+
+We have been developing this algorithm and extend its application to other kind of robots, such as industrial manipulators. A novel enhanced version of the algorithm with extended experimental validation has been sent and is currently under review.
+
+### Garment Ironing
+We have developed an algorithm that allows a humanoid robot to iron garments with unmodified human tools. This work has been submitted for peer-reviewed publication and it is currently under review.
+
+## Repository
 Structure of the repository:
+
 * **/images**
 * **/ironing** - robotic garment ironing applications developed with [TEO the humanoid robot](https://github.com/roboticslab-uc3m/teo-main)
 * **/unfolding** - robotic garment unfolding applications developed with [TEO the humanoid robot](https://github.com/roboticslab-uc3m/teo-main).
 * **/unfolding-industrial** - robotic garment unfolding applications developed with industrial robots. (Under development).
 
 
-# Publications
-Here you can find listed all publications related to the code hosted in this repository.
-
-Current publications refer to the unfolding process. The original algorithm was published in [[1]](#1). An extended description  of the same original algorithm can be found in [[2]](#2). Later on, we wrote about future trends we expect in this field [[3]](#3). A novel enhanced version of the algorithm with extended experimental validation has been sent and is currently under review.
+## Publications
+Here you can find listed all publications related to the code hosted in this repository. 
 
 <a id="1">[1]</a> David Estevez, Juan G. Victores, Santiago Morante, Carlos Balaguer. Towards Robotic Garment Folding: A Vision Approach for Fold Detection. International Conference on Autonomous Robot Systems and Competitions (ICARSC). 2016. [[PDF]](http://roboticslab.uc3m.es/roboticslab/sites/default/files/estevez2016towards-preprint.pdf) [[poster]](http://www.slideshare.net/JuanGVictores/estevez2016towardsposter) [[bib]](doc/bib/estevez2016towards.bib) [[URL]](http://icarsc2016.ipb.pt/docs/ProgramaICARSC.pdf)
 
