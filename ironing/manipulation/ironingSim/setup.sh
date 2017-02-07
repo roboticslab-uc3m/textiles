@@ -1,1 +1,1 @@
-export OPENRAVE_PLUGINS=/home/yo/repos/robEllenberg/forceSensor/lib/
+export OPENRAVE_PLUGINS=$HOME/repos/robEllenberg/forceSensor/lib/
