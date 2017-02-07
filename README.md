@@ -18,7 +18,7 @@ Structure of the repository:
 # Publications
 Here you can find listed all publications related to the code hosted in this repository.
 
-Current publications refer to the unfolding process. The original algorithm was published in [[1]](#1). An extended description  of the same original algorithm can be found in [[2]](#2). Later on, we wrote about future trends we expect in this field [[3]](#3). A current enhanced version of the algorithm with extended experimental validation is currently under review.
+Current publications refer to the unfolding process. The original algorithm was published in [[1]](#1). An extended description  of the same original algorithm can be found in [[2]](#2). Later on, we wrote about future trends we expect in this field [[3]](#3). A current enhanced version of the algorithm with extended experimental validation has been sent and is currently under review.
 
 <a id="1">[1]</a> David Estevez, Juan G. Victores, Santiago Morante, Carlos Balaguer. Towards Robotic Garment Folding: A Vision Approach for Fold Detection. International Conference on Autonomous Robot Systems and Competitions (ICARSC). 2016. [[PDF]](http://roboticslab.uc3m.es/roboticslab/sites/default/files/estevez2016towards-preprint.pdf) [[poster]](http://www.slideshare.net/JuanGVictores/estevez2016towardsposter) [[bib]](doc/bib/estevez2016towards.bib) [[URL]](http://icarsc2016.ipb.pt/docs/ProgramaICARSC.pdf)
 
