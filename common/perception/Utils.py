@@ -1,5 +1,6 @@
 import cv2
 
+
 def points_to_file(points, output_file):
     """
     Save a series of 3D points to a PCL's PCD file
