@@ -33,7 +33,7 @@ if __name__ == '__main__':
     filtered_image = median(normalized_image, disk(3))
 
     # Step #1: Identify garment border
-    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    _, contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     garment_contour = max(contours, key=cv2.contourArea)
 
     # Display the image and plot garment contour
@@ -116,7 +116,7 @@ if __name__ == '__main__':
     plt.show()
 
     # Select largest wrinkle blob
-    wrinkle_blobs, _ = cv2.findContours(binary_wrinkles, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    _, wrinkle_blobs, _ = cv2.findContours(binary_wrinkles, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     current_wrinkle_contour = max(wrinkle_blobs, key=cv2.contourArea)
 
     # Display the image and plot all contours found
