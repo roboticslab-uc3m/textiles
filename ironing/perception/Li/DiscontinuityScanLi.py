@@ -10,7 +10,7 @@ from skimage import img_as_ubyte
 from skimage.transform import hough_line, hough_line_peaks
 import numpy as np
 import matplotlib.pyplot as plt
-import cv2 # SIFT, SVM not in skimage
+import cv2  # SIFT, SVM not in skimage
 import logging
 logger = logging.getLogger(__name__)
 
@@ -203,7 +203,7 @@ class DiscontinuityScanLi(object):
         f, ax = plt.subplots(1, 3)
         ax[0].imshow(self.norm_1, cmap=colormap)
         ax[1].imshow(self.norm_2, cmap=colormap)
-        ax[2].imshow(self.norm , cmap=colormap)
+        ax[2].imshow(self.norm, cmap=colormap)
         plt.show()
 
 
@@ -288,7 +288,7 @@ def train_svm(num_images: 'Number of images in image folder' = 0, image_folder=l
     logger.info("Started training SVM...")
     des = np.empty((0, 4+128))  # point x, point y, feature scale, feature orientation + descritor size (128 cols)
     y = np.empty((0, 1))
-    for i in range(1, num_images+1): # For each sample image
+    for i in range(1, num_images+1):  # For each sample image
         logger.info("\tLoading data from image {}...".format(i))
         des = np.vstack((des, np.load(os.path.join(image_folder,
                                                    DiscontinuityScanLi.sift_features_name_pattern.format(i)))['descriptors']))
@@ -302,7 +302,7 @@ def train_svm(num_images: 'Number of images in image folder' = 0, image_folder=l
     logger.info("Loaded {} examples, {} negative and {} positive".format(des.shape[0], counts[0], counts[1]))
 
     logger.info("Training SVM with examples...")
-    svm_params = dict( kernel_type = cv2.ml.SVM_LINEAR, svm_type = cv2.ml.SVM_C_SVC, C=2.67, gamma=5.383 )  # Need to find a way to set this
+    svm_params = dict( kernel_type=cv2.ml.SVM_LINEAR, svm_type=cv2.ml.SVM_C_SVC, C=2.67, gamma=5.383)  # Need to find a way to set this
     svm = cv2.ml.SVM_create()
     svm.train(np.float32(des[:, 4:]), cv2.ml.ROW_SAMPLE, np.int32(y))
     svm.save(os.path.join(image_folder, DiscontinuityScanLi.svm_data_name_pattern))
