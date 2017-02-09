@@ -37,7 +37,7 @@ if __name__ == "__main__":
 
     # Convert mask to root
     path_mask = path_input_mesh + "-mask.png"
-    mask = cv2.imread(path_mask, cv2.cv.CV_LOAD_IMAGE_GRAYSCALE)
+    mask = cv2.imread(path_mask, cv2.IMREAD_GRAYSCALE)
     mask_px = [(x, y) for x in range(mask.shape[1]) for y in range(mask.shape[0]) if mask[y, x] == 255]
     mask_points = change_frame.root(mask_px)
 
