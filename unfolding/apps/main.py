@@ -1,5 +1,3 @@
-__author__ = "def"
-
 import cv2
 import numpy as np
 
@@ -8,6 +6,8 @@ from unfolding.perception.GarmentDepthMapClustering import GarmentDepthMapCluste
 from unfolding.perception.GarmentPickAndPlacePoints import GarmentPickAndPlacePoints
 import unfolding.perception.GarmentPlot
 from unfolding.perception.GarmentUtils import load_data
+
+__author__ = "def"
 
 if __name__ == "__main__":
     # image_paths, depth_image_paths = load_data('../data/20150902')
