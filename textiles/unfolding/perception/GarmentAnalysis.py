@@ -4,7 +4,6 @@ from skimage.filters import rank
 from skimage.util import img_as_ubyte
 from skimage.restoration import denoise_tv_chambolle
 from skimage import exposure
-
 import matplotlib.pyplot as plt
 
 __author__ = 'def'

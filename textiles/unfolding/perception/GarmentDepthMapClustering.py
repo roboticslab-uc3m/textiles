@@ -17,7 +17,7 @@ class GarmentDepthMapClustering:
         :return: Depth image normalized and converted to 8-bit unsigned
         """
         background = np.inf  # Define a depth value for background pixels
-        masked_depth_image = np.where(mask==255, depth_image.transpose(), background)
+        masked_depth_image = np.where(mask == 255, depth_image.transpose(), background)
 
         # Normalize depth map
         # scaled_depth_map = normalize_1Channel_image(masked_depth_image)
@@ -45,7 +45,7 @@ class GarmentDepthMapClustering:
         :return: Depth image normalized and converted to 8-bit unsigned compatible with depth-image-based algorithms
         """
         background = np.inf  # Define a depth value for background pixels
-        masked_depth_image = np.where(mask==255, heightmap.transpose(), background)
+        masked_depth_image = np.where(mask == 255, heightmap.transpose(), background)
         scaled_depth_map = masked_depth_image.copy()
 
         # Normalize using height range

@@ -1,4 +1,5 @@
-import glob, os
+import glob
+import os
 from collections import namedtuple
 
 __author__ = 'def'

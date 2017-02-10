@@ -4,7 +4,7 @@ from operator import itemgetter
 
 import cv2
 
-from common.perception import LineTools, Superpixels
+from textiles.common.perception import LineTools, Superpixels
 
 
 class GarmentPickAndPlacePoints:
@@ -28,7 +28,7 @@ class GarmentPickAndPlacePoints:
     @staticmethod
     def calculate_bumpiness(labeled_image, unfold_paths):
         profiles = [[p for p in Superpixels.line_sampling(labeled_image, path[0], path[1], 1) if p != 255]
-                    for path in unfold_paths ]
+                    for path in unfold_paths]
 
         bumpiness = [sum([abs(j-i) for i, j in zip(profile, profile[1:])])
                      for profile in profiles]
@@ -42,7 +42,8 @@ class GarmentPickAndPlacePoints:
 
         # Find contour of highest region (lowest depth value from the camera)
         highest_region = Superpixels.get_highest_superpixel(labeled_image)
-        _, highest_region_contours, dummy = cv2.findContours(highest_region.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        _, highest_region_contours, dummy = cv2.findContours(highest_region.copy(), cv2.RETR_EXTERNAL,
+                                                             cv2.CHAIN_APPROX_SIMPLE)
         highest_region_contour = max(highest_region_contours, key=cv2.contourArea)
 
         # Find intersection with contour
@@ -57,5 +58,3 @@ class GarmentPickAndPlacePoints:
         place_point = (2*contour_point[0] - pick_point[0], 2*contour_point[1] - pick_point[1])
 
         return pick_point, place_point
-
-

@@ -6,7 +6,8 @@ Compute the Kinfu meshes from Kinfu raw point clouds in batch
 Usage: generate_data.py <directory>
 """
 
-import os, sys
+import os
+import sys
 import subprocess
 
 

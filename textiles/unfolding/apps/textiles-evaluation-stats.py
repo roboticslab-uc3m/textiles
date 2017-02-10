@@ -1,7 +1,8 @@
 import os
-import StringIO
 from collections import defaultdict
+
 import numpy as np
+import StringIO
 from tabulate import tabulate
 
 # Define garment categories
@@ -68,7 +69,7 @@ if __name__ == '__main__':
     data = np.genfromtxt(StringIO.StringIO(data_txt))
 
     # Calculate indices of each category block
-    indices = [0] + (np.where(np.diff(data[:,0]))[0]+1).tolist() + [data.shape[0]]
+    indices = [0] + (np.where(np.diff(data[:, 0]))[0]+1).tolist() + [data.shape[0]]
     blocks = []
     for i, j in zip(indices, indices[1:]):
         blocks.append(data[i:j, :])

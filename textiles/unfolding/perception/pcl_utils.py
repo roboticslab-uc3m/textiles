@@ -1,11 +1,11 @@
-__author__ = 'def'
+import struct
 
 import numpy as np
 import pylab
 
-import struct
+import textiles.unfolding.perception.GarmentAnalysis as GarmentAnalysis
 
-import GarmentAnalysis
+__author__ = 'def'
 
 
 def surface_plot(data):
@@ -14,8 +14,8 @@ def surface_plot(data):
 
     fig = plt.figure()
     ax = fig.gca(projection='3d')
-    X = data[:,0]
-    Y = data[:,1]
+    X = data[:, 0]
+    Y = data[:, 1]
     # X, Y = np.meshgrid(X, Y)
     Z = data[:,2]
     G = data[:,3]
@@ -47,9 +47,9 @@ def rgb_to_pcl_float(r, g, b):
 
 
 def colorize_point_cloud(xyz_data, color_data, output_file, cmap=pylab.cm.cool):
-    X = xyz_data[:,0]
-    Y = xyz_data[:,1]
-    Z = xyz_data[:,2]
+    X = xyz_data[:, 0]
+    Y = xyz_data[:, 1]
+    Z = xyz_data[:, 2]
 
     try:
         color_data_norm = (color_data - color_data.min()) / (color_data.max()-color_data.min())
@@ -80,15 +80,15 @@ DATA ascii
 
 
 def colorize_rsd_point_cloud(xyz_data, r_min_data, r_max_data, output_file):
-    colors = {"plane":rgb_to_pcl_float(255,0,0),
-              "cylinder":rgb_to_pcl_float(0,0,255),
-              "edge":rgb_to_pcl_float(0,255,0),
-              "sphere":rgb_to_pcl_float(0,255,255),
-              "noise":rgb_to_pcl_float(255,255,255)}
+    colors = {"plane": rgb_to_pcl_float(255, 0, 0),
+              "cylinder": rgb_to_pcl_float(0, 0, 255),
+              "edge": rgb_to_pcl_float(0, 255, 0),
+              "sphere": rgb_to_pcl_float(0, 255, 255),
+              "noise": rgb_to_pcl_float(255, 255, 255)}
 
-    X = xyz_data[:,0]
-    Y = xyz_data[:,1]
-    Z = xyz_data[:,2]
+    X = xyz_data[:, 0]
+    Y = xyz_data[:, 1]
+    Z = xyz_data[:, 2]
 
     with open(output_file, 'w') as f:
         # Write pcd header
@@ -108,7 +108,7 @@ DATA ascii
         # Write data
         for x, y, z, r_min, r_max in zip(X, Y, Z, r_min_data, r_max_data):
             # Decision tree:
-            if r_min >0.1:
+            if r_min > 0.1:
                 color = colors["plane"]
             elif r_max > 0.15:
                 color = colors["cylinder"]

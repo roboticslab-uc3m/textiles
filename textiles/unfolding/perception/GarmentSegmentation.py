@@ -15,7 +15,7 @@ class GarmentSegmentation:
         image_hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
         # Threshold value and saturation (using Otsu for threshold selection)
-        blur_s = cv2.GaussianBlur(image_hsv[:, :, 1],(5, 5), 0)
+        blur_s = cv2.GaussianBlur(image_hsv[:, :, 1], (5, 5), 0)
         ret, mask_s = cv2.threshold(blur_s, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
         # cv2.imshow("----", mask_s)
 
@@ -29,7 +29,6 @@ class GarmentSegmentation:
         filtered_mask_open = cv2.morphologyEx(filtered_mask_close, cv2.MORPH_OPEN, kernel, iterations=8)
 
         return filtered_mask_open
-
 
     @staticmethod
     def compute_approximated_polygon(mask):
