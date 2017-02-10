@@ -1,4 +1,5 @@
 import numpy as np
+
 from textiles.common.rigid_transform_3D import rigid_transform_3D
 
 kinfu_wrt_cam = np.identity(4)

@@ -7,8 +7,9 @@ Functions to convert a depth image captured from an ASUS XTion Pro Live
 sensor to point cloud in PCL's PCD format.
 """
 
-import numpy as np
 import sys
+
+import numpy as np
 
 intrinsic_parameters_asus = np.array([[525.0,    0.0, 319.5],
                                       [  0.0,  525.0, 239.5],

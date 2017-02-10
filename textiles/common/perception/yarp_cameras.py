@@ -1,7 +1,8 @@
-import numpy as np
-import yarp
 import contextlib
 from abc import abstractmethod
+
+import numpy as np
+import yarp
 
 
 class YarpCamera(object):

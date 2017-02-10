@@ -4,8 +4,9 @@ Transformer.py
 Transform coordinate from pixel coordinate to world coordinates in the camera frame of reference
 """
 
-import numpy as np
 import collections
+
+import numpy as np
 
 
 class Transformer:

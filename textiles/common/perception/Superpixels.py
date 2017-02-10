@@ -1,6 +1,7 @@
+import operator
+
 import numpy as np
 from skimage import measure
-import operator
 
 __author__ = 'def', 'smorante'
 
