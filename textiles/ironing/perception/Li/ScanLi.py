@@ -1,7 +1,7 @@
 # coding=utf-8
 
-import DiscontinuityScanLi
-import CurvatureScanLi
+import textiles.ironing.perception.Li.DiscontinuityScanLi
+import textiles.ironing.perception.Li.CurvatureScanLi
 
 import numpy as np
 from skimage import io

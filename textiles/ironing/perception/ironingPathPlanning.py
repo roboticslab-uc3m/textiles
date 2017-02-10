@@ -3,7 +3,7 @@
 ironingPathPlanning computes ironing paths from wrinkle data
 """
 
-import sys
+
 import numpy as np
 import matplotlib.pyplot as plt
 from skimage.filters.rank import median
@@ -43,7 +43,7 @@ if __name__ == '__main__':
     points = [tuple(point[0]) for point in garment_contour]
     # Plot lines
     for (start_x, start_y), (end_x, end_y) in zip(points, points[1:]+points[0:1]):
-        plt.plot( (start_x, end_x), (start_y, end_y), 'r-', linewidth=2.0, alpha=0.7 )
+        plt.plot((start_x, end_x), (start_y, end_y), 'r-', linewidth=2.0, alpha=0.7)
     # Plot points
     # for x, y in points:
     #     plt.plot(x, y, 'ro', alpha=0.7)
@@ -53,7 +53,7 @@ if __name__ == '__main__':
     ax.set_yticks([])
 
     plt.figure()
-    plt.hist(normalized_image, bins=np.arange(0, 1 , 0.05))
+    plt.hist(normalized_image, bins=np.arange(0, 1, 0.05))
     plt.show()
 
     # Step #2: Identify wrinkle(s)
@@ -124,13 +124,13 @@ if __name__ == '__main__':
     points = [tuple(point[0]) for point in current_wrinkle_contour]
     # Plot lines
     for (start_x, start_y), (end_x, end_y) in zip(points, points[1:]+points[0:1]):
-        plt.plot( (start_x, end_x), (start_y, end_y), 'r-', linewidth=2.0, alpha=0.7 )
+        plt.plot((start_x, end_x), (start_y, end_y), 'r-', linewidth=2.0, alpha=0.7)
     plt.show()
 
     # Skeletonize wrinkle contour:
     current_wrinkle = np.zeros(image.shape, np.uint8)
     cv2.drawContours(current_wrinkle, [current_wrinkle_contour], -1, 255, -1)
-    wrinkle_skeleton = skeletonize(np.where(current_wrinkle==255, 1, 0))
+    wrinkle_skeleton = skeletonize(np.where(current_wrinkle == 255, 1, 0))
 
     # display results
     fig, (ax1, ax2) = plt.subplots(nrows=1, ncols=2, figsize=(8, 4.5),
@@ -152,12 +152,12 @@ if __name__ == '__main__':
     # From skeleton to ironing trajectory (graph)
     ################################################################################
     # Find row and column locations that are non-zero in skeleton
-    (rows,cols) = np.nonzero(wrinkle_skeleton)
+    (rows, cols) = np.nonzero(wrinkle_skeleton)
 
     # Retrieve the trajectory as a graph (plus extreme nodes)
     trajectory = {}
     extreme_points = []
-    for src_x, src_y in zip(cols,rows):
+    for src_x, src_y in zip(cols, rows):
         for dst_x, dst_y in zip(cols, rows):
             if src_x == dst_x and src_y == dst_y:
                 continue
@@ -173,7 +173,7 @@ if __name__ == '__main__':
     distances = []
     garment_contour_points = [tuple(point[0]) for point in garment_contour]
     for x, y in extreme_points:
-        dist_to_contour = min([np.sqrt((x-i)**2 +(y-j)**2) for i, j in garment_contour_points])
+        dist_to_contour = min([np.sqrt((x-i)**2 + (y-j)**2) for i, j in garment_contour_points])
         distances.append(dist_to_contour)
     start = extreme_points[distances.index(max(distances))]
     end = extreme_points[distances.index(min(distances))]
@@ -197,7 +197,7 @@ if __name__ == '__main__':
     plt.imshow(normalized_image, interpolation='nearest', cmap=plt.cm.RdGy)
     # Plot lines
     for (start_x, start_y), (end_x, end_y) in zip(trajectory_points, trajectory_points[1:]):
-        plt.plot( (start_x, end_x), (start_y, end_y), 'r-', linewidth=2.0, alpha=0.7 )
+        plt.plot((start_x, end_x), (start_y, end_y), 'r-', linewidth=2.0, alpha=0.7)
     # Plot points
     plt.plot(start[0], start[1], 'bo', alpha=0.7)
     plt.plot(end[0], end[1], 'go', alpha=0.7)

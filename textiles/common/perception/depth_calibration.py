@@ -1,5 +1,5 @@
 import numpy as np
-from common.rigid_transform_3D import rigid_transform_3D
+from textiles.common.rigid_transform_3D import rigid_transform_3D
 
 kinfu_wrt_cam = np.identity(4)
 kinfu_wrt_cam[0:3, 3] = [-0.75, -0.75, +0.15]

@@ -1,19 +1,20 @@
 # coding=utf-8
 
-from common.math import normalize
-from common.perception.Features import save_SIFT
-from common.perception.roi import load_roi_from_file, crop_roi
-
 import os
-from skimage import io
-from skimage import img_as_ubyte
-from skimage.transform import hough_line, hough_line_peaks
+import logging
+
 import numpy as np
 import matplotlib.pyplot as plt
 import cv2  # SIFT, SVM not in skimage
-import logging
-logger = logging.getLogger(__name__)
+from skimage import io
+from skimage import img_as_ubyte
+from skimage.transform import hough_line, hough_line_peaks
 
+from textiles.common.math import normalize
+from textiles.common.perception.Features import save_SIFT
+from textiles.common.perception.roi import load_roi_from_file, crop_roi
+
+logger = logging.getLogger(__name__)
 
 """
 Discontinuity Scan Li

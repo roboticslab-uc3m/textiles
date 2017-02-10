@@ -1,8 +1,8 @@
 # coding=utf-8
 
-from common.perception.roi import load_roi_from_file, crop_roi
-from common.math import normalize
-from common.perception.Utils import depthMap_2_heightMap
+from textiles.common.perception.roi import load_roi_from_file, crop_roi
+from textiles.common.math import normalize
+from textiles.common.perception.Utils import depthMap_2_heightMap
 
 import os
 from skimage import io
