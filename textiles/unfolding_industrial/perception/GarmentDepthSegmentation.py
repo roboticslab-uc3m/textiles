@@ -1,9 +1,10 @@
 import os
 import subprocess
+
 import cv2
 
-from unfolding.perception.GarmentSegmentation import GarmentSegmentation
-from common.perception.Utils import sparse2dense
+from textiles.unfolding.perception.GarmentSegmentation import GarmentSegmentation
+from textiles.common.perception.Utils import sparse2dense
 
 pcl_processing_binary = "kinfuUnfolding"
 pcl_processing_folder = "~/Repositories/textiles/build/unfolding_industrial/perception/"

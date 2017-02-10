@@ -1,11 +1,12 @@
 import os
+
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 
-from common.perception.Transformer import Transformer
-from common.perception.depth_calibration import H_root_cam, kinfu_wrt_cam
-from common.perception.Utils import points_to_file
+from textiles.common.perception.Transformer import Transformer
+from textiles.common.perception.depth_calibration import H_root_cam, kinfu_wrt_cam
+from textiles.common.perception.Utils import points_to_file
 
 path_input_mesh = "/home/def/Research/jresearch/2016-09-06-textiles-unfolding/calibration5/mesh_1.ply"
 

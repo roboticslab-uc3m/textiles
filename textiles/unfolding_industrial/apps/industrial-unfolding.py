@@ -1,16 +1,18 @@
+import os
+
 # Local (textiles) imports
-from unfolding.perception.GarmentSegmentation import GarmentSegmentation
-from unfolding.perception.GarmentDepthMapClustering import GarmentDepthMapClustering
-from unfolding.perception.GarmentPickAndPlacePoints import GarmentPickAndPlacePoints
-from unfolding.perception import GarmentPlot
-from common.perception.Transformer import Transformer
-from common.perception.depth_calibration import H_root_cam, kinfu_wrt_cam
-from common.user_interface import query_yes_no
-from common.perception.Utils import sparse2dense
+from textiles.unfolding.perception.GarmentSegmentation import GarmentSegmentation
+from textiles.unfolding.perception.GarmentDepthMapClustering import GarmentDepthMapClustering
+from textiles.unfolding.perception.GarmentPickAndPlacePoints import GarmentPickAndPlacePoints
+from textiles.unfolding.perception import GarmentPlot
+from textiles.common.perception.Transformer import Transformer
+from textiles.common.perception.depth_calibration import H_root_cam, kinfu_wrt_cam
+from textiles.common.user_interface import query_yes_no
+from textiles.common.perception.Utils import sparse2dense
 
 import cv2
 import numpy as np
-import os
+
 import abb
 
 __author__ = "def"

@@ -1,17 +1,19 @@
-import numpy as np
 import os
 from multiprocessing import Pool
-from tqdm import tqdm
-import matplotlib.pyplot as plt
 
-from unfolding_industrial.perception.GarmentDepthSegmentation import GarmentDepthSegmentation
-from unfolding.perception.GarmentDepthMapClustering import GarmentDepthMapClustering
-from unfolding_industrial.perception.GarmentMirrorPickAndPlacePoints import GarmentMirrorPickAndPlacePoints
-import unfolding.perception.GarmentPlot
-from common.perception.Utils import depthMap_2_heightMap
-from common.math import normalize
+from tqdm import tqdm
+import numpy as np
+import matplotlib.pyplot as plt
 from skimage.filters.rank import median
 from skimage.morphology import disk
+
+from textiles.unfolding_industrial.perception.GarmentDepthSegmentation import GarmentDepthSegmentation
+from textiles.unfolding.perception.GarmentDepthMapClustering import GarmentDepthMapClustering
+from textiles.unfolding_industrial.perception.GarmentMirrorPickAndPlacePoints import GarmentMirrorPickAndPlacePoints
+import textiles.unfolding.perception.GarmentPlot as GarmentPlot
+from textiles.common.perception.Utils import depthMap_2_heightMap
+from textiles.common.math import normalize
+
 
 __author__ = "def"
 
@@ -36,15 +38,13 @@ def compute_stages(point_cloud_path):
     depth_image = depth_image.transpose()  # Retrocompatibility
 
     approximated_polygon = GarmentDepthSegmentation.compute_approximated_polygon(mask)
-    unfolding.perception.GarmentPlot.plot_segmentation_stage(image_src, mask, approximated_polygon,
-                                                             to_file=out_prefix + '-segmentation.png')
+    GarmentPlot.plot_segmentation_stage(image_src, mask, approximated_polygon, to_file=out_prefix + '-segmentation.png')
 
     # Garment Depth Map Clustering Stage
     preprocessed_depth_image = GarmentDepthMapClustering.preprocess(depth_image, mask)
     # preprocessed_depth_image = normalize(np.ma.masked_array(depth_image, mask=np.bitwise_not(mask)))
     labeled_image = GarmentDepthMapClustering.cluster_similar_regions(preprocessed_depth_image, mask=mask)
-    unfolding.perception.GarmentPlot.plot_clustering_stage(image_src, labeled_image, to_file=out_prefix +
-                                                           '-clustering.png')
+    GarmentPlot.plot_clustering_stage(image_src, labeled_image, to_file=out_prefix + '-clustering.png')
 
     try:
         unfold_paths = GarmentMirrorPickAndPlacePoints.calculate_unfold_paths(labeled_image, approximated_polygon)
@@ -61,11 +61,9 @@ def compute_stages(point_cloud_path):
     for value in bumpiness:
         f.write(str(value)+'\n')
     f.close()
-    unfolding.perception.GarmentPlot.plot_pick_and_place_stage(image_src, labeled_image, approximated_polygon,
-                                                               unfold_paths,
-                                                               pick_point, place_point, to_file=out_prefix + '-pnp.png')
-    unfolding.perception.GarmentPlot.plot_pick_and_place_points(image_src, pick_point, place_point, to_file=out_prefix +
-                                                                '-direction.png')
+    GarmentPlot.plot_pick_and_place_stage(image_src, labeled_image, approximated_polygon, unfold_paths, pick_point,
+                                          place_point, to_file=out_prefix + '-pnp.png')
+    GarmentPlot.plot_pick_and_place_points(image_src, pick_point, place_point, to_file=out_prefix + '-direction.png')
 
     return True
 

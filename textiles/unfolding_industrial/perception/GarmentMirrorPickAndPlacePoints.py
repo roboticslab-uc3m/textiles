@@ -1,13 +1,13 @@
-
 import math
-import numpy as np
 from operator import itemgetter
 
+import numpy as np
 import cv2
 
-from common.perception import LineTools, Superpixels
-from unfolding.perception.GarmentPickAndPlacePoints import GarmentPickAndPlacePoints
-from common.math import mirror
+from textiles.common.perception import LineTools, Superpixels
+from textiles.unfolding.perception.GarmentPickAndPlacePoints import GarmentPickAndPlacePoints
+from textiles.common.math import mirror
+
 
 class GarmentMirrorPickAndPlacePoints(GarmentPickAndPlacePoints):
     @staticmethod
@@ -21,7 +21,8 @@ class GarmentMirrorPickAndPlacePoints(GarmentPickAndPlacePoints):
 
         # Find contour of highest region (lowest depth value from the camera)
         highest_region = Superpixels.get_highest_superpixel(labeled_image)
-        _, highest_region_contours, dummy = cv2.findContours(highest_region.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        _, highest_region_contours, _ = cv2.findContours(highest_region.copy(), cv2.RETR_EXTERNAL,
+                                                         cv2.CHAIN_APPROX_SIMPLE)
         highest_region_contour = max(highest_region_contours, key=cv2.contourArea)
 
         # Find intersection with contour
