@@ -6,12 +6,12 @@ ironingPathPlanning computes ironing paths from wrinkle data
 
 import numpy as np
 import matplotlib.pyplot as plt
+from skimage.filters import frangi, hessian
 from skimage.filters.rank import median
-from skimage.morphology import binary_erosion, disk
-from skimage.morphology import medial_axis, skeletonize
+from skimage.morphology import binary_erosion, disk, medial_axis, skeletonize
 from skimage import img_as_ubyte
 import cv2
-from skimage.filters import frangi, hessian
+
 
 # image_filename = "/home/def/Research/jResearch/2016-06-23-textiles-ironing/hoodie1/colored_mesh_1.ply-output.pcd-depth_image.m"
 image_filename = "/home/def/Research/jresearch/2016-07-25-textiles-ironing/hoodie1/colored_mesh_1.ply-output.pcd-wild_image.m"

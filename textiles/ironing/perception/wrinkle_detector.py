@@ -1,14 +1,13 @@
-import pypcd
 import os
+from itertools import cycle
+
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
-
+import pypcd
 from sklearn import mixture
-from itertools import cycle
 
-
-# Input file
+# Input file(s)
 src_file = "~/Research/jresearch/2016-06-23-textiles-ironing/hoodie2/colored_mesh_1.ply-output.pcd"
 src_file = os.path.abspath(os.path.expanduser(src_file))
 

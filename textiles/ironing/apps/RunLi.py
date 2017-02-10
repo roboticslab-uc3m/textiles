@@ -1,11 +1,11 @@
 #!/usr/env python3
 # coding=utf-8
 
-import textiles.ironing.perception.Li.DiscontinuityScanLi as DiscontinuityScanLi
-import textiles.ironing.perception.Li.ScanLi as ScanLi
-
 import begin
 import os
+
+import textiles.ironing.perception.Li.DiscontinuityScanLi as DiscontinuityScanLi
+import textiles.ironing.perception.Li.ScanLi as ScanLi
 
 """
 Run Li

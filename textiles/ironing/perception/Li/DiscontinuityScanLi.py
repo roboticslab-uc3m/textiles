@@ -5,10 +5,10 @@ import logging
 
 import numpy as np
 import matplotlib.pyplot as plt
-import cv2  # SIFT, SVM not in skimage
 from skimage import io
 from skimage import img_as_ubyte
 from skimage.transform import hough_line, hough_line_peaks
+import cv2  # SIFT, SVM not in skimage
 
 from textiles.common.math import normalize
 from textiles.common.perception.Features import save_SIFT

@@ -1,6 +1,6 @@
 import numpy as np
 
-from common.perception.Utils import points_to_file
+from textiles.common.perception.Utils import points_to_file
 
 
 class TrajectoryTransform:
