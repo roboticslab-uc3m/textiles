@@ -3,6 +3,7 @@
 ironingPathPlanning computes ironing paths from wrinkle data
 """
 
+import os
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -13,9 +14,18 @@ from skimage import img_as_ubyte
 import cv2
 
 
-# image_filename = "/home/def/Research/jResearch/2016-06-23-textiles-ironing/hoodie1/colored_mesh_1.ply-output.pcd-depth_image.m"
-image_filename = "/home/def/Research/jresearch/2016-07-25-textiles-ironing/hoodie1/colored_mesh_1.ply-output.pcd-wild_image.m"
-mask_filename = "/home/def/Research/jresearch/2016-07-25-textiles-ironing/hoodie1/colored_mesh_1.ply-output.pcd-image_mask.m"
+data_folder_pattern = "~/Research/datasets/2017-02-13-ironing-experiments/{}"
+data_file_name = "textured_mesh.ply-output.pcd"
+depth_file_suffix = "-depth_image.m"
+image_file_suffix = "-wild_image.m"
+mask_file_suffix = "-image_mask.m"
+garment = 'hoodie-01'
+
+data_folder = data_folder_pattern.format(garment)
+data_file_path = os.path.join(os.path.abspath(os.path.expanduser(data_folder)), data_file_name)
+# image_filename = data_file_path + depth_file_suffix
+image_filename = data_file_path + image_file_suffix
+mask_filename = data_file_path + mask_file_suffix
 use_frangi = False
 
 __author__ = 'def'
