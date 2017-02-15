@@ -29,6 +29,8 @@
 
 #include "Debug.hpp"
 
+#define SEGMENTATION_PYTHON
+
 void show_usage(char * program_name)
 {
     std::cout << std::endl;
@@ -330,6 +332,11 @@ int main (int argc, char** argv)
     debug.plotPointCloud<pcl::PointXYZRGB>(garment_table_cloud, Debug::COLOR_GREEN);
     debug.show("Table cloud (filtered)");
 
+#ifdef SEGMENTATION_PYTHON
+    //-- Save point cloud in file to process it in Python
+    pcl::io::savePCDFileBinary(argv[filenames[0]]+std::string("-unsegmented.pcd"), *garment_table_cloud);
+    return 0;
+#else
     //-- Color segmentation of the garment
     //-----------------------------------------------------------------------------------
     //-- HSV thresholding
@@ -425,4 +432,5 @@ int main (int argc, char** argv)
     pcl::io::savePCDFileBinary(argv[filenames[0]]+std::string("-output.pcd"), *oriented_garment_cloud);
 
     return 0;
+#endif
 }
