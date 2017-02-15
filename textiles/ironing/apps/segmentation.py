@@ -7,6 +7,19 @@ import pypcd
 import matplotlib.pyplot as plt
 
 
+def decode_rgb_from_pcl(rgb):
+    rgb = rgb.copy()
+    rgb.dtype = np.uint32
+    r = np.asarray((rgb >> 16) & 255, dtype=np.uint8)
+    g = np.asarray((rgb >> 8) & 255, dtype=np.uint8)
+    b = np.asarray(rgb & 255, dtype=np.uint8)
+    rgb_arr = np.zeros((len(rgb), 3), dtype=np.uint8)
+    rgb_arr[:, 0] = r
+    rgb_arr[:, 1] = g
+    rgb_arr[:, 2] = b
+    return rgb_arr
+
+
 @begin.start(auto_convert=True)
 @begin.logging
 def main(input):
