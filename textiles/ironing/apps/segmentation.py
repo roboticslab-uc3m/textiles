@@ -60,13 +60,22 @@ def main(input):
                                                                      decode_rgb_from_pcl(data['rgb']))])
     X_color = np.array([[r, g, b] for (r, g, b) in decode_rgb_from_pcl(data['rgb'])])
 
+    # Color to HSV
+    rgb_image = np.reshape(X[:, 3:].astype(np.uint8), (X.shape[0], 1, 3))
+    from skimage.color import rgb2hsv
+    hsv_image = rgb2hsv(rgb_image)
+    hsv = np.reshape(hsv_image.astype(np.float32), (X.shape[0], 3))
+
     # Normalization
     X_norm = X.copy()
     # X_norm[:, 0] = normalize(X[:, 0])
     # X_norm[:, 1] = normalize(X[:, 1])
     # X_norm[:, 2] = normalize(X[:, 2])
     # X_norm[:, 3:] = X[:, 3:] / 255.0
+
     X_norm[:, :3] *= 1000 * 0.35
+
+    X_norm[:, 3:] = hsv
 
     # K-means clustering
     km = KMeans(n_clusters=2)  # we know beforehand that only a garment and the ironing table exist
