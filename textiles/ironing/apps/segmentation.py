@@ -7,6 +7,7 @@ import pypcd
 import matplotlib.pyplot as plt
 from sklearn.cluster import KMeans
 
+from textiles.common.math import normalize
 
 def decode_rgb_from_pcl(rgb):
     """
@@ -57,10 +58,19 @@ def main(input):
     data = point_cloud.pc_data
     X = np.array([[x, y, z, r, g, b] for (x, y, z, (r, g, b)) in zip(data['x'], data['y'], data['z'],
                                                                      decode_rgb_from_pcl(data['rgb']))])
+    X_color = np.array([[r, g, b] for (r, g, b) in decode_rgb_from_pcl(data['rgb'])])
+
+    # Normalization
+    X_norm = X.copy()
+    # X_norm[:, 0] = normalize(X[:, 0])
+    # X_norm[:, 1] = normalize(X[:, 1])
+    # X_norm[:, 2] = normalize(X[:, 2])
+    # X_norm[:, 3:] = X[:, 3:] / 255.0
+    X_norm[:, :3] *= 1000 * 0.35
 
     # K-means clustering
     km = KMeans(n_clusters=2)  # we know beforehand that only a garment and the ironing table exist
-    km.fit(X)
+    km.fit(X_norm)
     labels = km.labels_
 
     cluster_1 = X[labels == 0]
