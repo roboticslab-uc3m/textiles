@@ -68,12 +68,12 @@ def main(input):
 
     # Normalization
     X_norm = X.copy()
-    # X_norm[:, 0] = normalize(X[:, 0])
-    # X_norm[:, 1] = normalize(X[:, 1])
-    # X_norm[:, 2] = normalize(X[:, 2])
+    X_norm[:, 0] = normalize(X[:, 0])
+    X_norm[:, 1] = normalize(X[:, 1])
+    X_norm[:, 2] = normalize(X[:, 2])
     # X_norm[:, 3:] = X[:, 3:] / 255.0
 
-    X_norm[:, :3] *= 1000 * 0.35
+    #X_norm[:, :3] *= 1000
 
     X_norm[:, 3:] = hsv
 
