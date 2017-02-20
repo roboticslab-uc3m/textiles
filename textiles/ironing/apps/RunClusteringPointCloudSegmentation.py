@@ -8,7 +8,11 @@ from textiles.ironing.perception.ClusteringPointCloudSegmentation import cluster
 
 @begin.start(auto_convert=True)
 @begin.logging
-def main(input: 'Input point cloud'):
+def main(input):
+    """
+    Performs a clustering_point_cloud_segmentation over a file
+    :param input: Input point cloud 
+    """
     src_file = os.path.abspath(os.path.expanduser(input))
     clustering_point_cloud_segmentation_from_file(src_file)
 

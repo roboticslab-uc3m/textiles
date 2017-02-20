@@ -7,6 +7,11 @@ from textiles.common.math import normalize
 
 
 def clustering_point_cloud_segmentation_from_file(input_cloud_file):
+    """
+    Performs a clustering_point_cloud_segmentation using a file as input. The output is saved to
+    files with the format {input_cloud_file}-cluster{i}.pcd, where i is the index of the cluster.
+    :param input_cloud_file: File where the point cloud is stored
+    """
     # Load point cloud
     point_cloud = pypcd.PointCloud.from_path(input_cloud_file)
 
@@ -21,7 +26,7 @@ def clustering_point_cloud_segmentation_from_file(input_cloud_file):
         packed_array[:, :3] = cluster[:, :3]
         packed_array[:, 3] = rgb
         point_cloud_output = pypcd.make_xyz_rgb_point_cloud(packed_array)
-        point_cloud_output.save_pcd('out{}.pcd'.format(i), compression='binary_compressed')
+        point_cloud_output.save_pcd(input_cloud_file+'-cluster{:2}.pcd'.format(i), compression='binary_compressed')
 
 
 def clustering_point_cloud_segmentation(input_point_cloud):
