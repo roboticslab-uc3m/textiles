@@ -1,8 +1,17 @@
 /*
- * ironingClothes
+ * GarmentSegmentation
  * --------------------------------------
  *
- * Placeholder text
+ * Segments the garment that has been placed on the ironing board from the
+ * ironing board and the environment.
+ *
+ * If Python is to be used to perform segmentation, the following line has to
+ * be added:
+ *
+ * #define SEGMENTATION_PYTHON
+ *
+ * And after segmentation, the cleanup routine, temporarily duplicated in
+ * GarmentCleanup, has to be called to complete segmentation.
  *
  */
 
