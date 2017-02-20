@@ -59,6 +59,7 @@ int main (int argc, char** argv)
     float ransac_threshold = 0.02;
     float hsv_s_threshold = 0.30;
     float hsv_v_threshold = 0.35;
+    bool debug_enabled = false;
 
     //-- Show usage
     if (pcl::console::find_switch(argc, argv, "-h") || pcl::console::find_switch(argc, argv, "--help"))
@@ -67,26 +68,8 @@ int main (int argc, char** argv)
         return 0;
     }
 
-    if (pcl::console::find_switch(argc, argv, "--ransac-threshold"))
-        pcl::console::parse_argument(argc, argv, "--ransac-threshold", ransac_threshold);
-    else
-    {
-        std::cerr << "RANSAC theshold not specified, using default value..." << std::endl;
-    }
-
-    if (pcl::console::find_switch(argc, argv, "--hsv-s-threshold"))
-        pcl::console::parse_argument(argc, argv, "--hsv-s-threshold", hsv_s_threshold);
-    else
-    {
-        std::cerr << "Saturation theshold not specified, using default value..." << std::endl;
-    }
-
-    if (pcl::console::find_switch(argc, argv, "--hsv-v-threshold"))
-        pcl::console::parse_argument(argc, argv, "--hsv-v-threshold", hsv_v_threshold);
-    else
-    {
-        std::cerr << "Value theshold not specified, using default value..." << std::endl;
-    }
+    if (pcl::console::find_switch(argc, argv, "--enable-debug"))
+        debug_enabled = true;
 
     //-- Get point cloud file from arguments
     std::vector<int> filenames;
@@ -167,7 +150,7 @@ int main (int argc, char** argv)
     debug.setAutoShow(false);
     debug.setEnabled(false);
 
-    debug.setEnabled(true);
+    debug.setEnabled(debug_enabled);
     debug.plotPointCloud<pcl::PointXYZRGB>(source_cloud_color, Debug::COLOR_ORIGINAL);
     debug.show("Original with color");
 
@@ -202,7 +185,7 @@ int main (int argc, char** argv)
       }
     }
 
-    debug.setEnabled(true);
+    debug.setEnabled(debug_enabled);
     debug.plotPointCloud<pcl::PointXYZRGB>(largest_color_cluster, Debug::COLOR_GREEN);
     debug.show("Filtered garment cloud");
 
@@ -239,7 +222,7 @@ int main (int argc, char** argv)
     record_transformation(argv[filenames[0]]+std::string("-transform2.txt"), garment_translation_transform, Eigen::Quaternionf(t2.rotation()));
 
 
-    debug.setEnabled(true);
+    debug.setEnabled(debug_enabled);
     debug.plotPointCloud<pcl::PointXYZRGB>(oriented_garment_cloud, Debug::COLOR_GREEN);
     debug.plotBoundingBox(min_point_OBB, max_point_OBB, position_OBB, rotational_matrix_OBB, Debug::COLOR_YELLOW);
     debug.show("Oriented garment patch");
