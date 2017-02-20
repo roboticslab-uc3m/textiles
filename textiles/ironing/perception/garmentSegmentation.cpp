@@ -48,6 +48,7 @@ void show_usage(char * program_name)
     std::cout << "--ransac-threshold: Set ransac threshold value (default: 0.02)" << std::endl;
     std::cout << "--hsv-s-threshold: threshold for saturation channel on hsv (default: ??)" << std::endl;
     std::cout << "--hsv-v-threshold: threshold for value channel on hsv (default: ??)" << std::endl;
+    std::cout << "--enable-debug: enable debug info display" << std::endl;
 }
 
 void record_transformation(std::string output_file, Eigen::Affine3f translation_transform, Eigen::Quaternionf rotation_quaternion)

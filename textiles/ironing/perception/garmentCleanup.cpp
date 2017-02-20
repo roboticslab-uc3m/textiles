@@ -12,19 +12,12 @@
 #include <pcl/io/pcd_io.h>
 #include <pcl/io/ply_io.h>
 #include <pcl/point_types.h>
-#include <pcl/ModelCoefficients.h>
 #include <pcl/filters/extract_indices.h>
-#include <pcl/filters/voxel_grid.h>
-#include <pcl/sample_consensus/method_types.h>
-#include <pcl/sample_consensus/model_types.h>
-#include <pcl/segmentation/sac_segmentation.h>
-#include <pcl/filters/project_inliers.h>
 #include <pcl/segmentation/extract_clusters.h>
 #include <pcl/common/transforms.h>
 #include <pcl/filters/passthrough.h>
 #include <pcl/search/search.h>
 #include <pcl/search/kdtree.h>
-#include <pcl/segmentation/region_growing_rgb.h>
 #include <pcl/point_types_conversion.h>
 #include <pcl/features/moment_of_inertia_estimation.h>
 
@@ -35,9 +28,7 @@ void show_usage(char * program_name)
     std::cout << std::endl;
     std::cout << "Usage: " << program_name << " cloud_filename.[pcd|ply]" << std::endl;
     std::cout << "-h:  Show this help." << std::endl;
-    std::cout << "--ransac-threshold: Set ransac threshold value (default: 0.02)" << std::endl;
-    std::cout << "--hsv-s-threshold: threshold for saturation channel on hsv (default: ??)" << std::endl;
-    std::cout << "--hsv-v-threshold: threshold for value channel on hsv (default: ??)" << std::endl;
+    std::cout << "--enable-debug: enable debug info display" << std::endl;
 }
 
 void record_transformation(std::string output_file, Eigen::Affine3f translation_transform, Eigen::Quaternionf rotation_quaternion)
@@ -56,9 +47,6 @@ int main (int argc, char** argv)
     //---------------------------------------------------------------------------------------------------
 
     //-- Command-line arguments
-    float ransac_threshold = 0.02;
-    float hsv_s_threshold = 0.30;
-    float hsv_v_threshold = 0.35;
     bool debug_enabled = false;
 
     //-- Show usage
@@ -133,14 +121,6 @@ int main (int argc, char** argv)
             return -1;
         }
     }
-
-    //-- Print arguments to user
-    std::cout << "Selected arguments: " << std::endl
-              << "\tRANSAC threshold: " << ransac_threshold << std::endl
-              << "\tColor point threshold: " << hsv_s_threshold << std::endl
-              << "\tColor region threshold: " << hsv_v_threshold << std::endl;
-
-    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered(new pcl::PointCloud<pcl::PointXYZ>);
 
 
     //--------------------------------------------------------------------------------------------------------
