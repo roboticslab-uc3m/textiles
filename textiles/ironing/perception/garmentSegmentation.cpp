@@ -1,8 +1,17 @@
 /*
- * ironingClothes
+ * GarmentSegmentation
  * --------------------------------------
  *
- * Placeholder text
+ * Segments the garment that has been placed on the ironing board from the
+ * ironing board and the environment.
+ *
+ * If Python is to be used to perform segmentation, the following line has to
+ * be added:
+ *
+ * #define SEGMENTATION_PYTHON
+ *
+ * And after segmentation, the cleanup routine, temporarily duplicated in
+ * GarmentCleanup, has to be called to complete segmentation.
  *
  */
 
@@ -29,6 +38,8 @@
 
 #include "Debug.hpp"
 
+#define SEGMENTATION_PYTHON
+
 void show_usage(char * program_name)
 {
     std::cout << std::endl;
@@ -37,6 +48,7 @@ void show_usage(char * program_name)
     std::cout << "--ransac-threshold: Set ransac threshold value (default: 0.02)" << std::endl;
     std::cout << "--hsv-s-threshold: threshold for saturation channel on hsv (default: ??)" << std::endl;
     std::cout << "--hsv-v-threshold: threshold for value channel on hsv (default: ??)" << std::endl;
+    std::cout << "--enable-debug: enable debug info display" << std::endl;
 }
 
 void record_transformation(std::string output_file, Eigen::Affine3f translation_transform, Eigen::Quaternionf rotation_quaternion)
@@ -58,6 +70,7 @@ int main (int argc, char** argv)
     float ransac_threshold = 0.02;
     float hsv_s_threshold = 0.30;
     float hsv_v_threshold = 0.35;
+    bool debug_enabled = false;
 
     //-- Show usage
     if (pcl::console::find_switch(argc, argv, "-h") || pcl::console::find_switch(argc, argv, "--help"))
@@ -86,6 +99,10 @@ int main (int argc, char** argv)
     {
         std::cerr << "Value theshold not specified, using default value..." << std::endl;
     }
+
+    if (pcl::console::find_switch(argc, argv, "--enable-debug"))
+        debug_enabled = true;
+
 
     //-- Get point cloud file from arguments
     std::vector<int> filenames;
@@ -166,7 +183,7 @@ int main (int argc, char** argv)
     debug.setAutoShow(false);
     debug.setEnabled(false);
 
-    debug.setEnabled(true);
+    debug.setEnabled(debug_enabled);
     debug.plotPointCloud<pcl::PointXYZRGB>(source_cloud_color, Debug::COLOR_ORIGINAL);
     debug.show("Original with color");
 
@@ -222,7 +239,7 @@ int main (int argc, char** argv)
         all_planes.push_back(copy_current_plane);
 
         //-- Debug stuff
-        debug.setEnabled(false);
+        debug.setEnabled(debug_enabled);
         debug.plotPlane(*current_plane, Debug::COLOR_BLUE);
         debug.plotPointCloud<pcl::PointXYZ>(cloud_filtered, Debug::COLOR_RED);
         debug.show("Plane segmentation");
@@ -284,7 +301,7 @@ int main (int argc, char** argv)
         std::cout << "Found closest plane with h=" << min_height << std::endl;
 
         //-- Debug stuff
-        debug.setEnabled(true);
+        debug.setEnabled(debug_enabled);
         debug.plotPlane(*garment_plane, Debug::COLOR_BLUE);
         debug.plotPointCloud<pcl::PointXYZ>(source_cloud, Debug::COLOR_RED);
         debug.show("Garment plane");
@@ -312,7 +329,7 @@ int main (int argc, char** argv)
     //-- Save to file
     record_transformation(argv[filenames[0]]+std::string("-transform1.txt"), translation_transform, rotation_quaternion);
 
-    debug.setEnabled(true);
+    debug.setEnabled(debug_enabled);
     debug.plotPointCloud<pcl::PointXYZRGB>(oriented_cloud, Debug::COLOR_GREEN);
     debug.show("Oriented");
 
@@ -326,10 +343,15 @@ int main (int argc, char** argv)
     passthrough_filter.setFilterLimitsNegative(false);
     passthrough_filter.filter(*garment_table_cloud);
 
-    debug.setEnabled(true);
+    debug.setEnabled(debug_enabled);
     debug.plotPointCloud<pcl::PointXYZRGB>(garment_table_cloud, Debug::COLOR_GREEN);
     debug.show("Table cloud (filtered)");
 
+#ifdef SEGMENTATION_PYTHON
+    //-- Save point cloud in file to process it in Python
+    pcl::io::savePCDFileBinary(argv[filenames[0]]+std::string("-unsegmented.pcd"), *garment_table_cloud);
+    return 0;
+#else
     //-- Color segmentation of the garment
     //-----------------------------------------------------------------------------------
     //-- HSV thresholding
@@ -344,7 +366,7 @@ int main (int argc, char** argv)
             filtered_garment_cloud->push_back(garment_table_cloud->points[i]);
     }
 
-    debug.setEnabled(true);
+    debug.setEnabled(debug_enabled);
     debug.plotPointCloud<pcl::PointXYZRGB>(filtered_garment_cloud, Debug::COLOR_GREEN);
     debug.show("Garment cloud");
 
@@ -379,7 +401,7 @@ int main (int argc, char** argv)
       }
     }
 
-    debug.setEnabled(true);
+    debug.setEnabled(debug_enabled);
     debug.plotPointCloud<pcl::PointXYZRGB>(largest_color_cluster, Debug::COLOR_GREEN);
     debug.show("Filtered garment cloud");
 
@@ -416,7 +438,7 @@ int main (int argc, char** argv)
     record_transformation(argv[filenames[0]]+std::string("-transform2.txt"), garment_translation_transform, Eigen::Quaternionf(t2.rotation()));
 
 
-    debug.setEnabled(true);
+    debug.setEnabled(debug_enabled);
     debug.plotPointCloud<pcl::PointXYZRGB>(oriented_garment_cloud, Debug::COLOR_GREEN);
     debug.plotBoundingBox(min_point_OBB, max_point_OBB, position_OBB, rotational_matrix_OBB, Debug::COLOR_YELLOW);
     debug.show("Oriented garment patch");
@@ -425,4 +447,5 @@ int main (int argc, char** argv)
     pcl::io::savePCDFileBinary(argv[filenames[0]]+std::string("-output.pcd"), *oriented_garment_cloud);
 
     return 0;
+#endif
 }

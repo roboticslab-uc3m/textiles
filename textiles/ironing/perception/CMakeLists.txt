@@ -1,8 +1,11 @@
 # Add programs
 include_directories(${TEXTILES_INCLUDE_DIRS})
 
-add_executable(ironingClothes ironingClothes.cpp)
-target_link_libraries (ironingClothes ${PCL_LIBRARIES} ${TEXTILES_LIBRARIES})
+add_executable(garmentSegmentation garmentSegmentation.cpp)
+target_link_libraries (garmentSegmentation ${PCL_LIBRARIES} ${TEXTILES_LIBRARIES})
+
+add_executable(garmentCleanup garmentCleanup.cpp)
+target_link_libraries (garmentCleanup ${PCL_LIBRARIES} ${TEXTILES_LIBRARIES})
 
 add_executable(testRegionGrowing testRegionGrowing.cpp)
 target_link_libraries (testRegionGrowing ${PCL_LIBRARIES} ${TEXTILES_LIBRARIES})
