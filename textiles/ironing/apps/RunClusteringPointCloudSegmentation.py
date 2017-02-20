@@ -11,7 +11,7 @@ from textiles.ironing.perception.ClusteringPointCloudSegmentation import cluster
 def main(input):
     """
     Performs a clustering_point_cloud_segmentation over a file
-    :param input: Input point cloud 
+    :param input: Input point cloud
     """
     src_file = os.path.abspath(os.path.expanduser(input))
     clustering_point_cloud_segmentation_from_file(src_file)

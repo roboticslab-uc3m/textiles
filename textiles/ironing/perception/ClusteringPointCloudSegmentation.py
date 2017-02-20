@@ -26,7 +26,7 @@ def clustering_point_cloud_segmentation_from_file(input_cloud_file):
         packed_array[:, :3] = cluster[:, :3]
         packed_array[:, 3] = rgb
         point_cloud_output = pypcd.make_xyz_rgb_point_cloud(packed_array)
-        point_cloud_output.save_pcd(input_cloud_file+'-cluster{:2}.pcd'.format(i), compression='binary_compressed')
+        point_cloud_output.save_pcd(input_cloud_file+'-cluster{}.pcd'.format(i), compression='binary_compressed')
 
 
 def clustering_point_cloud_segmentation(input_point_cloud):
