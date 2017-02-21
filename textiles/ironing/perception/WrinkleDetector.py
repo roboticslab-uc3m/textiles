@@ -2,9 +2,24 @@ import numpy as np
 import matplotlib.pyplot as plt
 from skimage.filters import frangi, hessian
 from skimage.filters.rank import median
-from skimage.morphology import disk, medial_axis, skeletonize
+from skimage.morphology import binary_erosion, disk, medial_axis, skeletonize
 from skimage import img_as_ubyte
 import cv2
+
+
+def detect_wrinkles_from_file(data_file_path, depth_file_suffix="-depth_image.m", image_file_suffix="-wild_image.m",
+                              mask_file_suffix="-image_mask.m"):
+    # Construct filenames
+    # image_filename = data_file_path + depth_file_suffix
+    image_filename = data_file_path + image_file_suffix
+    mask_filename = data_file_path + mask_file_suffix
+
+    # Load data from files
+    image = np.loadtxt(image_filename)
+    mask = np.loadtxt(mask_filename)
+    mask = img_as_ubyte(binary_erosion(mask), disk(7))
+
+    return detect_wrinkles(image, mask=mask)
 
 
 def detect_wrinkles(image, mask=None, debug=False, use_frangi=False):
