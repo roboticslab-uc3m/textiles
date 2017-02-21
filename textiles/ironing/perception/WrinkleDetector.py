@@ -17,11 +17,11 @@ def detect_wrinkles(image, mask=None, debug=False, use_frangi=False):
     _, contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     garment_contour = max(contours, key=cv2.contourArea)
 
-    # Display the image and plot garment contour
-    fig, ax = plt.subplots()
-    ax.imshow(normalized_image, interpolation='nearest', cmap=plt.cm.RdGy)
-
     if debug:
+        # Display the image and plot garment contour
+        fig, ax = plt.subplots()
+        ax.imshow(normalized_image, interpolation='nearest', cmap=plt.cm.RdGy)
+
         points = [tuple(point[0]) for point in garment_contour]
         # Plot lines
         for (start_x, start_y), (end_x, end_y) in zip(points, points[1:]+points[0:1]):
