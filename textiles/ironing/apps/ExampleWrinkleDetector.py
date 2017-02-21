@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-ironingPathPlanning computes ironing paths from wrinkle data
+ExampleWrinkleDetector computes ironing paths from wrinkle data
 """
 
 import os
@@ -19,7 +19,7 @@ data_file_path = os.path.join(os.path.abspath(os.path.expanduser(data_folder)), 
 __author__ = 'def'
 
 if __name__ == '__main__':
-    trajectory = detect_wrinkles_from_file(data_file_path)
+    trajectory = detect_wrinkles_from_file(data_file_path, debug=True)
     print(trajectory)
 
 
