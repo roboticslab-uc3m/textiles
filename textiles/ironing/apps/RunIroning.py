@@ -5,7 +5,7 @@ import logging
 import begin
 
 from textiles.ironing.perception.ClusteringPointCloudSegmentation import clustering_point_cloud_segmentation_from_file
-
+from textiles.ironing.perception.WrinkleDetection import detect_wrinkles_from_file
 
 pcl_segmentation_binary = "garmentSegmentation"
 pcl_cleanup_binary = "garmentCleanup"
@@ -52,3 +52,21 @@ def main(input_file, debug=False):
         print(str(out))
         print(str(err))
 
+    # Call the processing program for computing WiLD descriptors
+    args = [os.path.expanduser(os.path.join(pcl_processing_folder, pcl_detection_binary)),
+            "--normal-threshold",
+            str(0.03),
+            input_file_absolute+segmented_file_suffix+cluster_file_suffix+cleaned_file_suffix]
+
+    p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    out, err = p.communicate()
+
+    if debug:
+        print(str(out))
+        print(str(err))
+
+
+    # Extract ironing path with Python
+    trajectory = detect_wrinkles_from_file(input_file_absolute + segmented_file_suffix + cluster_file_suffix +
+                                           cleaned_file_suffix, debug=True)
+    print(trajectory)

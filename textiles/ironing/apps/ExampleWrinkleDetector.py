@@ -5,7 +5,7 @@ ExampleWrinkleDetector computes ironing paths from wrinkle data
 
 import os
 
-from textiles.ironing.perception.WrinkleDetector import detect_wrinkles_from_file
+from textiles.ironing.perception.WrinkleDetection import detect_wrinkles_from_file
 
 
 data_folder_pattern = "~/Research/datasets/2017-02-13-ironing-experiments/{}"
