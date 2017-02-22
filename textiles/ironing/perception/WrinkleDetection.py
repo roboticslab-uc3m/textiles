@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from skimage.filters import frangi, hessian
 from skimage.filters.rank import median
-from skimage.morphology import binary_erosion, disk, medial_axis, skeletonize
+from skimage.morphology import binary_erosion, binary_dilation, disk, medial_axis, skeletonize
 from skimage import img_as_ubyte
 import cv2
 
@@ -18,25 +18,32 @@ def detect_wrinkles_from_file(data_file_path, debug=False,
     # Load data from files
     image = np.loadtxt(image_filename)
     mask = np.loadtxt(mask_filename)
-    mask = img_as_ubyte(binary_erosion(mask), disk(7))
 
     return detect_wrinkles(image, mask=mask, debug=debug)
 
 
 def detect_wrinkles(image, mask=None, debug=False, use_frangi=False):
-    # Normalize (?)
-    minimum = 0.9  # np.min(image[np.nonzero(image)])
-    normalized_image = np.where(image > minimum, (image - minimum) / (image.max()-minimum), 0)
+    if mask is None:
+        mask = np.ones_like(image)
+
+    # Erode mask to discard border information
+    inner_mask = img_as_ubyte(binary_erosion(binary_dilation(mask, disk(3)), disk(11)))
+    mask = img_as_ubyte(mask)
+
+    # Normalize (not sure if required, WiLD should be already normalized)
+    minimum = np.min(image[np.nonzero(mask)])  # 0.9
+    normalized_image = np.where(mask != 0, (image - minimum) / (image.max()-minimum), 0)
     filtered_image = median(normalized_image, disk(3))
 
     # Step #1: Identify garment border
-    _, contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    _, contours, _ = cv2.findContours(inner_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     garment_contour = max(contours, key=cv2.contourArea)
 
     if debug:
         # Display the image and plot garment contour
         fig, ax = plt.subplots()
-        ax.imshow(normalized_image, interpolation='nearest', cmap=plt.cm.RdGy)
+        im = ax.imshow(normalized_image, interpolation='nearest', cmap=plt.cm.RdGy)
+        plt.colorbar(im)
 
         points = [tuple(point[0]) for point in garment_contour]
         # Plot lines
@@ -51,7 +58,7 @@ def detect_wrinkles(image, mask=None, debug=False, use_frangi=False):
         ax.set_yticks([])
 
         plt.figure()
-        plt.hist(normalized_image, bins=np.arange(0, 1, 0.05))
+        plt.hist(np.ravel(normalized_image), bins=np.arange(0, 1.01, 0.01))
         plt.show()
 
     # Step #2: Identify wrinkle(s)
@@ -79,8 +86,10 @@ def detect_wrinkles(image, mask=None, debug=False, use_frangi=False):
         binary_wrinkles = img_as_ubyte(np.where(img_as_ubyte(norm_wrinkles) > threshold_wrinkles, 255, 0))
 
     else:
-        binary_wrinkles = img_as_ubyte(np.where(np.logical_and(normalized_image > 0.90,
-                                                               normalized_image < 0.95), 255, 0))
+        binary_wrinkles = img_as_ubyte(np.where(np.logical_and(inner_mask,
+                                                               np.logical_and(normalized_image > 0.4,
+                                                                              normalized_image < 0.8)),
+                                                255, 0))
 
     if debug:
         plt.imshow(binary_wrinkles, cmap=plt.cm.gray)
