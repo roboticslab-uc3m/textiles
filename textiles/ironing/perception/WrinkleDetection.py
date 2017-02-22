@@ -88,7 +88,7 @@ def detect_wrinkles(image, mask=None, debug=False, use_frangi=False):
     else:
         binary_wrinkles = img_as_ubyte(np.where(np.logical_and(inner_mask,
                                                                np.logical_and(normalized_image > 0.4,
-                                                                              normalized_image < 0.8)),
+                                                                              normalized_image < 0.85)),
                                                 255, 0))
 
     if debug:
