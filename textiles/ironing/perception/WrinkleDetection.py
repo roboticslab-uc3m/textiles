@@ -138,18 +138,18 @@ def detect_wrinkles(image, mask=None, debug=False, use_frangi=False):
     # Find row and column locations that are non-zero in skeleton
     (rows, cols) = np.nonzero(wrinkle_skeleton)
 
-    # Retrieve the trajectory as a graph (plus extreme nodes)
-    trajectory = {}
+    # Retrieve the path as a graph (plus extreme nodes)
+    path = {}
     extreme_points = []
     for src_x, src_y in zip(cols, rows):
         for dst_x, dst_y in zip(cols, rows):
             if src_x == dst_x and src_y == dst_y:
                 continue
             if np.sqrt((src_x-dst_x)**2+(src_y-dst_y)**2) < 2:
-                trajectory.setdefault((src_x, src_y), []).append((dst_x, dst_y))
-        if len(trajectory.get((src_x, src_y), [])) == 1:
+                path.setdefault((src_x, src_y), []).append((dst_x, dst_y))
+        if len(path.get((src_x, src_y), [])) == 1:
             extreme_points.append((src_x, src_y))
-    #  print(trajectory)
+    #  print(path)
 
     # Step 3 (4&5): Compute start and end points
     start = None
@@ -162,26 +162,26 @@ def detect_wrinkles(image, mask=None, debug=False, use_frangi=False):
     start = extreme_points[distances.index(max(distances))]
     end = extreme_points[distances.index(min(distances))]
 
-    # Compute trajectory as a list of points
+    # Compute path as a list of points
     src_node = start
-    trajectory_points = []
+    path_points = []
     while True:
-        trajectory_points.append(src_node)
-        if src_node != start and len(trajectory[src_node]) == 1:
+        path_points.append(src_node)
+        if src_node != start and len(path[src_node]) == 1:
             break
         if src_node == end:
             break
-        for destination in trajectory[src_node]:
-            if destination not in trajectory_points:
+        for destination in path[src_node]:
+            if destination not in path_points:
                 src_node = destination
                 continue
-    #  print(trajectory_points)
+    #  print(path_points)
 
     if debug:
         # Display the image and plot endpoints
         plt.imshow(normalized_image, interpolation='nearest', cmap=plt.cm.RdGy)
         # Plot lines
-        for (start_x, start_y), (end_x, end_y) in zip(trajectory_points, trajectory_points[1:]):
+        for (start_x, start_y), (end_x, end_y) in zip(path_points, path_points[1:]):
             plt.plot((start_x, end_x), (start_y, end_y), 'r-', linewidth=2.0, alpha=0.7)
         # Plot points
         plt.plot(start[0], start[1], 'bo', alpha=0.7)
@@ -196,5 +196,6 @@ def detect_wrinkles(image, mask=None, debug=False, use_frangi=False):
     # with wild
     global_metric = np.sum(np.where(mask != 0, 1-normalized_image, 0)) / cv2.contourArea(true_garment_contour)
     return trajectory_points, global_metric
+
 
 
