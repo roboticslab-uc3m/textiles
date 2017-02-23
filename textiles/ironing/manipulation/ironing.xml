@@ -2,7 +2,7 @@
 <name>ironing App</name>
 
     <module>
-        <name>launchTeoYarp</name>
+        <name>yarpdev</name>
         <parameters>--from /usr/local/share/teo/contexts/kinematics/rightArmKinematics-pan45-tilt30.ini --device BasicCartesianControl --angleRepr axisAngle --robot remote_controlboard --local /BasicCartesianControl/teo/rightArm --remote /teo/rightArm</parameters>
         <node>localhost</node>
     </module>
