@@ -59,4 +59,12 @@ def clustering_point_cloud_segmentation(input_point_cloud):
     cluster_1 = X[labels == 0]
     cluster_2 = X[labels == 1]
 
-    return cluster_1, cluster_2
+    # Return sorted clusters (to increase repeatibility of code)
+    # This criteria will probably depend on the specific camera arrangement and how the garment is scanned
+    # In our case, with the ASUS frame of reference, the left part of the scan (the garment) will have a
+    # smaller X coordinate.
+    centroids = km.cluster_centers_
+    if centroids[0][0] < centroids[1][0]:
+        return cluster_1, cluster_2
+    else:
+        return cluster_2, cluster_1
