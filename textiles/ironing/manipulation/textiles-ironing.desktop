@@ -6,4 +6,4 @@ Exec=yarpmanager
 NoDisplay=true
 StartupNotify=true
 Icon=A35F_hh.0
-Path=/home/yo/repos/textiles/ironing/manipulation
+Path=/home/teo/repos/textiles/textiles/ironing/manipulation
