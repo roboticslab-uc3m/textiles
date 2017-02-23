@@ -176,6 +176,7 @@ def detect_wrinkles(image, mask=None, debug=False, use_frangi=False):
                 src_node = destination
                 continue
     #  print(path_points)
+    assert(path_points[-1][0]==end[0] and path_points[-1][1] == end[1])
 
     if debug:
         # Display the image and plot endpoints
