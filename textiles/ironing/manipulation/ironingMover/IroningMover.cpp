@@ -13,6 +13,7 @@ bool IroningMover::configure(yarp::os::ResourceFinder &rf) {
     robot = rf.check("robot",yarp::os::Value(DEFAULT_ROBOT),"name of /robot to be used").asString();
     targetForce = rf.check("targetForce",yarp::os::Value(DEFAULT_TARGET_FORCE),"target force").asDouble();
     strategy = rf.check("strategy",yarp::os::Value(DEFAULT_STRATEGY),"strategy").asString();
+    avoidTrunk = rf.check("avoidTrunk",yarp::os::Value(DEFAULT_AVOID_TRUNK),"avoid trunk movement").asInt();
 
     printf("--------------------------------------------------------------\n");
     if (rf.check("help")) {
@@ -176,29 +177,35 @@ bool IroningMover::openPortsAndDevices(yarp::os::ResourceFinder &rf)
 
 bool IroningMover::preprogrammedInitTrajectory()
 {
-    //-- Pan trunk
-    if(robot=="/teo")
-        trunkIPositionControl->setRefSpeed(0,2.0);
-    else if(robot=="/teoSim")
-        trunkIPositionControl->setRefSpeed(0,15);
-    trunkIPositionControl->positionMove(0,DEFAULT_TRUNK_PAN);
-
-    //-- Tilt trunk forward/down
-    if(robot=="/teo")
-        trunkIPositionControl->setRefSpeed(1,2.0);
-    else if(robot=="/teoSim")
-        trunkIPositionControl->setRefSpeed(1,15);
-    trunkIPositionControl->positionMove(1,DEFAULT_TRUNK_TILT);
-    CD_DEBUG("Waiting for trunk.");
-    bool done = false;
-    while(!done)
+    if( ! avoidTrunk )
     {
-        trunkIPositionControl->checkMotionDone(&done);
-        CD_DEBUG_NO_HEADER(".");
-        fflush(stdout);
-        yarp::os::Time::delay(0.1);
+        //-- Pan trunk (left) --
+
+        if(robot=="/teo")
+            trunkIPositionControl->setRefSpeed(0,2.0);
+        else if(robot=="/teoSim")
+            trunkIPositionControl->setRefSpeed(0,15);
+        trunkIPositionControl->positionMove(0,DEFAULT_TRUNK_PAN);
+
+        //-- Tilt trunk (forward+down) --
+
+        if(robot=="/teo")
+            trunkIPositionControl->setRefSpeed(1,2.0);
+        else if(robot=="/teoSim")
+            trunkIPositionControl->setRefSpeed(1,15);
+
+        trunkIPositionControl->positionMove(1,DEFAULT_TRUNK_TILT);
+        CD_DEBUG("Waiting for trunk.");
+        bool done = false;
+        while(!done)
+        {
+            trunkIPositionControl->checkMotionDone(&done);
+            CD_DEBUG_NO_HEADER(".");
+            fflush(stdout);
+            yarp::os::Time::delay(0.1);
+        }
+        CD_DEBUG_NO_HEADER("\n");
     }
-    CD_DEBUG_NO_HEADER("\n");
 
     //-- Pan head
     headIPositionControl->positionMove(0,DEFAULT_HEAD_PAN);
