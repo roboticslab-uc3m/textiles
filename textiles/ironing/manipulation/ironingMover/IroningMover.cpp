@@ -247,12 +247,12 @@ bool IroningMover::preprogrammedInitTrajectory()
     }
 
     // vid 1 and 2
-    {
+    /*{
         std::vector<double> q(7,0.0);
         double qd[7]={6.860721, -50.268563, -28.792619, 76.61138, 66.813708, -21.894552, 0.0};
         for(int i=0;i<7;i++) q[i]=qd[i];
         rightArmJointsMoveAndWait(q);
-    }
+    }*/
 
 
     //exit(1);
