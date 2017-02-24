@@ -14,7 +14,7 @@
     </module>
 
     <connection>
-        <from>/jr3/ch3:o</from>
+        <from>/jr3/ch2:o</from>
         <to>/ironingMover/force:i</to>
     </connection>
 
