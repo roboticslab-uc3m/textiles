@@ -130,6 +130,7 @@ bool IroningMover::openPortsAndDevices(yarp::os::ResourceFinder &rf)
     yarp::os::Property cartesianControlOptions;
     cartesianControlOptions.fromString( rf.toString() );
     cartesianControlOptions.put("device",cartesianControl);
+    cartesianControlOptions.put("cartesianRemote","/teo/rightArm/CartesianControl");
 
     cartesianControlDevice.open(cartesianControlOptions);
     if( ! cartesianControlDevice.isValid() ) {
