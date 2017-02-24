@@ -247,9 +247,16 @@ bool IroningMover::preprogrammedInitTrajectory()
         rightArmJointsMoveAndWait(q);
     }
 
-    {
+    /*{
         std::vector<double> q(7,0.0);
         double qd[7]={-15, -65.448151, 9.40246, 97.978912, 72.664323, -48.400696, 0.0};
+        for(int i=0;i<7;i++) q[i]=qd[i];
+        rightArmJointsMoveAndWait(q);
+    }*/
+
+    {
+        std::vector<double> q(7,0.0);
+        double qd[7]={43.585236, -31.177521, 7.06942, 57.293495, 39.806679, -50.773285};
         for(int i=0;i<7;i++) q[i]=qd[i];
         rightArmJointsMoveAndWait(q);
     }
@@ -299,7 +306,7 @@ bool IroningMover::strategyPosition()
     while( force > targetForce )
     {
         yarp::os::Bottle b;
-        x[2] -= 0.0075;
+        x[2] -= 0.005;
         bool okMove = iCartesianControl->movj(x);
         rightArmFTSensorPort.read(b);
         force = b.get(2).asDouble();
@@ -314,7 +321,7 @@ bool IroningMover::strategyPosition()
     for(int i=0;i<20;i++)
     {
         yarp::os::Bottle b;
-        x[1] += 0.0075;
+        x[1] += 0.005;
         bool okMove = iCartesianControl->movj(x);
 
         rightArmFTSensorPort.read(b);
@@ -331,7 +338,7 @@ bool IroningMover::strategyPosition()
     for(int i=0;i<30;i++)
     {
         yarp::os::Bottle b;
-        x[2] += 0.0075;
+        x[2] += 0.005;
         bool okMove = iCartesianControl->movj(x);
 
         rightArmFTSensorPort.read(b);
@@ -363,7 +370,7 @@ bool IroningMover::strategyVelocity()
     std::vector<double> xdot(6,0.0);
     xdot[0] = 0;
     xdot[1] = 0;
-    xdot[2] = -0.03;
+    xdot[2] = -0.003;
     bool okMove = iCartesianControl->movv(xdot);
     if( okMove ) {
         CD_DEBUG("Begin move arm down.\n");
@@ -382,7 +389,7 @@ bool IroningMover::strategyVelocity()
 
     CD_DEBUG("***************ADVANCE*****************\n");
     xdot[0] = 0;
-    xdot[1] = +0.015;
+    xdot[1] = +0.0015;
     xdot[2] = 0;
 
     bool okMove2 = iCartesianControl->movv(xdot);
@@ -405,7 +412,7 @@ bool IroningMover::strategyVelocity()
     CD_DEBUG("***************UP*****************\n");
     xdot[0] = 0;
     xdot[1] = 0;
-    xdot[2] = +0.03;
+    xdot[2] = +0.003;
 
     bool okMove3 = iCartesianControl->movv(xdot);
     if( okMove3 ) {

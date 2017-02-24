@@ -16,7 +16,7 @@
 #define DEFAULT_CARTESIAN_CONTROL "CartesianControlClient"
 #define DEFAULT_ROBOT "/teo"
 
-#define DEFAULT_TARGET_FORCE -0.2
+#define DEFAULT_TARGET_FORCE -200.0
 
 #define DEFAULT_STRATEGY "position"
 
