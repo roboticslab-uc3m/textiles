@@ -177,14 +177,14 @@ bool IroningMover::preprogrammedInitTrajectory()
 {
     //-- Pan trunk
     if(robot=="/teo")
-        trunkIPositionControl->setRefSpeed(0,0.1);
+        trunkIPositionControl->setRefSpeed(0,2.0);
     else if(robot=="/teoSim")
         trunkIPositionControl->setRefSpeed(0,15);
     trunkIPositionControl->positionMove(0,DEFAULT_TRUNK_PAN);
 
     //-- Tilt trunk forward/down
     if(robot=="/teo")
-        trunkIPositionControl->setRefSpeed(1,0.1);
+        trunkIPositionControl->setRefSpeed(1,2.0);
     else if(robot=="/teoSim")
         trunkIPositionControl->setRefSpeed(1,15);
     trunkIPositionControl->positionMove(1,DEFAULT_TRUNK_TILT);
