@@ -20,4 +20,4 @@ yarpdev --from /usr/local/share/teo/contexts/kinematics/rightArmKinematics-pan45
 
 - From app, connect all.
 
-- Run `ironingMover --robot /teo --avoidTrunk 1 --targetForce -5.0 --strategy position`.
+- Run `ironingMover --robot /teo --avoidTrunk 1 --targetForce -5.0 --strategy position` # Use `--help` parameter for more options and other strategies.
