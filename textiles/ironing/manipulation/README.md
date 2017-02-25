@@ -18,6 +18,6 @@ yarpscope --remote /jr3/ch2:o --index "(0 1 2 3 4 5)" --color "(Red Green Blue L
 yarpdev --from /usr/local/share/teo/contexts/kinematics/rightArmKinematics-pan45-tilt30.ini --name /teo/rightArm/CartesianControl --device BasicCartesianControl --angleRepr axisAngle --robot remote_controlboard --local /BasicCartesianControl/teo/rightArm --remote /teo/rightArm
 ```
 
-- From app, connect all.
-
 - Run `ironingMover --robot /teo --avoidTrunk 1 --targetForce -5.0 --strategy position` # Use `--help` parameter for more options and other strategies.
+
+- From app, connect all.
