@@ -97,6 +97,8 @@ def detect_wrinkles(image, mask=None, debug=False, use_frangi=False):
 
     # Select largest wrinkle blob
     _, wrinkle_blobs, _ = cv2.findContours(binary_wrinkles, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    if not wrinkle_blobs:  # No wrinkles
+        return None, 0
     current_wrinkle_contour = max(wrinkle_blobs, key=cv2.contourArea)
 
     if debug:

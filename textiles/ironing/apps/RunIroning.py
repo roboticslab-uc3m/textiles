@@ -13,7 +13,7 @@ pcl_detection_binary = "wrinkleDetection"
 pcl_processing_folder = "~/Repositories/textiles/build/textiles/ironing/perception/"
 
 segmented_file_suffix = "-unsegmented.pcd"
-cluster_file_suffix = "-cluster0.pcd"
+cluster_file_suffix = "-cluster1.pcd"
 cleaned_file_suffix = "-output.pcd"
 
 
@@ -29,6 +29,7 @@ def main(input_file, debug=False):
             str(0.4),
             "--hsv-v-threshold",  # This is not really used, since we are using clustering
             str(0.30),
+            # "--enable-debug",
             input_file_absolute]
 
     p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
