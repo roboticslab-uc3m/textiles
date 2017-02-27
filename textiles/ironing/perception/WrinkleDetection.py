@@ -191,8 +191,10 @@ def detect_wrinkles(image, mask=None, debug=False, use_frangi=False):
     # Compute global metric
     _, contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     true_garment_contour = max(contours, key=cv2.contourArea)
-    global_metric = sum(map(cv2.contourArea, wrinkle_blobs)) / cv2.contourArea(true_garment_contour)
-
+    # with b-Wild
+    # global_metric = sum(map(cv2.contourArea, wrinkle_blobs)) / cv2.contourArea(true_garment_contour)
+    # with wild
+    global_metric = np.sum(np.where(mask != 0, 1-normalized_image, 0)) / cv2.contourArea(true_garment_contour)
     return trajectory_points, global_metric
 
 
