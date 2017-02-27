@@ -13,7 +13,9 @@ $ pcl_kinfu_largeScale -r -et --volume_size 1.5
 ```bash
 $ pcl_kinfu_largeScale_mesh_output world.pcd --volume_size 1.5
 ```
-3.Process the mesh to add texture information (this will open a graphic window and wait for user input):
+3.Copy all image files from the `KinfuSnapshots`folder to the folder containing the `mesh_1.ply` file.
+
+4.Process the mesh to add texture information (this will open a graphic window and wait for user input):
 ```bash
 $ pcl_kinfu_largeScale_texture_output mesh_1.ply
 ```
