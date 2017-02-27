@@ -19,7 +19,8 @@ data_file_path = os.path.join(os.path.abspath(os.path.expanduser(data_folder)), 
 __author__ = 'def'
 
 if __name__ == '__main__':
-    trajectory = detect_wrinkles_from_file(data_file_path, debug=True)
+    trajectory, descriptor = detect_wrinkles_from_file(data_file_path, debug=True)
     print(trajectory)
+    print(descriptor)
 
 
