@@ -5,16 +5,15 @@ This software has several, independent components to run when trying to iron a g
 ## Kinect Fusion
 The first step is to obtain a color mesh with PCL's KinFu. It is highly recommended to run KinFu in a new dedicated folder. This step has three sub-steps:
 
-1. Scan the garment with KinectFusion
+1.Scan the garment with KinectFusion 
 ```bash
 $ pcl_kinfu_largeScale -r -et --volume_size 1.5
 ```
-2. Process the scan output to a mesh
+2.Process the scan output to a mesh
 ```bash
 $ pcl_kinfu_largeScale_mesh_output world.pcd --volume_size 1.5
 ```
-
-3.  Process the mesh to add texture information (this will open a graphic window and wait for user input):
+3.Process the mesh to add texture information (this will open a graphic window and wait for user input):
 ```bash
 $ pcl_kinfu_largeScale_texture_output mesh_1.ply
 ```
