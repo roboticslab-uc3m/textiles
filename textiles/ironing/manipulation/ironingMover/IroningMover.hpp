@@ -16,7 +16,7 @@
 #define DEFAULT_CARTESIAN_CONTROL "CartesianControlClient"
 #define DEFAULT_ROBOT "/teo"
 
-#define DEFAULT_TARGET_FORCE -0.2
+#define DEFAULT_TARGET_FORCE -200.0
 
 #define DEFAULT_STRATEGY "position"
 
@@ -25,6 +25,8 @@
 
 #define DEFAULT_TRUNK_PAN 45.0
 #define DEFAULT_TRUNK_TILT 30.0
+
+#define DEFAULT_AVOID_TRUNK 0  // Put 1 to avoid
 
 namespace teo
 {
@@ -78,6 +80,9 @@ class IroningMover : public yarp::os::RFModule
 
         /** Preprogrammed Initialization Trajectory */
         bool preprogrammedInitTrajectory();
+
+        /** Maintain fixed trunk **/
+        bool avoidTrunk;
 
         /** Right arm joints move and wait (auxiliary function due to many calls) */
         bool rightArmJointsMoveAndWait(std::vector<double>& q);

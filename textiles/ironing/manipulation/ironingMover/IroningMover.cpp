@@ -13,6 +13,7 @@ bool IroningMover::configure(yarp::os::ResourceFinder &rf) {
     robot = rf.check("robot",yarp::os::Value(DEFAULT_ROBOT),"name of /robot to be used").asString();
     targetForce = rf.check("targetForce",yarp::os::Value(DEFAULT_TARGET_FORCE),"target force").asDouble();
     strategy = rf.check("strategy",yarp::os::Value(DEFAULT_STRATEGY),"strategy").asString();
+    avoidTrunk = rf.check("avoidTrunk",yarp::os::Value(DEFAULT_AVOID_TRUNK),"avoid trunk movement").asInt();
 
     printf("--------------------------------------------------------------\n");
     if (rf.check("help")) {
@@ -130,6 +131,7 @@ bool IroningMover::openPortsAndDevices(yarp::os::ResourceFinder &rf)
     yarp::os::Property cartesianControlOptions;
     cartesianControlOptions.fromString( rf.toString() );
     cartesianControlOptions.put("device",cartesianControl);
+    cartesianControlOptions.put("cartesianRemote","/teo/rightArm/CartesianControl");
 
     cartesianControlDevice.open(cartesianControlOptions);
     if( ! cartesianControlDevice.isValid() ) {
@@ -175,29 +177,35 @@ bool IroningMover::openPortsAndDevices(yarp::os::ResourceFinder &rf)
 
 bool IroningMover::preprogrammedInitTrajectory()
 {
-    //-- Pan trunk
-    if(robot=="/teo")
-        trunkIPositionControl->setRefSpeed(0,0.1);
-    else if(robot=="/teoSim")
-        trunkIPositionControl->setRefSpeed(0,15);
-    trunkIPositionControl->positionMove(0,DEFAULT_TRUNK_PAN);
-
-    //-- Tilt trunk forward/down
-    if(robot=="/teo")
-        trunkIPositionControl->setRefSpeed(1,0.1);
-    else if(robot=="/teoSim")
-        trunkIPositionControl->setRefSpeed(1,15);
-    trunkIPositionControl->positionMove(1,DEFAULT_TRUNK_TILT);
-    CD_DEBUG("Waiting for trunk.");
-    bool done = false;
-    while(!done)
+    if( ! avoidTrunk )
     {
-        trunkIPositionControl->checkMotionDone(&done);
-        CD_DEBUG_NO_HEADER(".");
-        fflush(stdout);
-        yarp::os::Time::delay(0.1);
+        //-- Pan trunk (left) --
+
+        if(robot=="/teo")
+            trunkIPositionControl->setRefSpeed(0,2.0);
+        else if(robot=="/teoSim")
+            trunkIPositionControl->setRefSpeed(0,15);
+        trunkIPositionControl->positionMove(0,DEFAULT_TRUNK_PAN);
+
+        //-- Tilt trunk (forward+down) --
+
+        if(robot=="/teo")
+            trunkIPositionControl->setRefSpeed(1,2.0);
+        else if(robot=="/teoSim")
+            trunkIPositionControl->setRefSpeed(1,15);
+
+        trunkIPositionControl->positionMove(1,DEFAULT_TRUNK_TILT);
+        CD_DEBUG("Waiting for trunk.");
+        bool done = false;
+        while(!done)
+        {
+            trunkIPositionControl->checkMotionDone(&done);
+            CD_DEBUG_NO_HEADER(".");
+            fflush(stdout);
+            yarp::os::Time::delay(0.1);
+        }
+        CD_DEBUG_NO_HEADER("\n");
     }
-    CD_DEBUG_NO_HEADER("\n");
 
     //-- Pan head
     headIPositionControl->positionMove(0,DEFAULT_HEAD_PAN);
@@ -239,20 +247,27 @@ bool IroningMover::preprogrammedInitTrajectory()
         rightArmJointsMoveAndWait(q);
     }
 
-    {
+    /*{
         std::vector<double> q(7,0.0);
         double qd[7]={-15, -65.448151, 9.40246, 97.978912, 72.664323, -48.400696, 0.0};
+        for(int i=0;i<7;i++) q[i]=qd[i];
+        rightArmJointsMoveAndWait(q);
+    }*/
+
+    {
+        std::vector<double> q(7,0.0);
+        double qd[7]={43.585236, -31.177521, 7.06942, 57.293495, 39.806679, -50.773285};
         for(int i=0;i<7;i++) q[i]=qd[i];
         rightArmJointsMoveAndWait(q);
     }
 
     // vid 1 and 2
-    {
+    /*{
         std::vector<double> q(7,0.0);
         double qd[7]={6.860721, -50.268563, -28.792619, 76.61138, 66.813708, -21.894552, 0.0};
         for(int i=0;i<7;i++) q[i]=qd[i];
         rightArmJointsMoveAndWait(q);
-    }
+    }*/
 
 
     //exit(1);
@@ -291,7 +306,7 @@ bool IroningMover::strategyPosition()
     while( force > targetForce )
     {
         yarp::os::Bottle b;
-        x[2] -= 0.0075;
+        x[2] -= 0.005;
         bool okMove = iCartesianControl->movj(x);
         rightArmFTSensorPort.read(b);
         force = b.get(2).asDouble();
@@ -306,7 +321,7 @@ bool IroningMover::strategyPosition()
     for(int i=0;i<20;i++)
     {
         yarp::os::Bottle b;
-        x[1] += 0.0075;
+        x[1] += 0.005;
         bool okMove = iCartesianControl->movj(x);
 
         rightArmFTSensorPort.read(b);
@@ -323,7 +338,7 @@ bool IroningMover::strategyPosition()
     for(int i=0;i<30;i++)
     {
         yarp::os::Bottle b;
-        x[2] += 0.0075;
+        x[2] += 0.005;
         bool okMove = iCartesianControl->movj(x);
 
         rightArmFTSensorPort.read(b);
@@ -355,7 +370,7 @@ bool IroningMover::strategyVelocity()
     std::vector<double> xdot(6,0.0);
     xdot[0] = 0;
     xdot[1] = 0;
-    xdot[2] = -0.03;
+    xdot[2] = -0.003;
     bool okMove = iCartesianControl->movv(xdot);
     if( okMove ) {
         CD_DEBUG("Begin move arm down.\n");
@@ -374,7 +389,7 @@ bool IroningMover::strategyVelocity()
 
     CD_DEBUG("***************ADVANCE*****************\n");
     xdot[0] = 0;
-    xdot[1] = +0.015;
+    xdot[1] = +0.0015;
     xdot[2] = 0;
 
     bool okMove2 = iCartesianControl->movv(xdot);
@@ -397,7 +412,7 @@ bool IroningMover::strategyVelocity()
     CD_DEBUG("***************UP*****************\n");
     xdot[0] = 0;
     xdot[1] = 0;
-    xdot[2] = +0.03;
+    xdot[2] = +0.003;
 
     bool okMove3 = iCartesianControl->movv(xdot);
     if( okMove3 ) {

@@ -26,11 +26,11 @@
 
 #include "IroningMover.hpp"
 
-YARP_DECLARE_PLUGINS(TeoYarp)
+//YARP_DECLARE_PLUGINS(TeoYarp)
 
 int main(int argc, char **argv) {
 
-    YARP_REGISTER_PLUGINS(TeoYarp);
+    //YARP_REGISTER_PLUGINS(TeoYarp);
 
     yarp::os::ResourceFinder rf;
     rf.setVerbose(true);
