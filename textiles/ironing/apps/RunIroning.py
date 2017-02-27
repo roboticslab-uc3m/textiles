@@ -66,6 +66,7 @@ def main(input_file, debug=False):
         print(str(err))
 
     # Extract ironing path with Python
-    trajectory = detect_wrinkles_from_file(input_file_absolute + segmented_file_suffix + cluster_file_suffix +
-                                           cleaned_file_suffix, debug=True)
+    trajectory, metric = detect_wrinkles_from_file(input_file_absolute + segmented_file_suffix + cluster_file_suffix +
+                                                   cleaned_file_suffix, debug=True)
     print(trajectory)
+    print(metric)
