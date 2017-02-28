@@ -80,11 +80,11 @@ DATA ascii
 
 
 def colorize_rsd_point_cloud(xyz_data, r_min_data, r_max_data, output_file):
-    colors = {"plane": rgb_to_pcl_float(255, 0, 0),
-              "cylinder": rgb_to_pcl_float(0, 0, 255),
-              "edge": rgb_to_pcl_float(0, 255, 0),
-              "sphere": rgb_to_pcl_float(0, 255, 255),
-              "noise": rgb_to_pcl_float(255, 255, 255)}
+    colors = {"plane": rgb_to_pcl_float(1, 0, 0),
+              "cylinder": rgb_to_pcl_float(0, 0, 1),
+              "edge": rgb_to_pcl_float(0, 1, 0),
+              "sphere": rgb_to_pcl_float(0, 1, 1),
+              "noise": rgb_to_pcl_float(1, 1, 1)}
 
     X = xyz_data[:, 0]
     Y = xyz_data[:, 1]

@@ -163,7 +163,7 @@ int main (int argc, char** argv)
         rsd.setSearchMethod(tree);
         // Search radius, to look for neighbors. Note: the value given here has to be
         // larger than the radius used to estimate the normals.
-        rsd.setRadiusSearch(0.03);
+        rsd.setRadiusSearch(0.05);
         // Plane radius. Any radius larger than this is considered infinite (a plane).
         rsd.setPlaneRadius(0.1);
         // Do we want to save the full distance-angle histograms?
