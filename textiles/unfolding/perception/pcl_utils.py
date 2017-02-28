@@ -125,12 +125,12 @@ if __name__ == '__main__':
 
     if RSD:
         # data = np.loadtxt('../pcl/build/curvature_data.m')
-        data = np.loadtxt('../../../build/ironing/perception/rsd_wrinkle.m')
+        data = np.loadtxt('/home/def/Research/datasets/2017-02-27-ironing-kinfu/standing-three/textured_mesh.ply-unsegmented.pcd-cluster1.pcd-output.pcd-rsd.m')
 
         colorize_point_cloud(data[:,0:3], data[:,3], 'cloud-r_min.pcd', cmap=pylab.cm.RdGy)
         colorize_point_cloud(data[:,0:3], data[:,4], 'cloud-r_max.pcd', cmap=pylab.cm.RdGy)
         colorize_rsd_point_cloud(data[:,0:3], data[:,3], data[:,4], 'color-rsd.pcd')
 
     if WILD:
-        data = np.loadtxt('../../../build/ironing/perception/wild_descriptors.m')
+        data = np.loadtxt('/home/def/Research/datasets/2017-02-27-ironing-kinfu/standing-three/textured_mesh.ply-unsegmented.pcd-cluster1.pcd-output.pcd-wild_descriptors.m')
         colorize_point_cloud(data[:,0:3], data[:,3], 'cloud-wild.pcd', cmap=pylab.cm.RdGy)

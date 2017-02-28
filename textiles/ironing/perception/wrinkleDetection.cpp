@@ -163,7 +163,7 @@ int main (int argc, char** argv)
         rsd.setSearchMethod(tree);
         // Search radius, to look for neighbors. Note: the value given here has to be
         // larger than the radius used to estimate the normals.
-        rsd.setRadiusSearch(0.05);
+        rsd.setRadiusSearch(0.03);
         // Plane radius. Any radius larger than this is considered infinite (a plane).
         rsd.setPlaneRadius(0.1);
         // Do we want to save the full distance-angle histograms?
@@ -222,15 +222,16 @@ int main (int argc, char** argv)
     }
 
     //-- Save to mat file
-//    std::ofstream wild_file("wild_descriptors.m");
-//    for (int i = 0; i < source_cloud->points.size(); i++)
-//    {
-//        wild_file << source_cloud->points[i].x << " "
-//                 << source_cloud->points[i].y << " "
-//                 << source_cloud->points[i].z << " "
-//                 << wild[i] << "\n";
-//    }
-//    wild_file.close();
+    std::string output_wild_mat = "-wild_descriptors.m";
+    std::ofstream wild_des_file((argv[filenames[0]]+output_wild_mat).c_str());
+    for (int i = 0; i < source_cloud->points.size(); i++)
+    {
+        wild_des_file << source_cloud->points[i].x << " "
+                      << source_cloud->points[i].y << " "
+                      << source_cloud->points[i].z << " "
+                      << wild[i] << "\n";
+    }
+    wild_des_file.close();
 
 
     //-- Create 2D output image
