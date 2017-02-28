@@ -6,6 +6,8 @@ from skimage.morphology import binary_erosion, binary_dilation, disk, medial_axi
 from skimage import img_as_ubyte
 import cv2
 
+from textiles.common.graph import dfs
+
 
 def detect_wrinkles_from_file(data_file_path, debug=False,
                               depth_file_suffix="-depth_image.m", image_file_suffix="-wild_image.m",
@@ -164,19 +166,8 @@ def detect_wrinkles(image, mask=None, debug=False, use_frangi=False):
 
     # Compute path as a list of points
     src_node = start
-    path_points = []
-    while True:
-        path_points.append(src_node)
-        if src_node != start and len(path[src_node]) == 1:
-            break
-        if src_node == end:
-            break
-        for destination in path[src_node]:
-            if destination not in path_points:
-                src_node = destination
-                continue
-    #  print(path_points)
-    assert(path_points[-1][0]==end[0] and path_points[-1][1] == end[1])
+    trajectory_points = dfs(trajectory, start, end)
+    #  print(trajectory_points)
 
     if debug:
         # Display the image and plot endpoints
