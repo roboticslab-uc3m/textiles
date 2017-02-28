@@ -14,21 +14,57 @@ dd = yarp.PolyDriver(options)
 
 pos = dd.viewIPositionControl()
 pos.setPositionMode()
-pos.setRefSpeed(1,2)
-pos.setRefSpeed(0,2)
+pos.setRefSpeed(1,3)
+pos.setRefSpeed(0,3)
 
+print "go to init"
 pos.positionMove(1,-6)  # Down extreme w/o occlusions
 pos.positionMove(0,-45)  # Right extreme
-yarp.Time.delay(1)
+yarp.Time.delay(0.1)
+while not pos.checkMotionDone(): pass  # So much better than yarp.Time.delay(1)
 
+print "go to left"
 pos.positionMove(0,-30)  # Left enough
-yarp.Time.delay(3)
+yarp.Time.delay(0.1)
+while not pos.checkMotionDone(): pass
 
-pos.positionMove(1,-8)  # More up
-yarp.Time.delay(1)
+print "go upper"
+pos.positionMove(1,-10)  # More up
+yarp.Time.delay(0.1)
+while not pos.checkMotionDone(): pass
 
+print "go to right"
 pos.positionMove(0,-45)  # Right extreme
-yarp.Time.delay(3)
+yarp.Time.delay(0.1)
+while not pos.checkMotionDone(): pass
+
+print "go upper"
+pos.positionMove(1,-12)  # More up
+yarp.Time.delay(0.1)
+while not pos.checkMotionDone(): pass
+
+print "go to left"
+pos.positionMove(0,-30)  # Left enough
+yarp.Time.delay(0.1)
+while not pos.checkMotionDone(): pass
+
+print "go upper"
+pos.positionMove(1,-12)  # More up
+yarp.Time.delay(0.1)
+while not pos.checkMotionDone(): pass
+
+print "go to right"
+pos.positionMove(0,-45)  # Right extreme
+yarp.Time.delay(0.1)
+while not pos.checkMotionDone(): pass
+
+print "go to init"
+pos.positionMove(1,-6)  # Down extreme w/o occlusions
+pos.positionMove(0,-45)  # Right extreme
+yarp.Time.delay(0.1)
+while not pos.checkMotionDone(): pass
+
+dd.close()
 
 yarp.Network.fini()
 

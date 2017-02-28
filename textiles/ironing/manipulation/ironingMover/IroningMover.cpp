@@ -247,6 +247,22 @@ bool IroningMover::preprogrammedInitTrajectory()
         rightArmJointsMoveAndWait(q);
     }
 
+//::exit(1);
+
+    {
+        std::vector<double> q(7,0.0);
+        double qd[7]={38.400703, -38.207397, 8.741652, 53.251316, 53.778557, -45.237274, 0.0};
+        for(int i=0;i<7;i++) q[i]=qd[i];
+        rightArmJointsMoveAndWait(q);
+    }
+
+/*    {  // very close but flat
+        std::vector<double> q(7,0.0);
+        double qd[7]={29.876976, -37.240784, 7.149385, 61.159927, 51.669594, -48.752197, 0.0};
+        for(int i=0;i<7;i++) q[i]=qd[i];
+        rightArmJointsMoveAndWait(q);
+    }*/
+
     /*{
         std::vector<double> q(7,0.0);
         double qd[7]={-15, -65.448151, 9.40246, 97.978912, 72.664323, -48.400696, 0.0};
@@ -254,12 +270,12 @@ bool IroningMover::preprogrammedInitTrajectory()
         rightArmJointsMoveAndWait(q);
     }*/
 
-    {
+    /*{
         std::vector<double> q(7,0.0);
         double qd[7]={43.585236, -31.177521, 7.06942, 57.293495, 39.806679, -50.773285};
         for(int i=0;i<7;i++) q[i]=qd[i];
         rightArmJointsMoveAndWait(q);
-    }
+    }*/
 
     // vid 1 and 2
     /*{
