@@ -1,7 +1,5 @@
 #! /usr/bin/env python
 
-print "WARNING: only works with RaveBot in YARP yarpmods instead of in ASIBOT RlPlugins"
-
 import yarp
 
 yarp.Network.init()
@@ -9,30 +7,29 @@ if yarp.Network.checkNetwork() != True:
     print "[error] Please try running yarp server"
     quit()
 options = yarp.Property()
-options.put('device','ravebot')
+options.put('device','remote_controlboard')
+options.put('local','/python')
+options.put('remote','/teo/head')
 dd = yarp.PolyDriver(options)
 
 pos = dd.viewIPositionControl()
 pos.setPositionMode()
+pos.setRefSpeed(1,2)
+pos.setRefSpeed(0,2)
 
-print "test positionMove(1,-35)"
-pos.positionMove(1,-35)
+pos.positionMove(1,-6)  # Down extreme w/o occlusions
+pos.positionMove(0,-45)  # Right extreme
+yarp.Time.delay(1)
 
-print "test delay(5)"
-yarp.Time.delay(5)
+pos.positionMove(0,-30)  # Left enough
+yarp.Time.delay(3)
 
-enc = dd.viewIEncoders()
-v = yarp.DVector(enc.getAxes())
-enc.getEncoders(v)
-v[2]
+pos.positionMove(1,-8)  # More up
+yarp.Time.delay(1)
 
-vel = dd.viewIVelocityControl()
-vel.setVelocityMode()
-print "test velocityMove(0,10)"
-vel.velocityMove(0,10)
-
-print "test delay(5)"
-yarp.Time.delay(5)
+pos.positionMove(0,-45)  # Right extreme
+yarp.Time.delay(3)
 
 yarp.Network.fini()
+
 
