@@ -34,8 +34,8 @@ def detect_wrinkles(image, mask=None, debug=False, use_frangi=False):
 
     # Normalize (not sure if required, WiLD should be already normalized)
     minimum = np.min(image[np.nonzero(mask)])  # 0.9
-    # normalized_image = np.where(mask != 0, (image - minimum) / (image.max()-minimum), 0)
-    normalized_image = np.where(mask != 0, image, 0)
+    normalized_image = np.where(mask != 0, (image - minimum) / (image.max()-minimum), 0)
+    # normalized_image = np.where(mask != 0, image, 0)
     # filtered_image = median(normalized_image, disk(3))
 
     # Step #1: Identify garment border
@@ -90,8 +90,8 @@ def detect_wrinkles(image, mask=None, debug=False, use_frangi=False):
 
     else:
         binary_wrinkles = img_as_ubyte(np.where(np.logical_and(inner_mask,
-                                                               np.logical_and(normalized_image > 0,
-                                                                              normalized_image < 0.985)),
+                                                               np.logical_and(normalized_image > 0.4,
+                                                                              normalized_image < 0.95)),
                                                 255, 0))
 
     if debug:
