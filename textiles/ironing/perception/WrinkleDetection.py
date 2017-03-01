@@ -136,7 +136,7 @@ def detect_wrinkles(image, mask=None, debug=False, use_frangi=False):
 
         plt.show()
 
-    # From skeleton to ironing trajectory (graph)
+    # From skeleton to ironing path (graph)
     ################################################################################
     # Find row and column locations that are non-zero in skeleton
     (rows, cols) = np.nonzero(wrinkle_skeleton)
@@ -167,8 +167,8 @@ def detect_wrinkles(image, mask=None, debug=False, use_frangi=False):
 
     # Compute path as a list of points
     src_node = start
-    trajectory_points = dfs(trajectory, start, end)
-    #  print(trajectory_points)
+    path_points = dfs(path, start, end)
+    #  print(path_points)
 
     if debug:
         # Display the image and plot endpoints
@@ -188,7 +188,7 @@ def detect_wrinkles(image, mask=None, debug=False, use_frangi=False):
     # global_metric = sum(map(cv2.contourArea, wrinkle_blobs)) / cv2.contourArea(true_garment_contour)
     # with wild
     global_metric = np.sum(np.where(mask != 0, 1-normalized_image, 0)) / cv2.contourArea(true_garment_contour)
-    return trajectory_points, global_metric
+    return path_points, global_metric
 
 
 
