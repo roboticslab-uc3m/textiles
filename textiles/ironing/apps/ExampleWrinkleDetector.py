@@ -5,6 +5,8 @@ ExampleWrinkleDetector computes ironing paths from wrinkle data
 
 import os
 
+import begin
+
 from textiles.ironing.perception.WrinkleDetection import detect_wrinkles_from_file
 
 
@@ -18,8 +20,12 @@ data_file_path = os.path.join(os.path.abspath(os.path.expanduser(data_folder)), 
 
 __author__ = 'def'
 
-if __name__ == '__main__':
-    trajectory, descriptor = detect_wrinkles_from_file(data_file_path, debug=True)
+
+@begin.start(auto_convert=True)
+@begin.logging
+def main(input_file, debug=False):
+    input_file_absolute = os.path.abspath(os.path.expanduser(input_file))
+    trajectory, descriptor = detect_wrinkles_from_file(input_file_absolute, debug=True)
     print(trajectory)
     print(descriptor)
 
