@@ -14,8 +14,8 @@ dd = yarp.PolyDriver(options)
 
 pos = dd.viewIPositionControl()
 pos.setPositionMode()
-pos.setRefSpeed(1,3)
-pos.setRefSpeed(0,3)
+pos.setRefSpeed(1,10)
+pos.setRefSpeed(0,10)
 
 print "go to init"
 pos.positionMove(1,-6)  # Down extreme w/o occlusions
