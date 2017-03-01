@@ -21,7 +21,7 @@
 #define DEFAULT_STRATEGY "position"
 
 #define DEFAULT_HEAD_PAN -45.0
-#define DEFAULT_HEAD_TILT 7.0
+#define DEFAULT_HEAD_TILT -6.0
 
 #define DEFAULT_TRUNK_PAN 45.0
 #define DEFAULT_TRUNK_TILT 30.0
