@@ -33,7 +33,7 @@ def dfs(graph, source, target):
         node = origins[node]
     path.append(source)
 
-    return path
+    return list(reversed(path))
 
 
 if __name__ == '__main__':
@@ -43,7 +43,7 @@ if __name__ == '__main__':
              4: [9],
              7: [10, 11],
              9: [12, 13]}
-    source = 3
+    source = 1
     target = 11
 
     path = dfs(graph, source, target)
