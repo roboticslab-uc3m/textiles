@@ -29,7 +29,7 @@ def main(input_file, debug=False):
             str(0.4),
             "--hsv-v-threshold",  # This is not really used, since we are using clustering
             str(0.30),
-            "--enable-debug",
+            # "--enable-debug",
             input_file_absolute]
 
     p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -44,7 +44,7 @@ def main(input_file, debug=False):
 
     # Call the processing program for cleanup
     args = [os.path.expanduser(os.path.join(pcl_processing_folder, pcl_cleanup_binary)),
-            "--enable-debug",
+            # "--enable-debug",
             input_file_absolute+segmented_file_suffix+cluster_file_suffix]
 
     p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -58,6 +58,7 @@ def main(input_file, debug=False):
     args = [os.path.expanduser(os.path.join(pcl_processing_folder, pcl_detection_binary)),
             "--normal-threshold",
             str(0.03),
+            "--rsd",  # just for timings
             input_file_absolute+segmented_file_suffix+cluster_file_suffix+cleaned_file_suffix]
 
     p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)

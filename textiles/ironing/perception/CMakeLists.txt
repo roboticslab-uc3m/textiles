@@ -14,3 +14,6 @@ target_link_libraries (testRegionGrowing ${PCL_LIBRARIES} ${TEXTILES_LIBRARIES})
 
 add_executable(wrinkleDetection wrinkleDetection.cpp)
 target_link_libraries (wrinkleDetection ${PCL_LIBRARIES} ${YARP_LIBRARIES} ${TEXTILES_LIBRARIES})
+
+add_executable(jaccardrsd jaccardrsd.cpp)
+target_link_libraries (jaccardrsd ${PCL_LIBRARIES} ${YARP_LIBRARIES} ${TEXTILES_LIBRARIES})
