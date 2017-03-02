@@ -46,12 +46,12 @@ def detect_wrinkles(image, mask=None, debug=False, use_frangi=False):
         # Display the image and plot garment contour
         fig, ax = plt.subplots()
         im = ax.imshow(normalized_image, interpolation='nearest', cmap=plt.cm.RdGy)
-        plt.colorbar(im)
+        plt.colorbar(im, orientation='horizontal')
 
         points = [tuple(point[0]) for point in garment_contour]
         # Plot lines
-        for (start_x, start_y), (end_x, end_y) in zip(points, points[1:]+points[0:1]):
-            plt.plot((start_x, end_x), (start_y, end_y), 'r-', linewidth=2.0, alpha=0.7)
+        # for (start_x, start_y), (end_x, end_y) in zip(points, points[1:]+points[0:1]):
+        #     plt.plot((start_x, end_x), (start_y, end_y), 'r-', linewidth=2.0, alpha=0.7)
         # Plot points
         # for x, y in points:
         #     plt.plot(x, y, 'ro', alpha=0.7)
