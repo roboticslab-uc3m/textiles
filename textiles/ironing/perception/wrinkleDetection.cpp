@@ -48,6 +48,7 @@ int main (int argc, char** argv)
     std::string output_image = "-depth_image.m";
     std::string output_wild = "-wild_image.m";
     std::string output_mask = "-image_mask.m";
+    std::string output_rsd = "-rsd.m";
 
     //-- Command-line arguments
     float normal_threshold = 0.02;
@@ -116,6 +117,8 @@ int main (int argc, char** argv)
     //-- Print arguments to user
     std::cout << "Selected arguments: " << std::endl
               << "\tNormal threshold: " << normal_threshold << std::endl;
+    if (rsd)
+        std::cout << "\tRSD computation enabled" << std::endl;
 
     //--------------------------------------------------------------------------------------------------------
     //-- Program does actual work from here
@@ -169,7 +172,7 @@ int main (int argc, char** argv)
         rsd.compute(*descriptors);
 
         //-- Save to mat file
-        std::ofstream rsd_file("rsd_wrinkle.m");
+        std::ofstream rsd_file((argv[filenames[0]]+output_rsd).c_str());
         for (int i = 0; i < source_cloud->points.size(); i++)
         {
             rsd_file << source_cloud->points[i].x << " "
@@ -219,15 +222,16 @@ int main (int argc, char** argv)
     }
 
     //-- Save to mat file
-//    std::ofstream wild_file("wild_descriptors.m");
-//    for (int i = 0; i < source_cloud->points.size(); i++)
-//    {
-//        wild_file << source_cloud->points[i].x << " "
-//                 << source_cloud->points[i].y << " "
-//                 << source_cloud->points[i].z << " "
-//                 << wild[i] << "\n";
-//    }
-//    wild_file.close();
+    std::string output_wild_mat = "-wild_descriptors.m";
+    std::ofstream wild_des_file((argv[filenames[0]]+output_wild_mat).c_str());
+    for (int i = 0; i < source_cloud->points.size(); i++)
+    {
+        wild_des_file << source_cloud->points[i].x << " "
+                      << source_cloud->points[i].y << " "
+                      << source_cloud->points[i].z << " "
+                      << wild[i] << "\n";
+    }
+    wild_des_file.close();
 
 
     //-- Create 2D output image
