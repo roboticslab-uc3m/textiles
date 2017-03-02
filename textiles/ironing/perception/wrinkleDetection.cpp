@@ -19,6 +19,7 @@
 #include <pcl/filters/filter.h>
 #include <pcl/features/rsd.h>
 #include <pcl/features/moment_of_inertia_estimation.h>
+#include <yarp/os/Time.h>
 
 #include "Debug.hpp"
 
@@ -132,6 +133,7 @@ int main (int argc, char** argv)
     debug.show("Original with color");
 
     //-- Find normals
+    double t_normals_start = yarp::os::Time::now();
     pcl::NormalEstimationOMP<pcl::PointXYZRGB, pcl::Normal> normalEstimator;
     pcl::search::KdTree<pcl::PointXYZRGB>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZRGB>);
     pcl::PointCloud<pcl::Normal>::Ptr cloud_normals(new pcl::PointCloud<pcl::Normal>);
@@ -152,10 +154,12 @@ int main (int argc, char** argv)
     debug.plotNormals<pcl::PointXYZRGB, pcl::Normal>(source_cloud, cloud_normals, Debug::COLOR_ORIGINAL,
                                                      100, 0.01);
     debug.show("Normals");
-
+    double t_normals =  yarp::os::Time::now() - t_normals_start;
+    std::cout << "Normal computation time: " << t_normals << " seconds." << std::endl;
     // RSD estimation object
     if (rsd)
     {
+        double t_rsd_start = yarp::os::Time::now();
         pcl::PointCloud<pcl::PrincipalRadiiRSD>::Ptr descriptors(new pcl::PointCloud<pcl::PrincipalRadiiRSD>());
         pcl::RSDEstimation<pcl::PointXYZRGB, pcl::Normal, pcl::PrincipalRadiiRSD> rsd;
         rsd.setInputCloud(source_cloud);
@@ -170,6 +174,10 @@ int main (int argc, char** argv)
         rsd.setSaveHistograms(false);
 
         rsd.compute(*descriptors);
+
+        double t_rsd = yarp::os::Time::now() - t_rsd_start;
+        std::cout << "RSD computation time: " << t_rsd << " seconds." << std::endl;
+        std::cout << "RSD total computation time: " << t_rsd + t_normals << " seconds." << std::endl;
 
         //-- Save to mat file
         std::ofstream rsd_file((argv[filenames[0]]+output_rsd).c_str());
@@ -187,6 +195,8 @@ int main (int argc, char** argv)
     //-- WILD
     //---------------------
     //-- Compute wild descriptor
+    double t_wild_start = yarp::os::Time::now();
+
     const double threshold = 0.03;
     std::vector<double> wild(source_cloud->points.size());
 
@@ -220,6 +230,10 @@ int main (int argc, char** argv)
 
         wild[i] =current_wild;
     }
+
+    double t_wild = yarp::os::Time::now() - t_wild_start;
+    std::cout << "WiLD computation time: " << t_wild << " seconds." << std::endl;
+    std::cout << "WiLD total computation time: " << t_wild + t_normals << " seconds." << std::endl;
 
     //-- Save to mat file
     std::string output_wild_mat = "-wild_descriptors.m";
