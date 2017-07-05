@@ -9,7 +9,7 @@
 
     <module>
         <name>ironingMover</name>
-        <parameters>--robot /teo --avoidTrunk 1 --targetForce -200.0 --strategy position</parameters>
+        <parameters>--robot /teo --avoidTrunk 1 --targetForce -20.0 --strategy position</parameters>
         <node>localhost</node>
     </module>
 
