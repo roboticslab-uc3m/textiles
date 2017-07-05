@@ -3,7 +3,7 @@
 
     <module>
         <name>yarpdev</name>
-        <parameters>--from /usr/local/share/teo/contexts/kinematics/rightArmKinematics-pan45-tilt30.ini --name /teo/rightArm/CartesianControl --device BasicCartesianControl --angleRepr axisAngle --robot remote_controlboard --local /BasicCartesianControl/teo/rightArm --remote /teo/rightArm</parameters>
+        <parameters>--device BasicCartesianControl --name /teo/rightArm/CartesianControl --from /usr/local/share/teo-configuration-files/contexts/kinematics/rightArmKinematics-pan45-tilt30.ini --angleRepr axisAngle --robot remote_controlboard --local /BasicCartesianControl/teo/rightArm --remote /teo/rightArm</parameters>
         <node>localhost</node>
     </module>
 
