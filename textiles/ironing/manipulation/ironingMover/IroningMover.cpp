@@ -2,7 +2,7 @@
 
 #include "IroningMover.hpp"
 
-namespace teo
+namespace roboticslab
 {
 
 /************************************************************************/
@@ -740,4 +740,4 @@ bool IroningMover::strategyVelocityForceTraj()
 
 /************************************************************************/
 
-}  // namespace teo
+}  // namespace roboticslab

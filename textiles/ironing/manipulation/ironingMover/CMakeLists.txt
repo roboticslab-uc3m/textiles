@@ -6,7 +6,7 @@ set(KEYWORD "ironingMover")
 
 # Find YARP.  Point the YARP_DIR environment variable at your build.
 find_package(YARP REQUIRED)
-find_package(TEO REQUIRED)
+find_package(ROBOTICSLAB_KINEMATICS_DYNAMICS REQUIRED)
 
 # Search for source code.
 file(GLOB folder_source *.cpp *.cc *.c)
@@ -21,12 +21,12 @@ foreach(header_file ${folder_header})
 endforeach(header_file ${folder_header})
 
 # Inclue any directories needed for YARP
-include_directories(${YARP_INCLUDE_DIRS} ${TEO_INCLUDE_DIRS})
+include_directories(${YARP_INCLUDE_DIRS} ${ROBOTICSLAB_KINEMATICS_DYNAMICS_INCLUDE_DIRS})
 
 # Set up our main executable.
 if (folder_source)
   add_executable(${KEYWORD} ${folder_source} ${folder_header})
-  target_link_libraries(${KEYWORD} ${YARP_LIBRARIES} ${TEO_LIBRARIES} TrajectoryLib KdlVectorConverterLib)  # TrajectoryLib and already in TEO_LIBRARIES, but order matters...
+  target_link_libraries(${KEYWORD} ${YARP_LIBRARIES} ${ROBOTICSLAB_KINEMATICS_DYNAMICS_LIBRARIES} TrajectoryLib KdlVectorConverterLib)  # TrajectoryLib and already in TEO_LIBRARIES, but order matters...
   install(TARGETS ${KEYWORD} DESTINATION bin)
 else (folder_source)
   message(FATAL_ERROR "No source code files found. Please add something")

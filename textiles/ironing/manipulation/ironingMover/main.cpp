@@ -5,7 +5,7 @@
  * @ingroup textiles_programs
  * \defgroup ironingMover ironingMover
  *
- * @brief Creates an instance of teo::IroningMover.
+ * @brief Creates an instance of roboticslab::IroningMover.
  *
  * @section mover_legal Legal
  *
@@ -38,7 +38,7 @@ int main(int argc, char **argv) {
     rf.setDefaultConfigFile("mover.ini");
     rf.configure(argc, argv);
 
-    teo::IroningMover mod;
+    roboticslab::IroningMover mod;
     if(rf.check("help")) {
         return mod.runModule(rf);
     }

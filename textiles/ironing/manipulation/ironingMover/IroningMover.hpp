@@ -28,7 +28,7 @@
 
 #define DEFAULT_AVOID_TRUNK 0  // Put 1 to avoid
 
-namespace teo
+namespace roboticslab
 {
 
 class IroningMover : public yarp::os::RFModule
@@ -98,7 +98,7 @@ class IroningMover : public yarp::os::RFModule
         /** Cartesian Control Device */
         yarp::dev::PolyDriver cartesianControlDevice;
         /** Cartesian Control Interface */
-        teo::ICartesianControl *iCartesianControl;
+        roboticslab::ICartesianControl *iCartesianControl;
 
         /** Right Arm Device */
         yarp::dev::PolyDriver rightArmDevice;
@@ -124,6 +124,6 @@ class IroningMover : public yarp::os::RFModule
 
 };
 
-}  // namespace teo
+}  // namespace roboticslab
 
 #endif  // __IRONING_MOVER_HPP__
