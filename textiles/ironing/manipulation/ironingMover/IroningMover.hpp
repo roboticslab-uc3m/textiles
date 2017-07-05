@@ -16,12 +16,12 @@
 #define DEFAULT_CARTESIAN_CONTROL "CartesianControlClient"
 #define DEFAULT_ROBOT "/teo"
 
-#define DEFAULT_TARGET_FORCE -200.0
+#define DEFAULT_TARGET_FORCE -20.0
 
 #define DEFAULT_STRATEGY "position"
 
 #define DEFAULT_HEAD_PAN -45.0
-#define DEFAULT_HEAD_TILT -6.0
+#define DEFAULT_HEAD_TILT 0.0
 
 #define DEFAULT_TRUNK_PAN 45.0
 #define DEFAULT_TRUNK_TILT 30.0
