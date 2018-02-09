@@ -9,7 +9,7 @@ Author: [David Estevez](https://github.com/David-Estevez)
  * [libfreenect](https://github.com/OpenKinect/libfreenect/)
  * OpenGL and GLUT
    
-       sudo apt-get install freeglut3-dev libxmu-dev libxi-dev
+       sudo apt install freeglut3-dev libxmu-dev libxi-dev
  
  * pthreads-win32 (Windows)
 
