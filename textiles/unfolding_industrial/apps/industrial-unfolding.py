@@ -87,7 +87,7 @@ if __name__ == "__main__":
     # Transform points (debug edition)
     pick_point_abs, place_point_abs = change_frame.debug([pick_point, place_point])
     print(pick_point_abs, place_point_abs)
-    from common.perception.Utils import points_to_file
+    from textiles.common.perception.Utils import points_to_file
     points_to_file([pick_point_abs, place_point_abs], os.path.join(os.path.split(path_input_mesh)[0],
                                                                    "pick_and_place.pcd"))
 
