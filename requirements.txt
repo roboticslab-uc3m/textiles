@@ -1,9 +1,10 @@
 numpy
 begins
-skimage
+scikit-image
 matplotlib
 tabulate
 tqdm
 scipy
 sklearn
+pypcd
 
