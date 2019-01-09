@@ -34,13 +34,13 @@ setup(name='textiles',
                      'textiles_unfolding_generate_data = textiles.unfolding.apps.generate_data:main.start',
                      'textiles_unfolding_generate_figures = textiles.unfolding.apps.generate_figures:figure_7_2',
                      'textiles_unfolding_main = textiles.unfolding.apps.main:main',
-                     'textiles_unfolding_evaluation = textiles.unfolding.apps.textiles-evaluation:main',
-                     'textiles_unfolding_evaluation_stats = textiles.unfolding.apps.textiles-evaluation-stats:main',
-                     'textiles_unfolding_evaluation_yarp = textiles.unfolding.apps.textiles-evaluation-yarp:main',
-                     'textiles_unfolding_industrial = textiles.unfolding_industrial.apps.industrial-unfolding:main',
-                     'textiles_unfolding_industrial_movement_test = textiles.unfolding_industrial.apps.movement-test:main',
-                     'textiles_unfolding_industrial_evaluation = textiles.unfolding_industrial.apps-textiles-evaluation:main'
+                     'textiles_unfolding_evaluation = textiles.unfolding.apps.textiles_evaluation:main',
+                     'textiles_unfolding_evaluation_stats = textiles.unfolding.apps.textiles_evaluation_stats:main',
+                     'textiles_unfolding_evaluation_yarp = textiles.unfolding.apps.textiles_evaluation_yarp:main',
+                     'textiles_unfolding_industrial = textiles.unfolding_industrial.apps.industrial_unfolding:main',
+                     'textiles_unfolding_industrial_movement_test = textiles.unfolding_industrial.apps.movement_test:main',
+                     'textiles_unfolding_industrial_evaluation = textiles.unfolding_industrial.apps.textiles_evaluation:main'
                      ],
                     'gui_scripts':
-                    ['textiles_unfolding_evaluation_gui = textiles.unfolding.apps.textiles-evaluation-ui:main']}
+                    ['textiles_unfolding_evaluation_gui = textiles.unfolding.apps.textiles_evaluation_ui:main']}
       )
