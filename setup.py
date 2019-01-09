@@ -23,7 +23,7 @@ setup(name='textiles',
       description='Algorithms for textile perception and manipulation using robots.',
       long_description=open('README.md').read(),
 
-      packages=[package for package in find_packages() if 'app' not in package],
+      packages=find_packages(),
       package_data={'textiles.unfolding.apps': ['resources/*.ui']},
 
       entry_points={'console_scripts':
