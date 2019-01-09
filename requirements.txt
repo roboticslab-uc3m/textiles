@@ -1,0 +1,9 @@
+numpy
+begins
+skimage
+matplotlib
+tabulate
+tqdm
+scipy
+sklearn
+
