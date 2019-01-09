@@ -24,7 +24,7 @@ setup(name='textiles',
       long_description=open('README.md').read(),
 
       packages=[package for package in find_packages() if 'app' not in package],
-      package_data={'textiles.unfolding.apps'},
+      package_data={'textiles.unfolding.apps': ['resources/*.ui']},
 
       entry_points={'console_scripts':
                     ['textiles_ironing_ExampleWrinkleDetector = textiles.ironing.apps.ExampleWrinkleDetector:main.start',
