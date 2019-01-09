@@ -14,5 +14,6 @@ def figure_7_2():
     plt.tight_layout()
     plt.show()
 
-figure_7_2()
+if __name__ == '__main__':
+    figure_7_2()
 

@@ -53,7 +53,7 @@ def generate_table2(garment_data, garment_label=None, percentage=False, **kwargs
     return txt
 
 
-if __name__ == '__main__':
+def main():
     # Load file and modify categories to be loaded in numpy
     input_file = os.path.expanduser('~/Research/garments-birdsEye-flat-results/output.txt')
     with open(input_file, 'r') as f:
@@ -85,3 +85,7 @@ if __name__ == '__main__':
             f.write(generate_table(block, percentage=True, tablefmt='latex'))
 
         f.write(generate_table(data, garment_label="All", percentage=True, tablefmt='latex'))
+
+
+if __name__ == '__main__':
+    main()

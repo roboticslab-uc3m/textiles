@@ -13,7 +13,7 @@ except ImportError as e:
          "check https://github.com/roboticslab-uc3m/textiles for more info.)").format(e))
 
 
-if __name__ == '__main__':
+def main():
     with get_cameras("/OpenNI2/imageFrame:o", (640, 480),
                      "/OpenNI2/depthFrame:o", (640, 480)) as (rgb_camera, depth_camera):
         # Open port for output data
@@ -53,3 +53,6 @@ if __name__ == '__main__':
                 bottle.addDouble(place_point[0])
                 bottle.addDouble(place_point[1])
                 out_port.write(bottle)
+
+if __name__ == '__main__':
+    main()

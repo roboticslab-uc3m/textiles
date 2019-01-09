@@ -30,7 +30,7 @@ __author__ = "def"
 path_input_mesh = "/home/yo/martes/blackHoodie3/mesh_1.ply"
 
 
-if __name__ == "__main__":
+def main():
     # Connect to robot
     robot = abb.Robot('192.168.125.1')
     robot.set_units('meters', 'degrees')
@@ -113,3 +113,8 @@ if __name__ == "__main__":
                              place_point_root[0], place_point_root[1], distance*0.4)
 
     robot.close()
+
+
+if __name__ == "__main__":
+    main()
+
