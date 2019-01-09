@@ -13,7 +13,14 @@ from textiles.common.perception.Utils import sparse2dense
 import cv2
 import numpy as np
 
-import abb
+from textiles.common.errors import DependencyNotInstalled
+try:
+    import abb
+except ImportError as e:
+    raise DependencyNotInstalled(
+        ("{}. (HINT: you need to install open_abb for this to work," +
+         "check https://github.com/roboticslab-uc3m/textiles for more info.)").format(e))
+
 
 __author__ = "def"
 

@@ -1,10 +1,17 @@
 import numpy as np
-import yarp
 
 from textiles.common.perception.yarp_cameras import get_cameras
 from textiles.unfolding.perception.GarmentDepthMapClustering import GarmentDepthMapClustering
 from textiles.unfolding.perception.GarmentPickAndPlacePoints import GarmentPickAndPlacePoints
 from textiles.unfolding.perception.GarmentSegmentation import GarmentSegmentation
+from textiles.common.errors import DependencyNotInstalled
+try:
+    import yarp
+except ImportError as e:
+    raise DependencyNotInstalled(
+        ("{}. (HINT: you need to install YARP for this to work," +
+         "check https://github.com/roboticslab-uc3m/textiles for more info.)").format(e))
+
 
 if __name__ == '__main__':
     with get_cameras("/OpenNI2/imageFrame:o", (640, 480),

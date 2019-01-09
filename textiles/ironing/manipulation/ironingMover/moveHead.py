@@ -1,6 +1,12 @@
 #! /usr/bin/env python
 
-import yarp
+from textiles.common.errors import DependencyNotInstalled
+try:
+    import yarp
+except ImportError as e:
+    raise DependencyNotInstalled(
+        ("{}. (HINT: you need to install YARP for this to work," +
+         "check https://github.com/roboticslab-uc3m/textiles for more info.)").format(e))
 
 yarp.Network.init()
 if yarp.Network.checkNetwork() != True:
