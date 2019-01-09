@@ -11,7 +11,7 @@ except ImportError:
     print("I can install OpenCV with pip, but some functions might not be available.")
     ans = input("Proceed?[y/N]")
     if ans == 'y' or ans == 'Y':
-        requirements.add('opencv')  # Fallback in case system-wide opencv is not installed
+        requirements.append('opencv')  # Fallback in case system-wide opencv is not installed
 
 setup(name='textiles',
       version=0.1,
