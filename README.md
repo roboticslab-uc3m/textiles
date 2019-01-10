@@ -37,7 +37,7 @@ If you want to use the guis (`textiles_unfolding_evaluation_gui`):
 
 If you want to use the apps for `industrial-manipulation` (with ABB robots):
 
-* [open_abb](https://github.com/roboticslab-uc3m/open_abb): 
+* [open_abb](https://github.com/roboticslab-uc3m/open_abb) 
 
 
 ## Publications
