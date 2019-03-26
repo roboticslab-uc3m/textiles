@@ -74,42 +74,46 @@ int main(int argc, char * argv[]) try
 
     int counter = 0;
 
-    for (auto&& frame : pipe.wait_for_frames())
+    while(!nextObjectFlag)
     {
-        std::cout << "A new frame has arrived!" << std::endl;
-
-        // Wait for the next set of frames from the camera. Now that autoexposure, etc.
-        // has settled, we will write these to disk
-        if (captureFlag)
+        for (auto&& frame : pipe.wait_for_frames())
         {
-            std::cout << "Capture requested!" << std::endl;
+            std::cout << "A new frame has arrived!" << std::endl;
 
-            // We can only save video frames as pngs, so we skip the rest
-            if (auto vf = frame.as<rs2::video_frame>())
+            // Wait for the next set of frames from the camera. Now that autoexposure, etc.
+            // has settled, we will write these to disk
+            if (captureFlag)
             {
-                std::cout << "Correct frame, saving it..." << std::endl;
+                std::cout << "Capture requested!" << std::endl;
 
-                auto stream = frame.get_profile().stream_type();
-                // Use the colorizer to get an rgb image for the depth stream
-                if (vf.is<rs2::depth_frame>()) vf = color_map.process(frame);
+                // We can only save video frames as pngs, so we skip the rest
+                if (auto vf = frame.as<rs2::video_frame>())
+                {
+                    std::cout << "Correct frame, saving it..." << std::endl;
 
-                // Write images to disk
-                std::stringstream png_file;
-                png_file << "rs-save-to-disk-output-" << vf.get_profile().stream_name() << "-"<< counter << ".png";
-                stbi_write_png(png_file.str().c_str(), vf.get_width(), vf.get_height(),
-                               vf.get_bytes_per_pixel(), vf.get_data(), vf.get_stride_in_bytes());
-                std::cout << "Saved " << png_file.str() << std::endl;
+                    auto stream = frame.get_profile().stream_type();
+                    // Use the colorizer to get an rgb image for the depth stream
+                    if (vf.is<rs2::depth_frame>()) vf = color_map.process(frame);
 
-                // Record per-frame metadata for UVC streams
-                std::stringstream csv_file;
-                csv_file << "rs-save-to-disk-output-" << vf.get_profile().stream_name()
-                         << "-metadata" << "-"<< counter << ".csv";
-                metadata_to_csv(vf, csv_file.str());
+                    // Write images to disk
+                    std::stringstream png_file;
+                    png_file << "rs-save-to-disk-output-" << vf.get_profile().stream_name() << "-"<< counter << ".png";
+                    stbi_write_png(png_file.str().c_str(), vf.get_width(), vf.get_height(),
+                                   vf.get_bytes_per_pixel(), vf.get_data(), vf.get_stride_in_bytes());
+                    std::cout << "Saved " << png_file.str() << std::endl;
+
+                    // Record per-frame metadata for UVC streams
+                    std::stringstream csv_file;
+                    csv_file << "rs-save-to-disk-output-" << vf.get_profile().stream_name()
+                             << "-metadata" << "-"<< counter << ".csv";
+                    metadata_to_csv(vf, csv_file.str());
+                }
+
+                captureFlag = false;
+                counter++;
             }
-
-            captureFlag = false;
-            counter++;
         }
+        usleep(100);
     }
 
     return EXIT_SUCCESS;
