@@ -19,8 +19,8 @@ static const int INTERRUPT_PIN_0 = 0;
 static const int INTERRUPT_PIN_1 = 2;
 
 // Global variables (use with caution)
-volatile bool captureFlag = false;
-volatile bool nextObjectFlag = false;
+volatile int captureFlag = false;
+volatile int nextObjectFlag = false;
 
 void captureInterrupt(void)
 {
