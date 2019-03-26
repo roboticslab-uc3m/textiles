@@ -11,6 +11,27 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
 
+#include <wiringPi.h>
+#include <errno.h>
+
+// Interrupt pins
+static const int INTERRUPT_PIN_0 = 0;
+static const int INTERRUPT_PIN_1 = 2;
+
+// Global variables (use with caution)
+volatile bool captureFlag = false;
+volatile bool nextObjectFlag = false;
+
+void captureInterrupt(void)
+{
+    captureFlag = true;
+}
+
+void nextObjectInterrupt(void)
+{
+    nextObjectFlag = true;
+}
+
 // Helper function for writing metadata to disk as a csv file
 void metadata_to_csv(const rs2::frame& frm, const std::string& filename);
 
@@ -18,6 +39,7 @@ void metadata_to_csv(const rs2::frame& frm, const std::string& filename);
 // It can be useful for debugging an embedded system with no display.
 int main(int argc, char * argv[]) try
 {
+    //----- RealSense Configuration -----------------------------------------------
     // Declare depth colorizer for pretty visualization of depth data
     rs2::colorizer color_map;
 
@@ -29,29 +51,59 @@ int main(int argc, char * argv[]) try
     // Capture 30 frames to give autoexposure, etc. a chance to settle
     for (auto i = 0; i < 30; ++i) pipe.wait_for_frames();
 
-    // Wait for the next set of frames from the camera. Now that autoexposure, etc.
-    // has settled, we will write these to disk
-    for (auto&& frame : pipe.wait_for_frames())
+    //----- WiringPi Configuration -----------------------------------------------
+    if (wiringPiSetup() < 0)
     {
-        // We can only save video frames as pngs, so we skip the rest
-        if (auto vf = frame.as<rs2::video_frame>())
+        std::cerr << "Unable to setup WiringPi: " << strerror(errno) << std::endl;
+        return 1;
+    }
+
+    if (wiringPiISR(INTERRUPT_PIN_0, INT_EDGE_RISING, &captureInterrupt) < 0)
+    {
+        std::cerr << "Unable to setup ISR: " << strerror(errno) << std::endl;
+        return 1;
+    }
+
+    if (wiringPiISR(INTERRUPT_PIN_1, INT_EDGE_RISING, &nextObjectInterrupt) < 0)
+    {
+        std::cerr << "Unable to setup ISR: " << strerror(errno) << std::endl;
+        return 1;
+    }
+
+    int counter = 0;
+
+    while (true)
+    {
+        // Wait for the next set of frames from the camera. Now that autoexposure, etc.
+        // has settled, we will write these to disk
+        if (captureFlag)
         {
-            auto stream = frame.get_profile().stream_type();
-            // Use the colorizer to get an rgb image for the depth stream
-            if (vf.is<rs2::depth_frame>()) vf = color_map.process(frame);
+            // Get next frame
+            auto&& frame = pipe.wait_for_frames();
 
-            // Write images to disk
-            std::stringstream png_file;
-            png_file << "rs-save-to-disk-output-" << vf.get_profile().stream_name() << ".png";
-            stbi_write_png(png_file.str().c_str(), vf.get_width(), vf.get_height(),
-                           vf.get_bytes_per_pixel(), vf.get_data(), vf.get_stride_in_bytes());
-            std::cout << "Saved " << png_file.str() << std::endl;
+            // We can only save video frames as pngs, so we skip the rest
+            if (auto vf = frame.as<rs2::video_frame>())
+            {
+                auto stream = frame.get_profile().stream_type();
+                // Use the colorizer to get an rgb image for the depth stream
+                if (vf.is<rs2::depth_frame>()) vf = color_map.process(frame);
 
-            // Record per-frame metadata for UVC streams
-            std::stringstream csv_file;
-            csv_file << "rs-save-to-disk-output-" << vf.get_profile().stream_name()
-                     << "-metadata.csv";
-            metadata_to_csv(vf, csv_file.str());
+                // Write images to disk
+                std::stringstream png_file;
+                png_file << "rs-save-to-disk-output-" << vf.get_profile().stream_name() << ".png";
+                stbi_write_png(png_file.str().c_str(), vf.get_width(), vf.get_height(),
+                               vf.get_bytes_per_pixel(), vf.get_data(), vf.get_stride_in_bytes());
+                std::cout << "Saved " << png_file.str() << std::endl;
+
+                // Record per-frame metadata for UVC streams
+                std::stringstream csv_file;
+                csv_file << "rs-save-to-disk-output-" << vf.get_profile().stream_name()
+                         << "-metadata.csv";
+                metadata_to_csv(vf, csv_file.str());
+            }
+
+            captureFlag = false;
+            counter++;
         }
     }
 
