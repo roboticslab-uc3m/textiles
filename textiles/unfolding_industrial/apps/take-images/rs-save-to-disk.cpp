@@ -39,18 +39,6 @@ void metadata_to_csv(const rs2::frame& frm, const std::string& filename);
 // It can be useful for debugging an embedded system with no display.
 int main(int argc, char * argv[]) try
 {
-    //----- RealSense Configuration -----------------------------------------------
-    // Declare depth colorizer for pretty visualization of depth data
-    rs2::colorizer color_map;
-
-    // Declare RealSense pipeline, encapsulating the actual device and sensors
-    rs2::pipeline pipe;
-    // Start streaming with default recommended configuration
-    pipe.start();
-
-    // Capture 30 frames to give autoexposure, etc. a chance to settle
-    for (auto i = 0; i < 30; ++i) pipe.wait_for_frames();
-
     //----- WiringPi Configuration -----------------------------------------------
     if (wiringPiSetup() < 0)
     {
@@ -70,20 +58,37 @@ int main(int argc, char * argv[]) try
         return 1;
     }
 
+    //----- RealSense Configuration -----------------------------------------------
+    // Declare depth colorizer for pretty visualization of depth data
+    rs2::colorizer color_map;
+
+    // Declare RealSense pipeline, encapsulating the actual device and sensors
+    rs2::pipeline pipe;
+    // Start streaming with default recommended configuration
+    pipe.start();
+
+    // Capture 30 frames to give autoexposure, etc. a chance to settle
+    for (auto i = 0; i < 30; ++i) pipe.wait_for_frames();
+
+
+
     int counter = 0;
 
-    while (true)
+    for (auto&& frame : pipe.wait_for_frames())
     {
+        std::cout << "A new frame has arrived!" << std::endl;
+
         // Wait for the next set of frames from the camera. Now that autoexposure, etc.
         // has settled, we will write these to disk
         if (captureFlag)
         {
-            // Get next frame
-            auto&& frame = pipe.wait_for_frames();
+            std::cout << "Capture requested!" << std::endl;
 
             // We can only save video frames as pngs, so we skip the rest
             if (auto vf = frame.as<rs2::video_frame>())
             {
+                std::cout << "Correct frame, saving it..." << std::endl;
+
                 auto stream = frame.get_profile().stream_type();
                 // Use the colorizer to get an rgb image for the depth stream
                 if (vf.is<rs2::depth_frame>()) vf = color_map.process(frame);
