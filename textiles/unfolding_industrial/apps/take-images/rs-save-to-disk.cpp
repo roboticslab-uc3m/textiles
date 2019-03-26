@@ -13,6 +13,7 @@
 
 #include <wiringPi.h>
 #include <errno.h>
+#include <unistd.h>
 
 // Interrupt pins
 static const int INTERRUPT_PIN_0 = 0;
