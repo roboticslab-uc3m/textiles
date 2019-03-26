@@ -90,7 +90,7 @@ int main(int argc, char * argv[]) try
 
                 // Write images to disk
                 std::stringstream png_file;
-                png_file << "rs-save-to-disk-output-" << vf.get_profile().stream_name() << ".png";
+                png_file << "rs-save-to-disk-output-" << vf.get_profile().stream_name() << "-"<< counter << ".png";
                 stbi_write_png(png_file.str().c_str(), vf.get_width(), vf.get_height(),
                                vf.get_bytes_per_pixel(), vf.get_data(), vf.get_stride_in_bytes());
                 std::cout << "Saved " << png_file.str() << std::endl;
@@ -98,7 +98,7 @@ int main(int argc, char * argv[]) try
                 // Record per-frame metadata for UVC streams
                 std::stringstream csv_file;
                 csv_file << "rs-save-to-disk-output-" << vf.get_profile().stream_name()
-                         << "-metadata.csv";
+                         << "-metadata" << "-"<< counter << ".csv";
                 metadata_to_csv(vf, csv_file.str());
             }
 
