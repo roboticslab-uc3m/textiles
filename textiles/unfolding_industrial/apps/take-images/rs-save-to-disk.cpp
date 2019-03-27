@@ -10,10 +10,12 @@
 // 3rd party header for writing png files
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
+#include <unistd.h>
 
+#define DEBUG_WITHOUT_RPI
+#ifndef DEBUG_WITHOUT_RPI
 #include <wiringPi.h>
 #include <errno.h>
-#include <unistd.h>
 
 // Interrupt pins
 static const int INTERRUPT_PIN_0 = 0;
@@ -33,6 +35,11 @@ void nextObjectInterrupt(void)
     nextObjectFlag = true;
 }
 
+#else
+int captureFlag = true;
+int nextObjectFlag = false;
+#endif
+
 // Helper function for writing metadata to disk as a csv file
 void metadata_to_csv(const rs2::frame& frm, const std::string& filename);
 
@@ -40,6 +47,7 @@ void metadata_to_csv(const rs2::frame& frm, const std::string& filename);
 // It can be useful for debugging an embedded system with no display.
 int main(int argc, char * argv[]) try
 {
+#ifndef DEBUG_WITHOUT_RPI
     //----- WiringPi Configuration -----------------------------------------------
     if (wiringPiSetup() < 0)
     {
@@ -58,6 +66,7 @@ int main(int argc, char * argv[]) try
         std::cerr << "Unable to setup ISR: " << strerror(errno) << std::endl;
         return 1;
     }
+#endif
 
     //----- RealSense Configuration -----------------------------------------------
     // Declare depth colorizer for pretty visualization of depth data
@@ -97,9 +106,12 @@ int main(int argc, char * argv[]) try
                     if (vf.is<rs2::depth_frame>())
                     {
                         //  Save depth as hdr file
+                        float depth_data[vf.get_width()*vf.get_height()];
+                        for (auto i=0; i < vf.get_width()*vf.get_height(); i++)
+                            depth_data[i] = (float)((const uint16_t*)vf.get_data())[i];
                         std::stringstream depth_file;
                         depth_file << "rs-save-to-disk-output-" << vf.get_profile().stream_name() << "-" << counter << ".hdr";
-                        stbi_write_hdr(depth_file.str().c_str(), vf.get_width(), vf.get_height(), 1, vf.get_data());
+                        stbi_write_hdr(depth_file.str().c_str(), vf.get_width(), vf.get_height(), 1, depth_data);
                         std::cout << "Saved " << depth_file.str() << std::endl;
 
                         // Use the colorizer to get an rgb image for the depth stream
@@ -113,11 +125,6 @@ int main(int argc, char * argv[]) try
                                    vf.get_bytes_per_pixel(), vf.get_data(), vf.get_stride_in_bytes());
                     std::cout << "Saved " << png_file.str() << std::endl;
 
-                    std::stringstream depth_file;
-                    depth_file << "rs-save-to-disk-output-" << vf.get_profile().stream_name() << "-" << counter << ".hdr";
-                    stbi_write_hdr(depth_file.str().c_str(), vf.get_width(), vf.get_height(), 1, vf.get_data());
-                    std::cout << "Saved " << depth_file.str() << std::endl;
-
                     // Record per-frame metadata for UVC streams
                     std::stringstream csv_file;
                     csv_file << "rs-save-to-disk-output-" << vf.get_profile().stream_name()
@@ -127,6 +134,9 @@ int main(int argc, char * argv[]) try
 
                 captureFlag = false;
                 counter++;
+#ifdef DEBUG_WITHOUT_RPI
+                nextObjectFlag = true;
+#endif
             }
         }
         usleep(100);
