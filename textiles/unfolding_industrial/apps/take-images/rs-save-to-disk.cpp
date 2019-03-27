@@ -93,8 +93,18 @@ int main(int argc, char * argv[]) try
                     std::cout << "Correct frame, saving it..." << std::endl;
 
                     auto stream = frame.get_profile().stream_type();
-                    // Use the colorizer to get an rgb image for the depth stream
-                    if (vf.is<rs2::depth_frame>()) vf = color_map.process(frame);
+
+                    if (vf.is<rs2::depth_frame>())
+                    {
+                        //  Save depth as hdr file
+                        std::stringstream depth_file;
+                        depth_file << "rs-save-to-disk-output-" << vf.get_profile().stream_name() << "-" << counter << ".hdr";
+                        stbi_write_hdr(depth_file.str().c_str(), vf.get_width(), vf.get_height(), 1, vf.get_data());
+                        std::cout << "Saved " << depth_file.str() << std::endl;
+
+                        // Use the colorizer to get an rgb image for the depth stream
+                        vf = color_map.process(frame);
+                    }
 
                     // Write images to disk
                     std::stringstream png_file;
@@ -102,6 +112,11 @@ int main(int argc, char * argv[]) try
                     stbi_write_png(png_file.str().c_str(), vf.get_width(), vf.get_height(),
                                    vf.get_bytes_per_pixel(), vf.get_data(), vf.get_stride_in_bytes());
                     std::cout << "Saved " << png_file.str() << std::endl;
+
+                    std::stringstream depth_file;
+                    depth_file << "rs-save-to-disk-output-" << vf.get_profile().stream_name() << "-" << counter << ".hdr";
+                    stbi_write_hdr(depth_file.str().c_str(), vf.get_width(), vf.get_height(), 1, vf.get_data());
+                    std::cout << "Saved " << depth_file.str() << std::endl;
 
                     // Record per-frame metadata for UVC streams
                     std::stringstream csv_file;
