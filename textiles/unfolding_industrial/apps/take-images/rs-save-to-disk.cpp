@@ -75,7 +75,13 @@ int main(int argc, char * argv[]) try
     // Declare RealSense pipeline, encapsulating the actual device and sensors
     rs2::pipeline pipe;
     // Start streaming with default recommended configuration
-    pipe.start();
+    rs2::config cfg;
+    // Use a configuration object to request only depth from the pipeline
+    cfg.enable_stream(RS2_STREAM_DEPTH, 640, 480, RS2_FORMAT_Z16, 30);
+    cfg.enable_stream(RS2_STREAM_COLOR, 640, 480, RS2_FORMAT_RGB8, 30);
+
+    // Start streaming with the above configuration
+    pipe.start(cfg);
 
     // Capture 30 frames to give autoexposure, etc. a chance to settle
     for (auto i = 0; i < 30; ++i) pipe.wait_for_frames();
@@ -103,6 +109,8 @@ int main(int argc, char * argv[]) try
 
                     auto stream = frame.get_profile().stream_type();
 
+
+
                     if (vf.is<rs2::depth_frame>())
                     {
                         //  Save depth as hdr file
@@ -116,14 +124,23 @@ int main(int argc, char * argv[]) try
 
                         // Use the colorizer to get an rgb image for the depth stream
                         vf = color_map.process(frame);
-                    }
 
-                    // Write images to disk
-                    std::stringstream png_file;
-                    png_file << "rs-save-to-disk-output-" << vf.get_profile().stream_name() << "-"<< counter << ".png";
-                    stbi_write_png(png_file.str().c_str(), vf.get_width(), vf.get_height(),
-                                   vf.get_bytes_per_pixel(), vf.get_data(), vf.get_stride_in_bytes());
-                    std::cout << "Saved " << png_file.str() << std::endl;
+                        // Write images to disk
+                        std::stringstream png_file;
+                        png_file << "rs-save-to-disk-output-" << vf.get_profile().stream_name() << "-"<< counter << ".png";
+                        stbi_write_png(png_file.str().c_str(), vf.get_width(), vf.get_height(),
+                                       vf.get_bytes_per_pixel(), vf.get_data(), vf.get_stride_in_bytes());
+                        std::cout << "Saved " << png_file.str() << std::endl;
+                    }
+                    else
+                    {
+                        // Write images to disk
+                        std::stringstream rgb_png_file;
+                        rgb_png_file << "rs-save-to-disk-output-" << vf.get_profile().stream_name() << "-rgb-"<< counter << ".png";
+                        stbi_write_png(rgb_png_file.str().c_str(), vf.get_width(), vf.get_height(),
+                                       vf.get_bytes_per_pixel(), vf.get_data(), vf.get_stride_in_bytes());
+                        std::cout << "Saved " << rgb_png_file.str() << std::endl;
+                    }
 
                     // Record per-frame metadata for UVC streams
                     std::stringstream csv_file;
@@ -132,10 +149,14 @@ int main(int argc, char * argv[]) try
                     metadata_to_csv(vf, csv_file.str());
                 }
 
+#ifdef DEBUG_WITHOUT_RPI
+                if (counter >= 4)
+#endif
                 captureFlag = false;
                 counter++;
 #ifdef DEBUG_WITHOUT_RPI
-                nextObjectFlag = true;
+                if (counter >= 4)
+                    nextObjectFlag = true;
 #endif
             }
         }
