@@ -13,7 +13,9 @@
 #include "cxxopts.hpp"  // Small library to parse command-line args: https://github.com/jarro2783/cxxopts
 #include <unistd.h>
 
-#define DEBUG_WITHOUT_RPI
+#define DEBUG_WITHOUT_RPI  // Uncomment for testing without wiringPi
+//#define COLOR_STREAM  // Uncomment to get color stream (unavailable in USB 2.0)
+
 #ifndef DEBUG_WITHOUT_RPI
 #include <wiringPi.h>
 #include <errno.h>
@@ -104,7 +106,9 @@ int main(int argc, char * argv[]) try
     rs2::config cfg;
     // Use a configuration object to request only depth from the pipeline
     cfg.enable_stream(RS2_STREAM_DEPTH, 640, 480, RS2_FORMAT_Z16, 30);
+#ifdef COLOR_STREAM
     cfg.enable_stream(RS2_STREAM_COLOR, 640, 480, RS2_FORMAT_RGB8, 30);
+#endif
 
     // Start streaming with the above configuration
     pipe.start(cfg);
@@ -113,12 +117,17 @@ int main(int argc, char * argv[]) try
     for (auto i = 0; i < 30; ++i) pipe.wait_for_frames();
 
     int counter = 0;
+
+#ifdef COLOR_STREAM
     bool got_depth = false, got_rgb = false;
+#endif
 
     while(!nextObjectFlag)
     {
+#ifdef COLOR_STREAM
         while(!got_depth || !got_rgb)
         {
+#endif
             for (auto&& frame : pipe.wait_for_frames())
             {
                 std::cout << "A new frame has arrived!" << std::endl;
@@ -135,8 +144,6 @@ int main(int argc, char * argv[]) try
                         std::cout << "Correct frame, saving it..." << std::endl;
 
                         auto stream = frame.get_profile().stream_type();
-
-
 
                         if (vf.is<rs2::depth_frame>())
                         {
@@ -159,6 +166,7 @@ int main(int argc, char * argv[]) try
                                            vf.get_bytes_per_pixel(), vf.get_data(), vf.get_stride_in_bytes());
                             std::cout << "Saved " << png_file.str() << std::endl;
 
+#ifdef COLOR_STREAM
                             got_depth = true;
                         }
                         else
@@ -171,6 +179,7 @@ int main(int argc, char * argv[]) try
                             std::cout << "Saved " << rgb_png_file.str() << std::endl;
 
                             got_rgb = true;
+#endif
                         }
 
                         // Record per-frame metadata for UVC streams
@@ -181,11 +190,14 @@ int main(int argc, char * argv[]) try
                     }
                 }
             }
+#ifdef COLOR_STREAM
         }
-        captureFlag = false;
-        counter++;
         got_depth = false;
         got_rgb = false;
+#endif
+        captureFlag = false;
+        counter++;
+
 
 #ifdef DEBUG_WITHOUT_RPI
         nextObjectFlag = true;
