@@ -86,80 +86,85 @@ int main(int argc, char * argv[]) try
     // Capture 30 frames to give autoexposure, etc. a chance to settle
     for (auto i = 0; i < 30; ++i) pipe.wait_for_frames();
 
-
-
     int counter = 0;
+    bool got_depth = false, got_rgb = false;
 
     while(!nextObjectFlag)
     {
-        for (auto&& frame : pipe.wait_for_frames())
+        while(!got_depth || !got_rgb)
         {
-            std::cout << "A new frame has arrived!" << std::endl;
-
-            // Wait for the next set of frames from the camera. Now that autoexposure, etc.
-            // has settled, we will write these to disk
-            if (captureFlag)
+            for (auto&& frame : pipe.wait_for_frames())
             {
-                std::cout << "Capture requested!" << std::endl;
+                std::cout << "A new frame has arrived!" << std::endl;
 
-                // We can only save video frames as pngs, so we skip the rest
-                if (auto vf = frame.as<rs2::video_frame>())
+                // Wait for the next set of frames from the camera. Now that autoexposure, etc.
+                // has settled, we will write these to disk
+                if (captureFlag)
                 {
-                    std::cout << "Correct frame, saving it..." << std::endl;
+                    std::cout << "Capture requested!" << std::endl;
 
-                    auto stream = frame.get_profile().stream_type();
-
-
-
-                    if (vf.is<rs2::depth_frame>())
+                    // We can only save video frames as pngs, so we skip the rest
+                    if (auto vf = frame.as<rs2::video_frame>())
                     {
-                        //  Save depth as hdr file
-                        float depth_data[vf.get_width()*vf.get_height()];
-                        for (auto i=0; i < vf.get_width()*vf.get_height(); i++)
-                            depth_data[i] = (float)((const uint16_t*)vf.get_data())[i];
-                        std::stringstream depth_file;
-                        depth_file << "rs-save-to-disk-output-" << vf.get_profile().stream_name() << "-" << counter << ".hdr";
-                        stbi_write_hdr(depth_file.str().c_str(), vf.get_width(), vf.get_height(), 1, depth_data);
-                        std::cout << "Saved " << depth_file.str() << std::endl;
+                        std::cout << "Correct frame, saving it..." << std::endl;
 
-                        // Use the colorizer to get an rgb image for the depth stream
-                        vf = color_map.process(frame);
+                        auto stream = frame.get_profile().stream_type();
 
-                        // Write images to disk
-                        std::stringstream png_file;
-                        png_file << "rs-save-to-disk-output-" << vf.get_profile().stream_name() << "-"<< counter << ".png";
-                        stbi_write_png(png_file.str().c_str(), vf.get_width(), vf.get_height(),
-                                       vf.get_bytes_per_pixel(), vf.get_data(), vf.get_stride_in_bytes());
-                        std::cout << "Saved " << png_file.str() << std::endl;
+
+
+                        if (vf.is<rs2::depth_frame>())
+                        {
+                            //  Save depth as hdr file
+                            float depth_data[vf.get_width()*vf.get_height()];
+                            for (auto i=0; i < vf.get_width()*vf.get_height(); i++)
+                                depth_data[i] = (float)((const uint16_t*)vf.get_data())[i];
+                            std::stringstream depth_file;
+                            depth_file << "rs-save-to-disk-output-" << vf.get_profile().stream_name() << "-" << counter << ".hdr";
+                            stbi_write_hdr(depth_file.str().c_str(), vf.get_width(), vf.get_height(), 1, depth_data);
+                            std::cout << "Saved " << depth_file.str() << std::endl;
+
+                            // Use the colorizer to get an rgb image for the depth stream
+                            vf = color_map.process(frame);
+
+                            // Write images to disk
+                            std::stringstream png_file;
+                            png_file << "rs-save-to-disk-output-" << vf.get_profile().stream_name() << "-"<< counter << ".png";
+                            stbi_write_png(png_file.str().c_str(), vf.get_width(), vf.get_height(),
+                                           vf.get_bytes_per_pixel(), vf.get_data(), vf.get_stride_in_bytes());
+                            std::cout << "Saved " << png_file.str() << std::endl;
+
+                            got_depth = true;
+                        }
+                        else
+                        {
+                            // Write images to disk
+                            std::stringstream rgb_png_file;
+                            rgb_png_file << "rs-save-to-disk-output-" << vf.get_profile().stream_name() << "-rgb-"<< counter << ".png";
+                            stbi_write_png(rgb_png_file.str().c_str(), vf.get_width(), vf.get_height(),
+                                           vf.get_bytes_per_pixel(), vf.get_data(), vf.get_stride_in_bytes());
+                            std::cout << "Saved " << rgb_png_file.str() << std::endl;
+
+                            got_rgb = true;
+                        }
+
+                        // Record per-frame metadata for UVC streams
+                        std::stringstream csv_file;
+                        csv_file << "rs-save-to-disk-output-" << vf.get_profile().stream_name()
+                                 << "-metadata" << "-"<< counter << ".csv";
+                        metadata_to_csv(vf, csv_file.str());
                     }
-                    else
-                    {
-                        // Write images to disk
-                        std::stringstream rgb_png_file;
-                        rgb_png_file << "rs-save-to-disk-output-" << vf.get_profile().stream_name() << "-rgb-"<< counter << ".png";
-                        stbi_write_png(rgb_png_file.str().c_str(), vf.get_width(), vf.get_height(),
-                                       vf.get_bytes_per_pixel(), vf.get_data(), vf.get_stride_in_bytes());
-                        std::cout << "Saved " << rgb_png_file.str() << std::endl;
-                    }
-
-                    // Record per-frame metadata for UVC streams
-                    std::stringstream csv_file;
-                    csv_file << "rs-save-to-disk-output-" << vf.get_profile().stream_name()
-                             << "-metadata" << "-"<< counter << ".csv";
-                    metadata_to_csv(vf, csv_file.str());
                 }
-
-#ifdef DEBUG_WITHOUT_RPI
-                if (counter >= 4)
-#endif
-                captureFlag = false;
-                counter++;
-#ifdef DEBUG_WITHOUT_RPI
-                if (counter >= 4)
-                    nextObjectFlag = true;
-#endif
             }
         }
+        captureFlag = false;
+        counter++;
+        got_depth = false;
+        got_rgb = false;
+
+#ifdef DEBUG_WITHOUT_RPI
+        nextObjectFlag = true;
+#endif
+
         usleep(100);
     }
 
