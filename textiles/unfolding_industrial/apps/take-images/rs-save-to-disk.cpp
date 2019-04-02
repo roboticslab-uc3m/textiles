@@ -188,6 +188,8 @@ int main(int argc, char * argv[]) try
                                  << "-metadata" << "-"<< counter << ".csv";
                         metadata_to_csv(vf, csv_file.str());
                     }
+                captureFlag = false;
+                counter++;
                 }
             }
 #ifdef COLOR_STREAM
@@ -195,9 +197,6 @@ int main(int argc, char * argv[]) try
         got_depth = false;
         got_rgb = false;
 #endif
-        captureFlag = false;
-        counter++;
-
 
 #ifdef DEBUG_WITHOUT_RPI
         nextObjectFlag = true;
