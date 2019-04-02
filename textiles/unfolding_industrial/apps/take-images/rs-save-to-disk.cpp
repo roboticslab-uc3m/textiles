@@ -10,6 +10,7 @@
 // 3rd party header for writing png files
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
+#include "cxxopts.hpp"  // Small library to parse command-line args: https://github.com/jarro2783/cxxopts
 #include <unistd.h>
 
 #define DEBUG_WITHOUT_RPI
@@ -47,6 +48,31 @@ void metadata_to_csv(const rs2::frame& frm, const std::string& filename);
 // It can be useful for debugging an embedded system with no display.
 int main(int argc, char * argv[]) try
 {
+    //-- Parsing args
+    cxxopts::Options options("takeimages", "Take RGB and depth images with an industrial robot");
+    options.add_options()
+            ("f,folder", "Output folder", cxxopts::value<std::string>())
+            ("h,help", "Print help");
+    auto result = options.parse(argc, argv);
+    if (result.count("help"))
+        {
+          std::cout << options.help({""}) << std::endl;
+          exit(0);
+    }
+
+    std::string folder;
+    if (result.count("f"))
+    {
+        folder = result["f"].as<std::string>();
+        if (folder.back() != '/')
+            folder += "/";
+    }
+    else
+    {
+        folder = "./";
+    }
+    std::cout << "Folder =" << folder << std::endl;
+
 #ifndef DEBUG_WITHOUT_RPI
     //----- WiringPi Configuration -----------------------------------------------
     if (wiringPiSetup() < 0)
@@ -119,7 +145,7 @@ int main(int argc, char * argv[]) try
                             for (auto i=0; i < vf.get_width()*vf.get_height(); i++)
                                 depth_data[i] = (float)((const uint16_t*)vf.get_data())[i];
                             std::stringstream depth_file;
-                            depth_file << "rs-save-to-disk-output-" << vf.get_profile().stream_name() << "-" << counter << ".hdr";
+                            depth_file << folder << "rs-save-to-disk-output-" << vf.get_profile().stream_name() << "-" << counter << ".hdr";
                             stbi_write_hdr(depth_file.str().c_str(), vf.get_width(), vf.get_height(), 1, depth_data);
                             std::cout << "Saved " << depth_file.str() << std::endl;
 
@@ -128,7 +154,7 @@ int main(int argc, char * argv[]) try
 
                             // Write images to disk
                             std::stringstream png_file;
-                            png_file << "rs-save-to-disk-output-" << vf.get_profile().stream_name() << "-"<< counter << ".png";
+                            png_file << folder << "rs-save-to-disk-output-" << vf.get_profile().stream_name() << "-"<< counter << ".png";
                             stbi_write_png(png_file.str().c_str(), vf.get_width(), vf.get_height(),
                                            vf.get_bytes_per_pixel(), vf.get_data(), vf.get_stride_in_bytes());
                             std::cout << "Saved " << png_file.str() << std::endl;
@@ -139,7 +165,7 @@ int main(int argc, char * argv[]) try
                         {
                             // Write images to disk
                             std::stringstream rgb_png_file;
-                            rgb_png_file << "rs-save-to-disk-output-" << vf.get_profile().stream_name() << "-rgb-"<< counter << ".png";
+                            rgb_png_file << folder << "rs-save-to-disk-output-" << vf.get_profile().stream_name() << "-rgb-"<< counter << ".png";
                             stbi_write_png(rgb_png_file.str().c_str(), vf.get_width(), vf.get_height(),
                                            vf.get_bytes_per_pixel(), vf.get_data(), vf.get_stride_in_bytes());
                             std::cout << "Saved " << rgb_png_file.str() << std::endl;
@@ -149,7 +175,7 @@ int main(int argc, char * argv[]) try
 
                         // Record per-frame metadata for UVC streams
                         std::stringstream csv_file;
-                        csv_file << "rs-save-to-disk-output-" << vf.get_profile().stream_name()
+                        csv_file << folder << "rs-save-to-disk-output-" << vf.get_profile().stream_name()
                                  << "-metadata" << "-"<< counter << ".csv";
                         metadata_to_csv(vf, csv_file.str());
                     }
