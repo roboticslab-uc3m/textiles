@@ -11,17 +11,29 @@ MODULE MainModule
 	CONST robtarget p90:=[[824.10,73.95,149.18],[0.155173,-0.106368,0.962623,-0.194845],[0,-1,-4,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
 	CONST robtarget p100:=[[824.14,73.97,149.20],[0.0630606,0.143791,-0.90145,0.403405],[0,-1,-4,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
 	CONST robtarget p110:=[[824.16,73.97,149.19],[0.259063,0.219304,-0.918559,0.202589],[0,-1,-5,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+
+    PROC takePicture(robtarget point)
+        MoveJ point, v1000, z50, realsense;
+        MoveL point, v15, fine, realsense;
+        Set DO10_2;
+        WaitTime \InPos 0.5;
+        Reset DO10_2;
+    ENDPROC
+
 	PROC main()
-		MoveJ p10, v1000, z50, realsense;
-		MoveJ p20, v1000, z50, realsense;
-		MoveJ p30, v1000, z50, realsense;
-		MoveJ p40, v1000, z50, realsense;
-		MoveJ p50, v1000, z50, realsense;
-		MoveJ p60, v1000, z50, realsense;
-		MoveJ p70, v1000, z50, realsense;
-		MoveJ p80, v1000, z50, realsense;
-		MoveJ p90, v1000, z50, realsense;
-		MoveJ p100, v1000, z50, realsense;
-		MoveJ p110, v1000, z50, realsense;
+        takePicture p10;
+        takePicture p20;
+        takePicture p30;
+        takePicture p40;
+        takePicture p50;
+        takePicture p60;
+        takePicture p70;
+        takePicture p80;
+        takePicture p90;
+        takePicture p100;
+        takePicture p110;
+        Set DO10_3;
+        WaitTime \InPos 0.5;
+        Reset DO10_3;
 	ENDPROC
 ENDMODULE
