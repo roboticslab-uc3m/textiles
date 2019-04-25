@@ -14,9 +14,9 @@ MODULE MainModule
 
     PROC takePicture(robtarget point)
         MoveJ point, v1000, z50, realsense;
-        MoveL point, v15, fine, realsense;
+        MoveL point, v20, fine, realsense;
         Set DO10_2;
-        WaitTime \InPos 0.5;
+        WaitTime \InPos, 1;
         Reset DO10_2;
     ENDPROC
 
@@ -33,7 +33,7 @@ MODULE MainModule
         takePicture p100;
         takePicture p110;
         Set DO10_3;
-        WaitTime \InPos 0.5;
+        WaitTime \InPos, 1;
         Reset DO10_3;
 	ENDPROC
 ENDMODULE
