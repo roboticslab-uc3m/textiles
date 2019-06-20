@@ -111,7 +111,17 @@ int main(int argc, char * argv[]) try
 #endif
 
     // Start streaming with the above configuration
-    pipe.start(cfg);
+    rs2::pipeline_profile selection = pipe.start(cfg);
+    auto depth_stream = selection.get_stream(RS2_STREAM_DEPTH).as<rs2::video_stream_profile>();
+    auto resolution = std::make_pair(depth_stream.width(), depth_stream.height());
+    auto i = depth_stream.get_intrinsics();
+    auto principal_point = std::make_pair(i.ppx, i.ppy);
+    auto focal_length = std::make_pair(i.fx, i.fy);
+    rs2_distortion model = i.model;
+    std::cout << "Resolution: " << resolution.first << " " << resolution.second << std::endl
+              << "Principal point: " << principal_point.first << " " << principal_point.second << std::endl
+              << "Focal length: " << focal_length.first << " " << focal_length.second << std::endl << std::endl;
+
 
     // Capture 30 frames to give autoexposure, etc. a chance to settle
     for (auto i = 0; i < 30; ++i) pipe.wait_for_frames();
