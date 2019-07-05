@@ -313,9 +313,8 @@ bool IroningMover::rightArmJointsMoveAndWait(std::vector<double>& q)
 
 bool IroningMover::strategyPosition()
 {
-    int state;
     std::vector<double> x;
-    iCartesianControl->stat(state,x);
+    iCartesianControl->stat(x);
     iCartesianControl->movj(x);
     CD_DEBUG("***************DOWN*****************\n");
     double force = 0;
@@ -377,9 +376,8 @@ bool IroningMover::strategyPosition()
 
 bool IroningMover::strategyVelocity()
 {
-    int state;
     std::vector<double> x;
-    iCartesianControl->stat(state,x);
+    iCartesianControl->stat(x);
     iCartesianControl->movj(x);
 
     CD_DEBUG("***************DOWN*****************\n");
@@ -457,9 +455,8 @@ bool IroningMover::strategyVelocity()
 
 bool IroningMover::strategyVelocityForce()
 {
-    int state;
     std::vector<double> x;
-    iCartesianControl->stat(state,x);
+    iCartesianControl->stat(x);
     iCartesianControl->movj(x);
 
     CD_DEBUG("***************DOWN*****************\n");
@@ -540,9 +537,8 @@ bool IroningMover::strategyVelocityForce()
 
 bool IroningMover::strategyHybrid()
 {
-    int state;
     std::vector<double> x;
-    iCartesianControl->stat(state,x);
+    iCartesianControl->stat(x);
     iCartesianControl->movj(x);
 
     yarp::os::Bottle b;
@@ -576,7 +572,7 @@ bool IroningMover::strategyHybrid()
     exit(0);
 
     CD_DEBUG("***************ADVANCE*****************\n");
-    iCartesianControl->stat(state,x);
+    iCartesianControl->stat(x);
 
     for(int i=0;i<40;i++)
     {
@@ -625,9 +621,8 @@ bool IroningMover::strategyHybrid()
 
 bool IroningMover::strategyVelocityForceTraj()
 {
-    int state;
     std::vector<double> x;
-    iCartesianControl->stat(state,x);
+    iCartesianControl->stat(x);
     iCartesianControl->movj(x);
     CD_DEBUG("* at: %f,%f\n",x[0],x[1]);
 
@@ -678,7 +673,7 @@ bool IroningMover::strategyVelocityForceTraj()
     while(pointIterator < trajectory.size())
     {
         yarp::os::Bottle* point = trajectory.get(pointIterator).asList();
-        iCartesianControl->stat(state,x);
+        iCartesianControl->stat(x);
 
         double xe = point->get(0).asDouble() - x[0];
         double ye = point->get(1).asDouble() - x[1];
