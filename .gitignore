@@ -3,3 +3,4 @@
 pcl/build
 *.txt.user
 *.fcstd1
+**/build*/
