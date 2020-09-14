@@ -55,7 +55,7 @@ def compute_stages(args):
     return True
 
 
-if __name__ == "__main__":
+def main():
     # Input and output folders:
     input_dir = os.path.expanduser('~/Research/garments-birdsEye-flat')
     print("[+] Loading data from:", input_dir)
@@ -82,3 +82,7 @@ if __name__ == "__main__":
 
     for result in tqdm(it):
         pass
+
+
+if __name__ == "__main__":
+    main()

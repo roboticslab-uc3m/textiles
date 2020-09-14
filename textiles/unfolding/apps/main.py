@@ -9,7 +9,7 @@ from textiles.unfolding.perception.GarmentUtils import load_data
 
 __author__ = "def"
 
-if __name__ == "__main__":
+def main():
     # image_paths, depth_image_paths = load_data('../data/20150902')
     image_paths, depth_image_paths = load_data('/home/def/Research/garments-birdsEye/jacket')
 
@@ -38,3 +38,7 @@ if __name__ == "__main__":
         # GarmentPlot.plot_pick_and_place_points(image_src, pick_point, place_point)
         GarmentPlot.plot_pick_and_place_stage(image_src, labeled_image, approximated_polygon, unfold_paths,
                                               pick_point, place_point)
+
+
+if __name__ == "__main__":
+    main()

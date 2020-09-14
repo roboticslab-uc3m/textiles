@@ -1,12 +1,19 @@
 import numpy as np
-import yarp
 
 from textiles.common.perception.yarp_cameras import get_cameras
 from textiles.unfolding.perception.GarmentDepthMapClustering import GarmentDepthMapClustering
 from textiles.unfolding.perception.GarmentPickAndPlacePoints import GarmentPickAndPlacePoints
 from textiles.unfolding.perception.GarmentSegmentation import GarmentSegmentation
+from textiles.common.errors import DependencyNotInstalled
+try:
+    import yarp
+except ImportError as e:
+    raise DependencyNotInstalled(
+        ("{}. (HINT: you need to install YARP for this to work," +
+         "check https://github.com/roboticslab-uc3m/textiles for more info.)").format(e))
 
-if __name__ == '__main__':
+
+def main():
     with get_cameras("/OpenNI2/imageFrame:o", (640, 480),
                      "/OpenNI2/depthFrame:o", (640, 480)) as (rgb_camera, depth_camera):
         # Open port for output data
@@ -46,3 +53,6 @@ if __name__ == '__main__':
                 bottle.addDouble(place_point[0])
                 bottle.addDouble(place_point[1])
                 out_port.write(bottle)
+
+if __name__ == '__main__':
+    main()

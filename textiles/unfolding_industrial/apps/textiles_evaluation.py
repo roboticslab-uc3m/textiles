@@ -68,7 +68,7 @@ def compute_stages(point_cloud_path):
     return True
 
 
-if __name__ == "__main__":
+def main():
     # Input and output folders:
     input_dir = os.path.expanduser(input_folder)
     print("[+] Loading data from:", input_dir)
@@ -95,3 +95,7 @@ if __name__ == "__main__":
     else:
         for path in tqdm(point_cloud_paths):
             result = compute_stages(path)
+
+
+if __name__ == "__main__":
+    main()

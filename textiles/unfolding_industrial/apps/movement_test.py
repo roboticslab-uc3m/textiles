@@ -47,7 +47,7 @@ if __name__ == "__main__":
     points = change_frame.root(px)
 
     # Plot good points
-    from common.perception.depth_calibration import points_root
+    from textiles.common.perception.depth_calibration import points_root
     plt.scatter([p[0] for p in points], [p[1] for p in points], c='b')
     plt.scatter([p[0] for p in mask_points], [p[1] for p in mask_points], c='r')
     plt.scatter([p[0] for p in test_points], [p[1] for p in test_points], c='y')

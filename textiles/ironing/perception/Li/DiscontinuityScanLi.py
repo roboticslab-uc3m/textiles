@@ -13,6 +13,8 @@ import cv2  # SIFT, SVM not in skimage
 from textiles.common.math import normalize
 from textiles.common.perception.Features import save_SIFT
 from textiles.common.perception.roi import load_roi_from_file, crop_roi
+from textiles.common.errors import DependencyNotInstalled
+
 
 logger = logging.getLogger(__name__)
 
@@ -115,9 +117,11 @@ class DiscontinuityScanLi(object):
 
         try:
             self.svm = cv2.ml.SVM_load(os.path.join(svm_folder, self.svm_data_name_pattern))
-        except AttributeError:
+        except AttributeError as e:
             logger.error("\tYour OpenCV version does not support loading SVM parameters")
-            raise AttributeError("OpenCV version does not support loading SVM parameters")
+            raise DependencyNotInstalled(
+                ("{}. (HINT: you need to install a custom OpenCV 3 for this to work," +
+                 "check https://github.com/roboticslab-uc3m/textiles for more info.)").format(e))
 
     def run(self, debug=False):
         self.normalize_images()
