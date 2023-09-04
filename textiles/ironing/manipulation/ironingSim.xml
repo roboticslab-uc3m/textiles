@@ -3,7 +3,7 @@
 
     <module>
         <name>teoSim</name>
-        <parameters>--env /home/yo/repos/textiles/ironing/manipulation/ironingSim/ironingSim.env.xml</parameters>
+        <parameters>--env /home/yo/repos/roboticslab-uc3m/textiles/textiles/ironing/manipulation/ironingSim/ironingSim.env.xml</parameters>
         <node>localhost</node>
     </module>
 
