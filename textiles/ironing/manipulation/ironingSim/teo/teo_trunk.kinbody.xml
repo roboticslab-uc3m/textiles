@@ -16,7 +16,7 @@
             </Mass>
             </Body>
 
-	    <Joint circular="true" name="q30" type="hinge">
+	    <Joint circular="true" name="AxialTrunk" type="hinge">
             <Body>cintura</Body>
             <Body>r30</Body>
             <offsetfrom>r30</offsetfrom>
@@ -39,7 +39,7 @@
             </Mass>
             </Body>
 
-	    <Joint circular="true" name="q31" type="hinge">
+	    <Joint circular="true" name="FrontalTrunk" type="hinge">
             <Body>r30</Body>
             <Body>r31</Body>
             <offsetfrom>r30</offsetfrom>
