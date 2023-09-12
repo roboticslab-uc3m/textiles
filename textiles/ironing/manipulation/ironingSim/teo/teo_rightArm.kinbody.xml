@@ -23,7 +23,7 @@
             <offsetfrom>r10</offsetfrom>
             <weight>1.0</weight>
             <limitsdeg>-98.1 106.0</limitsdeg>
-            <axis>0 -1 0</axis>
+            <axis>0 1 0</axis>
             <maxvel>3</maxvel>
             <resolution>1</resolution>
             </Joint>
@@ -71,7 +71,7 @@
             <offsetfrom>r12</offsetfrom>
             <weight>1.0</weight>
             <limitsdeg>-80.1 57.0</limitsdeg>
-            <axis>0 0 -1</axis>
+            <axis>0 0 1</axis>
             <maxvel>3</maxvel>
             <resolution>1</resolution>
             </Joint>
@@ -95,7 +95,7 @@
             <offsetfrom>r13</offsetfrom>
             <weight>1.0</weight>
             <limitsdeg>-99.6 98.4</limitsdeg>
-            <axis>0 -1 0</axis>
+            <axis>0 1 0</axis>
             <maxvel>3</maxvel>
             <resolution>1</resolution>
             </Joint>
@@ -119,7 +119,7 @@
             <offsetfrom>r14</offsetfrom>
             <weight>1.0</weight>
             <limitsdeg>-90 90</limitsdeg>
-            <axis>0 0 -1</axis>
+            <axis>0 0 1</axis>
             <maxvel>3</maxvel>
             <resolution>1</resolution>
             </Joint>
@@ -156,7 +156,7 @@
             <offsetfrom>r15</offsetfrom>
             <weight>1.0</weight>
             <limitsdeg>-115.1 44.7</limitsdeg>
-            <axis>0 -1 0</axis>
+            <axis>0 1 0</axis>
             <maxvel>3</maxvel>
             <resolution>1</resolution>
             </Joint>
