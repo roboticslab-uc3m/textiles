@@ -85,7 +85,14 @@ output_file = "/home/def/Research/jresearch/2016-07-25-textiles-ironing/hoodie1/
 
 
 def send_trajectory_over_yarp(port, trajectory):
-    import yarp
+    from textiles.common.errors import DependencyNotInstalled
+    try:
+        import yarp
+    except ImportError as e:
+        raise DependencyNotInstalled(
+            ("{}. (HINT: you need to install YARP for this to work," +
+             "check https://github.com/roboticslab-uc3m/textiles for more info.)").format(e))
+
     yarp.Network.initMinimum()
     p = yarp.Port()
     p.open("/traj:o")

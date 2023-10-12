@@ -13,7 +13,14 @@ from textiles.common.perception.Utils import sparse2dense
 import cv2
 import numpy as np
 
-import abb
+from textiles.common.errors import DependencyNotInstalled
+try:
+    import abb
+except ImportError as e:
+    raise DependencyNotInstalled(
+        ("{}. (HINT: you need to install open_abb for this to work," +
+         "check https://github.com/roboticslab-uc3m/textiles for more info.)").format(e))
+
 
 __author__ = "def"
 
@@ -23,7 +30,7 @@ __author__ = "def"
 path_input_mesh = "/home/yo/martes/blackHoodie3/mesh_1.ply"
 
 
-if __name__ == "__main__":
+def main():
     # Connect to robot
     robot = abb.Robot('192.168.125.1')
     robot.set_units('meters', 'degrees')
@@ -87,7 +94,7 @@ if __name__ == "__main__":
     # Transform points (debug edition)
     pick_point_abs, place_point_abs = change_frame.debug([pick_point, place_point])
     print(pick_point_abs, place_point_abs)
-    from common.perception.Utils import points_to_file
+    from textiles.common.perception.Utils import points_to_file
     points_to_file([pick_point_abs, place_point_abs], os.path.join(os.path.split(path_input_mesh)[0],
                                                                    "pick_and_place.pcd"))
 
@@ -106,3 +113,8 @@ if __name__ == "__main__":
                              place_point_root[0], place_point_root[1], distance*0.4)
 
     robot.close()
+
+
+if __name__ == "__main__":
+    main()
+

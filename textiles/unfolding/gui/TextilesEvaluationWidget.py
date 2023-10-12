@@ -1,12 +1,15 @@
-import os
-import sys
 from collections import namedtuple
 from operator import itemgetter
 
-from PySide import QtCore, QtGui
-from PySide import QtUiTools
-
 from textiles.unfolding.perception.GarmentUtils import load_results_data
+from textiles.common.errors import DependencyNotInstalled
+try:
+    from PySide import QtCore, QtGui
+    from PySide import QtUiTools
+except ImportError as e:
+    raise DependencyNotInstalled(
+        ("{}. (HINT: you need to install PySide 1 for this to work," +
+         "check https://github.com/roboticslab-uc3m/textiles for more info.)").format(e))
 
 
 def load_ui(file_name, where=None):
@@ -30,6 +33,7 @@ def load_ui(file_name, where=None):
     ui_file.close()
 
     return ui
+
 
 # Named tuple to store evaluation results
 Evaluation = namedtuple('Evaluation', 'name stage1 stage2 stage3')
@@ -61,7 +65,8 @@ class TextilesEvaluationWidget(QtGui.QWidget):
 
     def setup_ui(self):
         # Load UI and set it as main layout
-        ui_file_path = os.path.join(os.path.realpath(os.path.dirname(__file__)), 'TextilesEvaluationWidget.ui')
+        ui_file_path = os.path.join(os.path.realpath(os.path.dirname(__file__)), 'resources',
+                                                                                 'TextilesEvaluationWidget.ui')
         main_widget = load_ui(ui_file_path, self)
         layout = QtGui.QVBoxLayout()
         layout.addWidget(main_widget)
@@ -169,17 +174,3 @@ class TextilesEvaluationWidget(QtGui.QWidget):
         self.input_results = load_results_data(folder)
         self.input_iterator = iter(self.input_results)
         self.update_image(self.load_next_result())
-
-
-if __name__ == '__main__':
-    # Create Qt App
-    app = QtGui.QApplication(sys.argv)
-
-    # Create the widget and show it
-    gui = TextilesEvaluationWidget()
-    gui.output_data_path = os.path.expanduser('~/Research/garments-birdsEye-flat-results/output.txt')
-    gui.start(os.path.expanduser('~/Research/garments-birdsEye-flat-results'))
-    gui.show()
-
-    # Run the app
-    sys.exit(app.exec_())
